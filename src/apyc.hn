@@ -1,0 +1,168 @@
+/* -*- mode: fundamental; c-file-style: "stroustrup"; indent-tabs-mode: nil -*- */
+
+/* apyc: Bison Parser */
+
+/* Authors: YOUR NAMES HERE */
+
+%define semantic_tree_type "AST"
+
+%{
+  #include <string>
+  #include "apyc.h"
+  #include "ast.h"
+
+  using namespace std;
+
+  static AST_Ptr theTree;
+
+  /* Utilities */
+  /** Return a new unop node corresponding to OPERANDS, which is the list of
+   *  right-hand-side semantic values of a unop production (consisting of a
+   *  token for the operator, followed by the AST for the operand). */
+  static AST_Ptr make_unop (const List_Ptr& operands);
+
+  /** Return a new binop node corresponding to OPERANDS, which is the list of
+   *  right-hand-side semantic values of a binop production (consisting of an
+   *  AST for the first operand, a token for the operator, and an AST for the
+   *  second operand). */
+  static AST_Ptr make_binop (const List_Ptr& operands);
+
+  /** Return a new ID node, where the text of the identifier is given by
+   *  TOKEN. */
+  static AST_Ptr make_id (AST_Ptr& token);
+
+%}
+
+%debug
+%define error_function error
+
+/* A token declaration such as
+ *   %token INDENT
+ * declares a new integer constant INDENT, which serves as a syntactic category
+ * (suitable for output by the lexer) identifying a kind of token, which we
+ * also often refer to as INDENT. A declaration such as
+ *   %token IF "if"
+ * defines a constant IF and makes it the syntactic category for the token
+ * "if".  The built-in function yyexternal_token_name(...) maps between 
+ * syntactic categories (like IF) and the token strings defined in these 
+ * %token declarations (like "if").  
+ *
+ * The Horn system uses tokens as leaf nodes and as AST node operators.  A
+ * rule such as
+ *     if_stmt: "if"^ expression ":"! ...
+ * with no action, by default creates an AST node whose operator is an "if"
+ * token (with syntactic category IF, given the %token declaration above).
+ * When the node type does not correspond to a token that appears in the 
+ * program, we define a dummy token type that serves only as an AST
+ * node type.  For example, we can define
+ *     %token DICT_DISPLAY ...
+ * and then use
+ *     dict_display: "{"! key_datum_list? "}"! 
+ *              { $$ = $^(DICT_DISPLAY, $*); }
+ * in the grammar (using DICT_DISPLAY only in actions, not as a grammar
+ * symbol).
+ *
+ * In this skeleton, we've used a simple kludge to extract the printed forms
+ * of AST operators from the operators themselves.  When a token such as IF
+ * is the operator, yyexternal_token_name returns the operator name directly.
+ * When there is no such correspondence, as with DICT_DISPLAY, we'll define
+ *     %token DICT_DISPLAY "@dict_display"
+ * Since "@dict_display" is not a valid token (it would be an error for this
+ * to appear in any Python program) and does not appear in the grammar, this
+ * declaration has no effect on the language recognized.  However, it
+ * still provides an easy way to find the external name of an operator (just
+ * strip off the leading "@").  (We can't just use "dict_display", since that
+ * would tell Horn to define 'dict_display' as a token, whereas it would be a
+ * simple identifier if it actually appeared in a Python program.  This is
+ * where the kludginess comes in.) The AST_Tree::external_name method does
+ * this conversion, converting tokens that are supposed to represent
+ * node operators to printable strings.
+ */
+
+%token ID
+
+%token PRINTLN "@println"
+%token EMPTY 
+%token EXPR_LIST "@expr_list"
+%token MODULE "@module"
+%token BINOP "@binop"
+%token UNOP "@unop"
+/* FIXME: MORE... */
+
+%%
+
+program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
+        ;
+
+/* REPLACE THE FOLLOWING WITH SOMETHING REAL. */
+
+stmt_list : print_stmt '\n'!
+    ;
+
+print_stmt : "print"  expression_list 
+                      { $$ = $^(PRINTLN, $^(EMPTY), $expression_list); }
+    ;
+
+expression_list :
+      expression (","! expression)*
+                      { $$ = $^(EXPR_LIST, $*); }
+    | /*empty*/       { $$ = $^(EXPR_LIST); }
+    ;
+
+expression :
+      INT_LITERAL
+    ;
+
+/* Normally, throw away whitespace other than newline. */
+* : (' ' | '\t' | '\r')+ ;
+
+INT_LITERAL : ('1' .. '9') ('0' .. '9')* /* FIXME */;
+
+STRING : "\"\"" /* FIXME */ ;
+
+RAWSTRING : "r\"\"" /* FIXME */ ;
+
+%%
+
+bool debugParser;
+
+static AST_Ptr
+make_unop (const List_Ptr& operands)
+{
+    return YYMAKE_TREE (UNOP, make_id (operands->at (0)), operands->at (1));
+}
+
+static AST_Ptr
+make_binop (const List_Ptr& operands)
+{
+    return YYMAKE_TREE (BINOP, operands->at (0), make_id (operands->at (1)),
+                        operands->at (2));
+}
+
+static AST_Ptr
+make_id (AST_Ptr& token)
+{
+    AST_Ptr result = AST::make_token (ID, token->text_size (), 
+                                      token->as_chars (), false);
+    result->set_loc (token->loc ());
+    return result;
+}
+
+int
+AST::lineNumber ()
+{
+    return yylocation_line (loc ());
+}
+
+void
+parse (FILE* f, const string& name)
+{
+    if (debugParser)
+        yydebug = 1;
+    yypush_lexer (f, name);
+    theTree = NULL;
+    yyparse ();
+    if (theTree != NULL) {
+        theTree->print (cout, 0);
+    }
+}
