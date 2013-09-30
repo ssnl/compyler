@@ -1,0 +1,65 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_type int
+
+%interactive
+
+%code top {
+# include <iostream>
+
+using namespace std;
+
+   static int expo (int x, int n);
+
+}
+
+%left "+" "-"
+%left "*" "/"
+%left UNARY
+%right "**"
+
+%%
+
+program : stmt* 
+        ;
+
+stmt :   expr ";"             { cout << "=" << $expr.value () << endl; }
+     ;
+
+expr : 
+         L=expr "+" R=expr    { $$ = $L.value () + $R.value (); }
+       | L=expr "-" R=expr    { $$ = $L.value () - $R.value (); }
+       | L=expr "*" R=expr    { $$ = $L.value () * $R.value (); }
+       | L=expr "/" R=expr    { $$ = $L.value () / $R.value (); }
+       | L=expr "**" R=expr   { $$ = expo ($L.value (), $R.value ()); }
+       | "(" L=expr ")"	      { $$ = $L; }
+       | "-" L=expr           { $$ = -$L.value (); } %prec UNARY
+       | NUM
+       ;
+
+NUM :  ('0' .. '9')+	      { $$ = atoi ($TEXT); }
+    ;
+
+WS : (' ' | '\t' | '\n' | '\r' )+  { YYIGNORE; }
+   ;
+
+%%
+
+static int
+expo (int x, int n)
+{
+    if (n < 0)
+        return 0;
+
+    int z;
+    z = 1;
+    while (n > 0) {
+        z *= x;
+	n -= 1;
+    }
+
+    return z;
+}
+
+#include "common-main2.cc"
+

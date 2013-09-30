@@ -1,0 +1,49 @@
+%{
+#  include <cstdlib>
+#  include <cstdio>
+#  include <math.h>
+
+   extern double make_token (int syntax, size_t len, const char* text);
+
+   using namespace std;
+
+%}
+
+%define token_factory make_token
+%define semantic_type double
+%interactive
+%debug
+
+%left "+" "-"
+%left "*" "/"
+%right "**"
+
+%%
+
+prog : (expr ";" { printf ("=%g\n", $expr.value()); })* ;
+
+expr : L=expr "+" R=expr     { $$ = $L.value() + $R.value(); };
+expr : L=expr "-" R=expr     { $$ = $L.value() - $R.value(); };
+expr : L=expr "*" R=expr     { $$ = $L.value() * $R.value(); };
+expr : L=expr "/" R=expr     { $$ = $L.value() / $R.value(); };
+expr : L=expr "**" R=expr    { $$ = pow($L.value(), $R.value()); };
+expr : NUM;
+expr : "(" expr ")"          { $$ = $expr; };
+
+_DIG : '0' .. '9' ;
+NUM : _DIG+ ("." _DIG*)? (("e"|"E") ("+"|"-")? _DIG+)? ;
+* : ' ' | '\t' | '\n' | '\r';
+%%
+
+double
+make_token (int syntax, size_t len, const char* text) {
+   return strtod (text, NULL);
+}
+
+int
+main (int argc, char* argv[]) {
+  if (argc > 1)
+      freopen(argv[1], "r", stdin);
+  yypush_lexer (stdin, "<stdin>");
+  yyparse ();
+}

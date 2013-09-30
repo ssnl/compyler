@@ -1,0 +1,43 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type Simple_Node
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+%}
+
+%debug
+
+%token PROG STMT_LIST
+
+%%
+
+prog : stmt+  { theTree = $^ (PROG, $*); $$ = NULL; }
+     ;
+
+while_stmt : "while"^ expression ":"! suite ( "else"! ":"! suite )?
+    ;
+
+suite : "{"! stmt+ "}"!  { $$ = $^(STMT_LIST, $*); } ;
+
+stmt : ID "\n"!
+     | "\n"!
+     | while_stmt
+     ;
+
+expression : ID ;
+
+ID: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

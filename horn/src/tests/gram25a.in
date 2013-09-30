@@ -1,0 +1,12 @@
+foo
+bar
+baz
+while cont : { 
+   eek
+   thud
+} 
+while ouch : {
+   bar
+} else: {
+   baz
+}

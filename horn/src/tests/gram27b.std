@@ -1,0 +1,16 @@
+gram27b.in:1:[
+  gram27b.in:1:("="
+    gram27b.in:1:<ID 'x1'>
+    gram27b.in:1:("+"
+      gram27b.in:1:("+"
+        gram27b.in:1:<ID 'x'>
+        gram27b.in:1:("*"
+          gram27b.in:1:("*"
+            gram27b.in:1:<ID 'y'>
+            gram27b.in:1:<ID 'z'>)
+          :<ID 'error'>))
+      gram27b.in:1:<ID 'z'>))
+  gram27b.in:3:(CALL
+    gram27b.in:3:<ID 'g'>
+    gram27b.in:3:<ID 'x1'>
+    gram27b.in:3:<ID 'x2'>)]

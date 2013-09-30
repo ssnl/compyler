@@ -1,0 +1,40 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Simple_Node"
+
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+%}
+
+%debug
+
+%term ID
+
+%%
+
+top: p     { theTree = $p.value (); }
+;
+
+p:
+   ID ("," ID)* "=" q
+;
+
+q:
+   ID ("," ID)*
+;
+
+*: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+ { YYSET_TOKEN (ID); }
+;
+
+*: ('\n' | ' ' | '\t')
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

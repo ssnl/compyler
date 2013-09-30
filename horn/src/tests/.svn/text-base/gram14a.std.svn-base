@@ -1,0 +1,14 @@
+NUM <- factor
+factor <- term
+NUM <- factor
+factor <- term
+term <- expr
+NUM <- factor
+factor <- term
+expr + term <- expr
+( expr ) <- factor
+term * factor <- term
+term <- expr
+NUM <- factor
+factor <- term
+expr - term <- expr

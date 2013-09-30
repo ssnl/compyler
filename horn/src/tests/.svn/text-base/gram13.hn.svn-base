@@ -1,0 +1,56 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_type "Quantity*"
+
+%{
+# include <iostream>
+# include "linalg.h"
+
+using namespace std;
+
+YYDEFINE_LIST_TYPE(List, Quantity*);
+
+%}
+
+%left "+" "-"
+%left "*" ".*"
+%left UNARY
+
+%debug
+
+%%
+
+program : stmt* 
+        ;
+
+stmt :   expr ";"             { cout << "=" << $expr.value () << endl; }
+     ;
+
+expr : 
+         L=expr "+"! R=expr    { $$ = $L.value ()->add($R.value ()); }
+       | L=expr "-"! R=expr    { $$ = $L.value ()->sub($R.value ()); }
+       | L=expr "*"! R=expr    { $$ = $L.value ()->mult($R.value ()); }
+       | L=expr ".*"! R=expr   { $$ = $L.value ()->inner_prod($R.value ()); }
+       | "("! L=expr ")"!      { $$ = $L; }
+       | "-"! L=expr           { $$ = $L.value ()->neg(); } %prec UNARY
+       | "["! E0=snum ( ","! E1+=snum )* "]"! 
+       	      	               { List L = $E1.list_value ();
+			         L->insert (L->begin (), $E0.value()); 
+				 $$ = new Quantity (L->begin(), L->end ()); }
+       | NUM		       { $$ = new Quantity (*$NUM.value ()); }
+       ;
+
+snum: NUM                      { $$ = new Quantity (*$NUM.value ()); }
+    | "-"! NUM  	       { $$ = new Quantity (-*$NUM.value ()); }
+   ;
+
+NUM :  ('0' .. '9')+	       { $$ = new Quantity (atof ($TEXT)); }
+    ;
+
+WS : (' ' | '\t' | '\n' | '\r' )+  { YYIGNORE; }
+   ;
+
+%%
+
+#include "common-main2.cc"
+

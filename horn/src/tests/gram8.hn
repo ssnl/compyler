@@ -1,0 +1,90 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Simple_Node"
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+   static void handle_indent (const char* start);
+%}
+
+%debug
+
+%token INDENT
+%token DEDENT
+
+%%
+
+top: stmts     { theTree = $stmts.value (); }
+;
+
+stmt: 
+   ID "\n"
+|  "if" expr ":" "\n" INDENT stmts DEDENT
+;
+
+stmts: stmt*
+;
+   
+expr:  ID
+;
+
+_WS: ' ' | '\t'
+;
+
+ID: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+
+;
+
+*: _BOL (_WS* '\r'? '\n') %prefer { YYIGNORE; }
+;
+
+*: _BOL _WS* %prefer { YYIGNORE; handle_indent ($TEXT); }
+;
+
+*: _WS { YYIGNORE; }
+;
+
+%%
+
+#include <vector>
+
+using namespace std;
+
+Simple_Node::NodePtr theTree;
+static vector<int> indentations;
+
+static void
+handle_indent (const char* text) {
+    if (indentations.empty ())
+	indentations.push_back (0);
+
+    while (*text == '\r' || *text == '\n')
+	text += 1;
+
+    int n;
+    n = 0;
+    for (const char* p = text; *p != '\0'; p += 1) {
+	if (*p == '\t') 
+	    n = (n+8) & ~8;
+	else
+	    n += 1;
+    }
+
+    if (indentations.back () < n) {
+	indentations.push_back (n);
+	yyqueue_token (INDENT, Simple_Tree::make_token (INDENT, text, 0));
+    } else {
+	while (indentations.back () > n) {
+	    yyqueue_token (DEDENT, Simple_Tree::make_token (DEDENT, text, 0));
+	    indentations.pop_back ();
+	}
+	if (indentations.back () != n)
+	    fprintf (stderr, "Inconsistent indentation\n");
+    }
+}
+
+
+
+#include "common-main1.cc"
+    
+

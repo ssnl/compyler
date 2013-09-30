@@ -1,0 +1,11 @@
+[
+  <ID 'foo'>
+  <SUFFIX 'bar'>
+  <COMMAND 'foo'>
+  <ID 'bar'>
+  <ID 'foo'>
+  <SUFFIX 'bar'>
+  <COMMAND 'baz'>
+  <SUFFIX 'baz'>
+  <COMMAND 'baz'>
+  <STOP ''>]

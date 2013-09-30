@@ -1,0 +1,54 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Simple_Node"
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+   extern int eofs;
+%}
+
+%debug
+
+%%
+
+top: ps         { theTree = $ps.value (); }
+;
+
+ps: p+
+;
+
+p:
+   ID
+|  SUFFIX
+|  COMMAND
+|  STOP
+;
+
+_ID: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+
+;
+
+COMMAND: _BOL _ID %prefer
+;
+
+SUFFIX: _ID _EOL
+;
+
+ID: _ID
+;
+
+STOP: _EOF { eofs += 1; if (eofs > 1) YYSET_TOKEN (0); }
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+int eofs;
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

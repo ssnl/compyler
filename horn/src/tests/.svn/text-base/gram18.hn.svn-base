@@ -1,0 +1,39 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Simple_Node"
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+%}
+
+%debug
+
+%%
+
+top: p     { theTree = $p.value (); }
+;
+
+p:
+   id_list+=ID ("," id_list+=ID)* op="=" q 
+   { $$ = Simple_Node::make_list ()->append ($id_list.begin (), $id_list.end ())
+     		->append ($op.value ())->append ($q.begin (), $q.end ()); }
+;
+
+q:
+   id_list+=ID ("," id_list+=ID)* { $$ = $id_list; }
+;
+
+ID: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

@@ -1,0 +1,27 @@
+%left '+' '-' 
+%left '*' '/'
+%right "**"
+
+%%
+
+expr : ID
+     | NUM 
+     | '(' e=expr ')'		{ $$ = $e; }
+     | expr '+' expr
+     | expr '-' expr
+     | expr '*' expr
+     | expr '/' expr
+     | expr "**" expr
+     ;
+
+ID : _letter ( _letter | _digit )*
+     ;
+
+NUM : _digit+ ;
+
+_letter : 'a'..'z' | 'A'..'Z' | '_'
+        ;
+
+_digit : '0' .. '9' ;
+
+%%

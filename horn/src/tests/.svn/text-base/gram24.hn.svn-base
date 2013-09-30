@@ -1,0 +1,159 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type Arith_Node
+
+%{
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+
+using namespace std;
+
+class Arith_Token;
+class Arith_Tree;
+
+class Arith_Node : public CommonNode<Arith_Node, Arith_Token, Arith_Tree> {
+public:
+    virtual int eval () { return 0; }
+};
+
+class Arith_Tree : public CommonTree<Arith_Node, Arith_Token, Arith_Tree> {
+    typedef CommonTree<Arith_Node, Arith_Token, Arith_Tree> Parent;
+
+public: 
+    NODE_BASE_CONSTRUCTORS (Arith_Tree, Parent);
+
+    Arith_Node* post_make () {
+        repcheck_kids ();
+	return this;
+    }
+
+};
+
+class Arith_Token : public CommonToken<Arith_Node, Arith_Token, Arith_Tree> {
+public:
+    Arith_Token (int syntax, const char* text, size_t len, bool owner = false)
+	: CommonToken<Arith_Node, Arith_Token, Arith_Tree>
+            (syntax, text, len, owner),
+          _value (atoi(string(text, len).c_str()))
+    { }
+
+    Arith_Token (int syntax, const std::string& text, bool owner)
+        : CommonToken<Arith_Node, Arith_Token, Arith_Tree> (syntax, text, owner) { }
+
+    int eval () { return _value; }
+
+private:
+    int _value;
+};
+
+#define YYSEMDUMPER yysemdumper
+
+static void yysemdumper (const Arith_Node::NodePtr& x)
+{
+    x->dump (x, cerr, 8);
+}
+%}
+
+%printer { $$.dump (); } <>
+
+%left "+" "-"
+%left "*" "/"
+%right "**"
+
+%token EXPO "**"
+
+%debug
+%interactive
+%%
+
+prog : /* empty */	    { $$ = NULL; }
+     | prog expr ";"        { printf ("=%d\n", $expr.value()->eval()); } 
+     ;
+
+expr : expr "+"^ expr;
+expr : expr "-"^ expr;
+expr : expr "*"^ expr;
+expr : expr "/"^ expr;
+expr : expr "**"^ expr;
+expr : NUM;
+expr : "("! expr ")"!;
+
+_DIG : '0' .. '9' ;
+NUM : _DIG+ ("." _DIG*)? (("e"|"E") ("+"|"-")? _DIG+)?;
+* : ' ' | '\t' | '\n' ;
+%%
+
+class Add_Tree : public Arith_Tree {
+public:
+    int eval () {
+        return child(0)->eval () + child(1)->eval ();
+    }
+
+private:
+
+    NODE_CONSTRUCTORS (Add_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Add_Tree, '+');
+
+class Sub_Tree : public Arith_Tree {
+public:
+    int eval () {
+        return child(0)->eval () - child(1)->eval ();
+    }
+
+private:
+
+    NODE_CONSTRUCTORS (Sub_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Sub_Tree, '-');
+
+class Mult_Tree : public Arith_Tree {
+public:
+    int eval () {
+        return child(0)->eval () * child(1)->eval ();
+    }
+
+private:
+
+    NODE_CONSTRUCTORS (Mult_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Mult_Tree, '*');
+
+class Div_Tree : public Arith_Tree {
+public:
+    int eval () {
+        return child(0)->eval () / child(1)->eval ();
+    }
+
+private:
+
+    NODE_CONSTRUCTORS (Div_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Div_Tree, '/');
+
+class Expo_Tree : public Arith_Tree {
+public:
+    int eval () {
+        int z;
+	int x = child(0)->eval(), n = child(1)->eval();
+
+	z = 1;
+	for (int i = 0; i < n; i += 1)
+	    z *= x;
+
+        return z;
+    }
+
+private:
+
+    NODE_CONSTRUCTORS (Expo_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Expo_Tree, EXPO);
+
+#include "common-main2.cc"

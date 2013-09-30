@@ -1,0 +1,30 @@
+%code top {
+# include <cstdio>
+
+using namespace std;
+}
+
+%define semantic_type int
+
+%%
+
+prog : ( expr ";" { printf ("=%d\n", $expr.value ()); } )*;
+
+expr : term;
+expr : expr "+" term     { $$ = $expr.value() + $term.value(); };
+expr : expr "-" term     { $$ = $expr.value() - $term.value(); };
+term : factor;
+term : term "*" factor   { $$ = $term.value() * $factor.value(); };
+term : term "/" factor   { $$ = $term.value() / $factor.value(); };
+factor : NUM;
+factor : "(" expr ")"    { $$ = $expr; };
+
+NUM : ('0' .. '9')+      { $$ = atoi ($TEXT); }
+    ;
+
+WS : (' ' | '\t' | '\n') { YYIGNORE; };
+
+%%
+
+#include "common-main2.cc"
+  

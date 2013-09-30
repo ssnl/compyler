@@ -1,0 +1,107 @@
+#!@PYTHON@
+
+import sys, re, os
+from subprocess import Popen, PIPE
+from getopt import getopt, GetoptError
+from os.path import join, dirname, basename
+
+VERSION = "Horn parser generator, version @VERSION@"
+
+# Installation parameters
+
+datadir = "@DATADIR@"
+bindir = "@BINDIR@"
+
+def Usage():
+    print >>sys.stderr, '''\
+Usage: horn [ -o FILE | --output=FILE ] [-h | --help ] [ -v | --verbose ]
+            [ --datadir=DIR ] [ --[no-]post-process ] [ --version ] [INPUT_FILE]'''
+
+    sys.exit(1)
+
+def Exec(cmd_list, input=None, errfilter = None):
+    if verbose:
+        print >>sys.stderr, ' '.join (cmd_list)
+    errdest = errfilter and PIPE
+    if input is None:
+        p = Popen(cmd_list, stderr=errdest)
+    else:
+        p = Popen(cmd_list, stdin=PIPE, stderr=errdest)
+    out, err = p.communicate(input)
+    if errfilter:
+        sys.stderr.write (errfilter(err))
+    if p.returncode < 0:
+        print >>sys.stderr, \
+              basename(cmd_list[0]), "terminated on signal", -p.returncode
+    return p.returncode == 0
+
+def BisonFilter(text):
+    return re.sub(r'(?m)^.*warning: un(used|set) value:.*(\n|\Z)', '', text)
+
+
+output_file = None
+post_process = True
+verbose = False
+
+try:
+    opts, args = getopt(sys.argv[1:], 'o:hv',
+                        [ 'output=', 'post-process', 'no-post-process',
+                          'help', 'verbose', 'version' ])
+
+    if len(args) > 1:
+        Usage()
+    elif args:
+        input_file = args[0]
+    else:
+        input_file = None
+
+    for opt, val in opts:
+        if opt == '-o' or opt == '--output':
+            output_file = val
+        elif opt == '-h' or opt == '--help':
+            try:
+                Usage()
+            except:
+                sys.exit(0)
+        elif opt == '--version':
+            print >>sys.stderr, VERSION
+            sys.exit(0)
+        elif opt == '--no-post-process':
+            post_process = False;
+        elif opt == '-v' or opt == '--verbose':
+            verbose = True
+
+except GetoptError:
+    Usage()
+
+hornpp = join(bindir, 'hornpp')
+bison = "@BISON@"
+flex = "@FLEX@"
+
+if output_file:
+    base_name = re.match(r'(?s)(.*?)(?:-parser)?(?:\.[^.]*)?$',
+                         output_file).group(1)
+elif input_file:
+    base_name = re.match(r'(?s)(.*?)(?:\.[^.]*)?$', input_file).group(1)
+else:
+    base_name = "yy"
+
+parser_out = base_name + "-parser.y"
+lexer_out = base_name + "-lexer.l"
+parser_cc_out = base_name + "-parser.cc"
+lexer_cc_out = base_name + "-lexer.cc"
+
+if input_file:
+    if not Exec((hornpp, "--datadir=" + datadir,
+                 "-o", base_name, input_file), input=''):
+        sys.exit(1)
+else:
+    if not Exec((hornpp, "--datadir=" + datadir, "-o", base_name)):
+        sys.exit(1)
+
+pp1 = Exec((flex, "-o", lexer_cc_out, lexer_out), input='')
+pp2 = Exec((bison, "-v", "-o", parser_cc_out, parser_out), 
+           input='', errfilter = BisonFilter)
+
+sys.exit(0 if pp1 and pp2 else 1)
+

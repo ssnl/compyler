@@ -1,0 +1,89 @@
+
+CC = gcc
+
+CXX = g++
+
+CXXFLAGS = -g -Wall
+
+ALLFLAGS = $(CXXFLAGS) -I$(SRCDIR)
+
+SRCDIR = $(realpath @SRCDIR@/tests)
+
+TESTS = gram3.hn gram4.hn gram5.hn gram6.hn gram7.hn gram8.hn gram9.hn \
+        gram10.hn gram11.hn gram12.hn gram13.hn gram14.hn gram15.hn \
+	gram16.hn gram17.hn gram18.hn gram19.hn gram20.hn gram21.hn \
+	gram22.hn gram23.hn gram24.hn gram25.hn gram26.hn gram27.hn
+
+OUTSIDE_DEPS = ../bin/hornpp ../bin/horn  \
+	$(SRCDIR)/common-main1.cc $(SRCDIR)/common-main2.cc \
+	$(SRCDIR)/simpletree.h $(SRCDIR)/simpletree2.h $(SRCDIR)/linalg.h \
+	../lib/horn-common.h ../lib/horn-parse-lex.cc \
+	$(SRCDIR)/../data/horn-common.h $(SRCDIR)/../data/horn-parse-lex.cc \
+	../lib/lexer-template.l ../lib/interactive-lexer-template.l
+
+HERE := $(shell pwd)
+
+VPATH = $(SRCDIR)
+
+$(HERE)/%: $(SRCDIR)/%.hn $(OUTSIDE_DEPS)
+	-@ [ -f horn-common.h ] && chmod u+w horn-common.h
+	-@ [ -f horn-parse-lex.cc ] && chmod u+w horn-parse-lex.cc
+	@root=`basename $*`; \
+	$(RM) $$root-parser.cc $$root-parser.y $$root-lexer.l LOG; \
+	(echo ../bin/horn -o $$root $< && \
+	 ../bin/horn -o $$root $< && \
+	 chmod a-w $$root-parser.cc $$root-parser.y $$root-lexer.l \
+	     horn-common.h horn-parse-lex.cc && \
+	 echo $(CXX) $(ALLFLAGS) -o $@ -I. -I$(SRCDIR) $$root-parser.cc && \
+	 $(CXX) $(ALLFLAGS) -o $@ -I. -I$(SRCDIR) $$root-parser.cc) \
+              > LOG 2>&1 || { cat LOG; echo "... FAIL: compilation"; \
+                               $(RM) LOG; false; }; \
+         $(RM) LOG
+
+%.tst: 
+	@$(MAKE) -s $(HERE)/$*
+	@code=0; \
+	for f in $(SRCDIR)/$*[a-z].in; do \
+	    if [ ! -f $$f ]; then \
+		echo "  <No input files>"; \
+		continue; \
+	    fi; \
+	    b=`basename $$f .in`; \
+	    echo $$b...; \
+	    if [ -s $(SRCDIR)/$$b.stderrs ]; then \
+	        if ./$* $$f > $$b.out 2> $$b.errs; then \
+                    echo "... FAIL: Error not detected" >&2; code=1; \
+                else \
+		    { diff $(SRCDIR)/$$b.std $$b.out && \
+		      sed -e 's,^.*/\(.*:[0-9]*:\),./\1,' $$b.errs | diff $(SRCDIR)/$$b.stderrs -; } \
+		    || { echo "... FAIL (output)" >&2; code=1; }; \
+		fi; \
+	    else \
+		{ ./$* $$f > $$b.out 2> $$b.errs \
+	          && diff $(SRCDIR)/$$b.std $$b.out \
+	          && [ ! -s $$b.errs ]; } \
+	        || { echo "... FAIL" >&2; code=1; }; \
+	    fi; \
+	done; \
+	exit $$code
+
+.PHONY: default clean check
+
+default: $(TESTS:.hn=)
+
+refcounting: refcounting.cc ../data/horn-common.h 
+	$(CXX) $(ALLFLAGS) -o $@ refcounting.cc 
+
+check: 
+	@code=0; \
+	for tst in $(TESTS:.hn=.tst); do \
+	    $(MAKE) --no-print-directory $$tst || code=1; \
+	done; \
+	exit $$code
+
+clean: 
+	$(RM) *-parser.* *-lexer.* $(TESTS:.hn=) *~ *.o *.out *.errs core
+	$(RM) horn-common.h horn-parse-lex.cc
+
+distclean: clean
+	$(RM) Makefile

@@ -1,0 +1,34 @@
+%code top {
+# include <cstdio>
+
+using namespace std;
+
+extern int make_token (int syntax, size_t len, const char* text);
+
+}
+
+%define semantic_type int
+
+%%
+
+expr : term              { printf ("term <- expr\n"); };
+expr : expr "+" term     { printf ("expr + term <- expr\n"); };
+expr : expr "-" term     { printf ("expr - term <- expr\n"); };
+term : factor 		 { printf ("factor <- term\n"); };
+term : term "*" factor   { printf ("term * factor <- term\n"); };
+term : term "/" factor   { printf ("term / factor <- term\n"); };
+factor : NUM             { printf ("NUM <- factor\n"); };
+factor : "(" expr ")"    { printf ("( expr ) <- factor\n"); };
+
+NUM : ('0' .. '9')+;
+
+WS : (' ' | '\t' | '\n') { YYIGNORE; };
+
+%%
+
+int make_token (int syntax, size_t len, const char* text) {
+  return atoi (text);
+}
+
+#include "common-main2.cc"
+  

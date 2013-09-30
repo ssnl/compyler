@@ -1,0 +1,30 @@
+gram10a.in:1:[
+  gram10a.in:1:("="
+    gram10a.in:1:<ID 'x1'>
+    gram10a.in:1:("+"
+      gram10a.in:1:("+"
+        gram10a.in:1:<ID 'x'>
+        gram10a.in:1:("*"
+          gram10a.in:1:("*"
+            gram10a.in:1:<ID 'y'>
+            gram10a.in:1:<ID 'z'>)
+          gram10a.in:1:("+"
+            gram10a.in:1:<ID 'q'>
+            gram10a.in:1:<ID 'r'>)))
+      gram10a.in:1:<ID 'z'>))
+  gram10a.in:2:("="
+    gram10a.in:2:<ID 'x2'>
+    gram10a.in:2:("+"
+      gram10a.in:2:("+"
+        gram10a.in:2:<ID 'x1'>
+        gram10a.in:2:(CALL
+          gram10a.in:2:<ID 'f'>
+          gram10a.in:2:("+"
+            gram10a.in:2:<ID 'x'>
+            gram10a.in:2:<ID 'y'>)
+          gram10a.in:2:<ID 'z'>))
+      gram10a.in:2:<ID 'z'>))
+  gram10a.in:3:(CALL
+    gram10a.in:3:<ID 'g'>
+    gram10a.in:3:<ID 'x1'>
+    gram10a.in:3:<ID 'x2'>)]

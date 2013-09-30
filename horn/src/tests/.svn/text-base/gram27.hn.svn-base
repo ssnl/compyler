@@ -1,0 +1,82 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+/* Test the 'error' token. */
+
+%define semantic_tree_type "Simple_Node"
+
+%code top {
+#include "simpletree3.h"
+}
+
+%{
+   extern Simple_Node::NodePtr theTree;
+   extern int code;
+   static void Error (const char* loc, const char* msg);
+%}
+
+%define error_function "Error"
+
+%debug
+
+%term CALL
+
+%%
+
+top: stmts     { theTree = $stmts.value (); }
+;
+
+stmts: stmt*
+;
+
+stmt:
+   expr ';'!
+|  ID "="^ expr ';'!
+|  error! ';'!
+;
+
+expr:
+   term
+|  expr '+'^ term
+;   
+
+term:
+   factor
+|  term '*'^ factor
+;
+
+factor:
+   ID
+|  "("! expr ")"! 
+|  "("! error! ")"!       { $$ = Simple_Node::make_token (ID, "error"); }
+|  ID "("! arg_list ")"!  { $$ = $^(CALL, $*); }
+;
+
+arg_list:
+   /* empty */
+|  expr ( ","! expr )*
+;
+
+ID: _LETTER (_LETTER | _DIGIT)* 
+;
+
+_LETTER: 'A' .. 'Z' | 'a' .. 'z' | '_'
+;
+
+_DIGIT: '0' .. '9' 
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+static void Error (const char* loc, const char* msg)
+{
+    fprintf (stderr, "%s: %s\n",
+             yyprinted_location (yysource_location ()).c_str (), msg);
+    code = 1;
+}

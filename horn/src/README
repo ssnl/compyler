@@ -1,0 +1,32 @@
+The Horn parser generator system.
+
+BUILDING AND INSTALLING
+-------- --- ----------
+
+You will need GCC, bison, flex, and python to build, install, and run horn.
+
+Use the standard Unix technique to configure your sources:
+
+      ./configure --prefix=DIR
+
+DIR defaults to $HOME if the --prefix option is left off.  This configures
+so that the executable will be installed in DIR/bin and auxiliary data in
+DIR/lib/horn.  Alternatively, you may set these two directories
+separately with --bindir=DIR and --datadir=DIR.
+
+The configure script uses the $PATH at the time of configuration to find 
+python, bison, and flex.  The optional parameters --with-python=PROG,
+--with-bison=PROG, and --with-flex=PROG will override this.
+
+To build, use
+
+     make
+
+(GNU make), and to install in the selected location, use
+
+     make install
+
+To uninstall, use
+
+     make uninstall
+

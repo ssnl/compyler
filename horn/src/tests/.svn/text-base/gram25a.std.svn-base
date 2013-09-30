@@ -1,0 +1,15 @@
+(PROG
+  <ID 'foo'>
+  <ID 'bar'>
+  <ID 'baz'>
+  ("while"
+    <ID 'cont'>
+    (STMT_LIST
+      <ID 'eek'>
+      <ID 'thud'>))
+  ("while"
+    <ID 'ouch'>
+    (STMT_LIST
+      <ID 'bar'>)
+    (STMT_LIST
+      <ID 'baz'>)))

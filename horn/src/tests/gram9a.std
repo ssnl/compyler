@@ -1,0 +1,43 @@
+[
+  <ID 'line1'>
+  <\n '
+'>
+  <if>
+  <ID 'expr1'>
+  <:>
+  <\n '
+'>
+  <INDENT '   '>
+  <ID 'line2'>
+  <\n '
+'>
+  <if>
+  <ID 'expr2'>
+  <:>
+  <\n '
+'>
+  <INDENT '       '>
+  <ID 'line3'>
+  <\n '
+'>
+  <ID 'line4'>
+  <\n '
+'>
+  <DEDENT '   '>
+  <ID 'line5'>
+  <\n '
+'>
+  <if>
+  <ID 'expr3'>
+  <:>
+  <\n '
+'>
+  <INDENT '       '>
+  <ID 'line6'>
+  <\n '
+'>
+  <DEDENT ''>
+  <DEDENT ''>
+  <ID 'line7'>
+  <\n '
+'>]

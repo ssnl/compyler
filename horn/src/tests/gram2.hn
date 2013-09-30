@@ -1,0 +1,14 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%debug
+
+%%
+
+input:
+    (a { printf ("%s\n", $a->text); } | q=b | r=c) z  { glorp ($q, $a); }
+;
+
+a : q* (r | s)+ e? ;
+
+%%
+

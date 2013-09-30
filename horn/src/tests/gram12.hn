@@ -1,0 +1,66 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type Simple_Node
+
+%{
+#  include "simpletree.h"
+
+   extern Simple_Node::NodePtr theTree;
+%}
+
+%debug
+
+%term CALL
+
+%left "+" "-"
+%left "*" "/"
+
+%%
+
+top: stmts     { theTree = $stmts.value (); }
+;
+
+stmts: stmt*
+;
+
+stmt:
+   expr ';'!
+|  ID "="^ expr ';'!
+;
+
+expr:
+   factor
+|  expr ('+'^ | '*'^) expr %expand
+;   
+
+factor:
+   ID
+|  "("! expr ")"! 
+|  ID "("! arg_list ")"!  
+   { $$ = $^(CALL, $ID.value (), $arg_list.list_value ()); }
+;
+
+arg_list:
+   /* empty */
+|  expr ( ","! expr )*
+;
+
+ID: _LETTER (_LETTER | _DIGIT)* 
+;
+
+_LETTER: 'A' .. 'Z' | 'a' .. 'z' | '_'
+;
+
+_DIGIT: '0' .. '9' 
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

@@ -1,0 +1,169 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Node"
+
+%code top {
+# include <iostream>
+# include "arithtree.h"
+
+using namespace std;
+
+
+}
+
+%token VECT
+%token INNER_PROD ".*"
+
+%left "+" "-"
+%left "*" ".*"
+%left NEGATE
+
+%debug
+
+%%
+
+program : stmt* 
+        ;
+
+stmt :   expr ";"             { cout << $expr.value() << endl; }
+     ;
+
+expr : 
+         expr "+"^ expr
+       | expr "-"^ expr 
+       | expr "*"^ expr 
+       | expr ".*"^ expr
+       | "("! expr ")"!   
+       | "-"! expr  %prec NEGATE { $$ = $^(NEGATE, $expr.value()); }
+       | "["! expr ( ","! expr )* "]"! 
+       	      	               { $$ = $^(VECT, $*); }
+       | NUM
+       ;
+
+NUM :  ('0' .. '9')+
+    ;
+
+WS : (' ' | '\t' | '\n' | '\r' )+  { YYIGNORE; }
+   ;
+
+%%
+
+class AddNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () != 2)
+	    throw domain_error ("add needs two operands");
+    }
+
+    void print (ostream& os) {
+	os << "(" << child (0) << " + " << child (1) << ")";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (AddNode, Tree);
+};
+
+NODE_FACTORY (AddNode, '+');
+
+class SubNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () != 2)
+	    throw domain_error ("sub needs two operands");
+    }
+
+    void print (ostream& os) {
+	os << "(" << child (0) << " - " << child (1) << ")";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (SubNode, Tree);
+};
+
+NODE_FACTORY (SubNode, '-');
+
+class MultNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () != 2)
+	    throw domain_error ("mult needs two operands");
+    }
+
+    void print (ostream& os) {
+	os << "(" << child (0) << " * " << child (1) << ")";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (MultNode, Tree);
+};
+
+NODE_FACTORY (MultNode, '*');
+
+class InnerProdNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () != 2)
+	    throw domain_error ("inner product needs two operands");
+    }
+
+    void print (ostream& os) {
+	os << "(" << child (0) << " .* " << child (1) << ")";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (InnerProdNode, Tree);
+};
+
+NODE_FACTORY (InnerProdNode, INNER_PROD);
+
+class NegNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () != 1)
+	    throw domain_error ("negate needs one operand");
+    }
+
+    void print (ostream& os) {
+	os << "(-"  << child (0) << ")";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (NegNode, Tree);
+};
+
+NODE_FACTORY (NegNode, NEGATE);
+
+class VectNode : public Tree {
+public:
+    
+    void check () const {
+	if (arity () == 0)
+	    throw domain_error ("vectors cannot be empty");
+    }
+
+    void print (ostream& os) {
+	os << "[" << child (0);
+	for (size_t i = 1; i < arity (); i += 1)
+	    os << ", " << child (i);
+	os << "]";
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (VectNode, Tree);
+};
+
+NODE_FACTORY (VectNode, VECT);
+
+#include "common-main2.cc"
+

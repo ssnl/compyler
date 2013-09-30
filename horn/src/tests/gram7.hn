@@ -1,0 +1,52 @@
+/* -*- c-file-style: "stroustrup"; -*- */
+
+%define semantic_tree_type "Simple_Node"
+
+%{
+#  include "simpletree.h"
+   extern Simple_Node::NodePtr theTree;
+
+#include <iostream>
+using namespace std;
+#define YYSEMDUMPER yysemdumper
+
+static void yysemdumper (const Simple_Node::NodePtr& x)
+{
+    x->dump (cerr, 8);
+}
+
+%}
+
+%debug
+
+%%
+
+top: p     { theTree = $p.value (); }
+;
+
+p:
+   first=ID ("," tail+=ID)* op="=" q 
+   { $$ = Simple_Node::make_list ()->append ($first.value ()) 
+             ->append ($tail.begin (), $tail.end ())
+             ->append ($op.value ())->append ($q.value ()); }
+;
+
+q:
+   first=ID ("," tail+=ID)* 
+            { $$ = Simple_Node::make_list ()->append ($first.value ())
+                   ->append ($tail.begin (), $tail.end ()); }
+;
+
+ID: ('a' .. 'z' | 'A' .. 'Z' | '0' .. '9')+
+;
+
+WS: ('\n' | ' ' | '\t') { YYIGNORE; }
+;
+
+%%
+
+Simple_Node::NodePtr theTree;
+
+#include "common-main1.cc"
+    
+

@@ -1,0 +1,38 @@
+%code top {
+# include <cstdio>
+
+using namespace std;
+
+}
+
+%{
+  YYDEFINE_LIST_TYPE(List, int);
+  static void print_list (const List& L);
+
+%}
+
+%define semantic_type int
+
+%glr-parser
+
+%%
+
+prog : ( L1+=NUM { print_list ($L1.list_value ()); } L2+=NUM )* ;
+
+NUM : ('0' .. '9')+      { $$ = atoi ($TEXT); }
+    ;
+
+WS : (' ' | '\t' | '\n') { YYIGNORE; };
+
+%%
+
+static void
+print_list (const List& L) {
+  printf ("[");
+  for (List_obj::iterator p = L->begin(); p != L->end(); p ++)
+    printf ("%d ", *p);
+  printf ("]\n");
+}
+
+#include "common-main2.cc"
+  
