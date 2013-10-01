@@ -15,6 +15,9 @@
 *.la
 *.a
 
+# Horn build files
+horn/build/*
+
 # Sublime Workspace files
 *.sublime-project
 *.sublime-workspace
