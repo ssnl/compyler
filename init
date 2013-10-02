@@ -1,0 +1,16 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Add horn script
+export PATH=$DIR/horn/build/bin/:$PATH
+
+# Add functions to easily compile
+function compile {
+  if [ -z $2 ]
+  then
+    g++ -g $1
+  else
+    g++ -g -o $2 $1
+  fi
+}
