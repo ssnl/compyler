@@ -30,7 +30,7 @@
 %%
 
 expr: expr ('+'|'-'|'*'|'/') expr %expand
- | '-'? '(' expr ')'
+ | '(' expr ')'
  | atom
  ;
 
@@ -41,7 +41,6 @@ tuple: '(' csv ')'
  | '(' atom ",)";
 
 list: '[' csv ']'
- | '[' csv ']'
  | '[' csv ",]"
  | '[' atom ",]";
 
