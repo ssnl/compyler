@@ -1,0 +1,52 @@
+This directory contains a very simple example of using the Horn framework 
+to create a calculator, using abstract syntax trees (ASTs) as an
+intermediate representation.  The grammar (in exprs.hn) accepts a very
+simple expression grammar with which it builds an AST for each
+expression given to it.  It then uses two virtual methods on these
+ASTs, print and eval, to print out results of the form
+
+      <expr>=<result>
+
+where <expr> is an expression reconstructed from the AST and <result>
+is the value (a double) that it denotes.
+
+The tree type (derived from Arith_Node) is defined in arith.h, with
+implementations in arith.cc, using the Horn CommonNode, CommonTree,
+and CommonToken template classes that are defined in the generated
+horn-common.h file.  For each operator, arith.cc defines a subtype of
+Arith_Tree that defines how to print and evaluate trees for that
+operator.  
+
+The definitions in arith.cc use the Horn framework to register each of
+the tree-node types so that the "^" tree-building operator will create
+the right kind of node for each operator.  The generated nodes' types
+are keyed off the syntactic categories of the operator tokens. As
+explained in the Horn documentation, the "exemplar" variable
+definitions inform the framework of which AST class goes with each
+operator.  Simple, one-character operator tokens (such as '+') are
+identified for this purpose by the numeric value of their
+single-character text (the convention for communicating syntactic
+categories in Bison and Horn).  Other operators must have symbolic
+names---hence the declaration
+
+   %token EXPO "**"
+
+The file exprs-parser.hh, which horn generates (actually, Horn calls
+Bison, which generates it), contains the definitions of all such
+symbols. 
+
+
+To build this example on the instructional machines, use
+
+   gmake 
+
+in a copy of this directory.   It produces an executable named arith,
+which you can execute either with
+
+      ./arith 
+
+which takes input from the terminal or 
+
+      ./arith FILENAME
+
+which takes input from file FILENAME.

@@ -1,0 +1,256 @@
+Grammar
+
+    0 $accept: prog $end
+
+    1 prog: /* empty */
+    2     | prog expr ";"
+
+    3 expr: expr "+" expr
+    4     | expr "-" expr
+    5     | expr "*" expr
+    6     | expr "/" expr
+    7     | expr "**" expr
+    8     | NUM
+    9     | "(" expr ")"
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+"(" (40) 9
+")" (41) 9
+"*" (42) 5
+"+" (43) 3
+"-" (45) 4
+"/" (47) 6
+";" (59) 2
+error (256)
+"**" (258) 7
+NUM (259) 8
+
+
+Nonterminals, with rules where they appear
+
+$accept (12)
+    on left: 0
+prog (13)
+    on left: 1 2, on right: 0 2
+expr (14)
+    on left: 3 4 5 6 7 8 9, on right: 2 3 4 5 6 7 9
+
+
+state 0
+
+    0 $accept: . prog $end
+
+    $default  reduce using rule 1 (prog)
+
+    prog  go to state 1
+
+
+state 1
+
+    0 $accept: prog . $end
+    2 prog: prog . expr ";"
+
+    $end  shift, and go to state 2
+    "("   shift, and go to state 3
+    NUM   shift, and go to state 4
+
+    expr  go to state 5
+
+
+state 2
+
+    0 $accept: prog $end .
+
+    $default  accept
+
+
+state 3
+
+    9 expr: "(" . expr ")"
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 6
+
+
+state 4
+
+    8 expr: NUM .
+
+    $default  reduce using rule 8 (expr)
+
+
+state 5
+
+    2 prog: prog expr . ";"
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+
+    "**"  shift, and go to state 7
+    "*"   shift, and go to state 8
+    "+"   shift, and go to state 9
+    "-"   shift, and go to state 10
+    "/"   shift, and go to state 11
+    ";"   shift, and go to state 12
+
+
+state 6
+
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+    9     | "(" expr . ")"
+
+    "**"  shift, and go to state 7
+    ")"   shift, and go to state 13
+    "*"   shift, and go to state 8
+    "+"   shift, and go to state 9
+    "-"   shift, and go to state 10
+    "/"   shift, and go to state 11
+
+
+state 7
+
+    7 expr: expr "**" . expr
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 14
+
+
+state 8
+
+    5 expr: expr "*" . expr
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 15
+
+
+state 9
+
+    3 expr: expr "+" . expr
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 16
+
+
+state 10
+
+    4 expr: expr "-" . expr
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 17
+
+
+state 11
+
+    6 expr: expr "/" . expr
+
+    "("  shift, and go to state 3
+    NUM  shift, and go to state 4
+
+    expr  go to state 18
+
+
+state 12
+
+    2 prog: prog expr ";" .
+
+    $default  reduce using rule 2 (prog)
+
+
+state 13
+
+    9 expr: "(" expr ")" .
+
+    $default  reduce using rule 9 (expr)
+
+
+state 14
+
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+    7     | expr "**" expr .
+
+    "**"  shift, and go to state 7
+
+    $default  reduce using rule 7 (expr)
+
+
+state 15
+
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    5     | expr "*" expr .
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+
+    "**"  shift, and go to state 7
+
+    $default  reduce using rule 5 (expr)
+
+
+state 16
+
+    3 expr: expr . "+" expr
+    3     | expr "+" expr .
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+
+    "**"  shift, and go to state 7
+    "*"   shift, and go to state 8
+    "/"   shift, and go to state 11
+
+    $default  reduce using rule 3 (expr)
+
+
+state 17
+
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    4     | expr "-" expr .
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    7     | expr . "**" expr
+
+    "**"  shift, and go to state 7
+    "*"   shift, and go to state 8
+    "/"   shift, and go to state 11
+
+    $default  reduce using rule 4 (expr)
+
+
+state 18
+
+    3 expr: expr . "+" expr
+    4     | expr . "-" expr
+    5     | expr . "*" expr
+    6     | expr . "/" expr
+    6     | expr "/" expr .
+    7     | expr . "**" expr
+
+    "**"  shift, and go to state 7
+
+    $default  reduce using rule 6 (expr)
