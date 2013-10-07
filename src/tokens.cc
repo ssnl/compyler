@@ -47,6 +47,8 @@ private:
      *  construction of a node or token.] */
     Int_Token* post_make () {
         // FIXME
+        // Really pleas this is really bad :(
+        value = atol(string(_text, _len).c_str());
         return this;
     }
 
