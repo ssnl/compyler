@@ -4,6 +4,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Add horn script
 export PATH=$DIR/horn/build/bin/:$PATH
+# Add pyunparse script
+export PATH=$DIR/bin/:$PATH
 
 # Add functions to easily compile
 function compile {

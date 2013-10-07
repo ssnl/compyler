@@ -48,7 +48,13 @@ private:
     Int_Token* post_make () {
         // FIXME
         // Really pleas this is really bad :(
-        value = atol(string(_text, _len).c_str());
+        int max = 1 << 30;
+        value = atol(string(as_chars(), text_size()).c_str());
+        if (value == max) {
+            value = -max;
+        } else if (value > max) {
+            error (as_chars(), "integer too large");
+        }
         return this;
     }
 
@@ -60,11 +66,11 @@ private:
 
 TOKEN_FACTORY(Int_Token, INT_LITERAL);
 
-    
+
 /** Represents a string. */
 class String_Token : public AST_Token {
 private:
-    
+
     /** Set literal_text from the text of this lexeme, converting
      *  escape sequences as necessary. */
     String_Token* post_make () {
@@ -93,8 +99,8 @@ private:
                     case '\'': v = '\''; break;
                     case '"': case '\\': v = s[i-1]; break;
                     case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': 
-                    { 
+                    case '5': case '6': case '7':
+                    {
                         v = s[i-1] - '0';
                         for (int j = 0; j < 2; j += 1) {
                             if ('0' > s[i] || s[i] > '7')
@@ -105,7 +111,7 @@ private:
                         break;
                     }
                     case 'x': {
-                        if (i+2 > text_size () || 
+                        if (i+2 > text_size () ||
                             !isxdigit (s[i]) || !isxdigit (s[i+1])) {
                             error (s, "bad hexadecimal escape sequence");
                             break;
@@ -117,7 +123,7 @@ private:
                     }
                 } else
                     v = s[i-1];
-                literal_text += (char) v;        
+                literal_text += (char) v;
             }
         }
         return this;
@@ -156,5 +162,5 @@ TOKEN_FACTORY(String_Token, STRING);
  *  to use for RAWSTRING tokens produced by the lexer.  (The
  *  TOKEN_FACTORY macro above registers String_Token as the class for
  *  non-raw the STRING tokens as well.)
- *  */ 
+ *  */
 const String_Token String_Token::raw_factory (RAWSTRING);
