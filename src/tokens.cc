@@ -32,6 +32,17 @@ AST_Token::append_text(const string& s)
     throw logic_error ("unimplemented operation: append_text");
 }
 
+/** Represents a ID. */
+class ID_Token : public AST_Token {
+private:
+    void print (ostream& out, int indent) {
+        out << "(id " << lineNumber() << " " << as_chars() << ")";
+    }
+
+    TOKEN_CONSTRUCTORS(ID_Token, AST_Token);
+};
+
+TOKEN_FACTORY(ID_Token, ID);
 
 /** Represents an integer literal. */
 class Int_Token : public AST_Token {
@@ -61,7 +72,6 @@ private:
     long value;
 
     TOKEN_CONSTRUCTORS(Int_Token, AST_Token);
-
 };
 
 TOKEN_FACTORY(Int_Token, INT_LITERAL);

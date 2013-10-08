@@ -82,12 +82,14 @@
 %token ID
 
 %token PRINTLN "@println"
-%token EMPTY 
+%token EMPTY
 %token EXPR_LIST "@expr_list"
 %token MODULE "@module"
 %token BINOP "@binop"
 %token UNOP "@unop"
 /* FIXME: MORE... */
+
+%left '+' '-'
 
 %%
 
@@ -111,6 +113,8 @@ expression_list :
 
 expression :
       INT_LITERAL
+    | expression '+' expression { $$ = make_binop($*); }
+    | expression '-' expression { $$ = make_binop($*); }
     ;
 
 /* Normally, throw away whitespace other than newline. */
