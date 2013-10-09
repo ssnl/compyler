@@ -1,1 +1,0 @@
-./apyc --phase=1 -o out tests/correct/arith.py

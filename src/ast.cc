@@ -88,6 +88,7 @@ class Empty_AST : public AST_Tree {
 
 NODE_FACTORY (Empty_AST, EMPTY);
 
+/*
 // Left comparison
 class LeftCompare_AST : public AST_Tree {
 
@@ -95,7 +96,7 @@ class LeftCompare_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (LeftCompare_AST,AST_Tree)
+NODE_FACTORY (LeftCompare_AST,AST_Tree);
 
 // Comparison
 class Compare_AST : public AST_Tree {
@@ -104,7 +105,7 @@ class Compare_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (Compare_AST,AST_Tree)
+NODE_FACTORY (Compare_AST,AST_Tree);
 
 // If expression
 class IfExpr_AST : public AST_Tree {
@@ -113,7 +114,7 @@ class IfExpr_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (IfExpr_AST,AST_Tree)
+NODE_FACTORY (IfExpr_AST,AST_Tree);
 
 // And
 class And_AST : public AST_Tree {
@@ -122,7 +123,7 @@ class And_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (And_AST,AST_Tree)
+NODE_FACTORY (And_AST,AST_Tree);
 
 
 // Or
@@ -132,7 +133,7 @@ class Or_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (Or_AST,AST_Tree)
+NODE_FACTORY (Or_AST,AST_Tree);
 
 
 // Tuple
@@ -142,7 +143,7 @@ class Tuple_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (Tuple_AST,AST_Tree)
+NODE_FACTORY (Tuple_AST,AST_Tree);
 
 // List
 class List_AST : public AST_Tree {
@@ -151,4 +152,5 @@ class List_AST : public AST_Tree {
 
 };
 
-NODE_FACTORY (List_AST,AST_Tree)
+NODE_FACTORY (List_AST,AST_Tree);
+*/

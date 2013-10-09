@@ -16,3 +16,11 @@ function compile {
     g++ -g -o $2 $1
   fi
 }
+
+function run {
+  make compile
+  ./apyc --phase=1 -o out $1
+  cat out
+  echo
+  rm out
+}
