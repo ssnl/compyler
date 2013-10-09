@@ -36,7 +36,8 @@ AST_Token::append_text(const string& s)
 class ID_Token : public AST_Token {
 private:
     void print (ostream& out, int indent) {
-        out << "(id " << lineNumber() << " " << as_chars() << ")";
+        out << "(id " << lineNumber() << " "
+            << string(as_chars(), text_size()).c_str() << ")";
     }
 
     TOKEN_CONSTRUCTORS(ID_Token, AST_Token);
