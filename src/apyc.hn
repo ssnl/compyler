@@ -121,9 +121,15 @@ expression_list :
     ;
 
 expression :
-      INT_LITERAL
+      primary
+    | ('+'|'-') primary
+                      { $$ = make_unop($*); }
     | expression ('+'|'-'|'*'|'/'|'%'|EXPO) expression %expand
                       { $$ = make_binop($*); }
+    ;
+
+primary :
+      INT_LITERAL
     | '('! expression ')'!
     ;
 
