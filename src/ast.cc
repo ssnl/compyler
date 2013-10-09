@@ -50,7 +50,7 @@ AST_Tree::external_name ()
     name += 1;
     while (*name == '@')
         name += 1;
-    
+
     if (name[0] == '\0')
         return "?";
 
@@ -73,7 +73,7 @@ AST_Tree::external_name ()
  * source file (those definitions appear in apyc-parser.hh, included above).
  */
 
-/** A node representing a missing element in the AST (e.g., a missing 
+/** A node representing a missing element in the AST (e.g., a missing
  *  >>FILE argument in a print node.) */
 class Empty_AST : public AST_Tree {
 
@@ -87,3 +87,68 @@ class Empty_AST : public AST_Tree {
 };
 
 NODE_FACTORY (Empty_AST, EMPTY);
+
+// Left comparison
+class LeftCompare_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (LeftCompare_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (LeftCompare_AST,AST_Tree)
+
+// Comparison
+class Compare_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (Compare_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (Compare_AST,AST_Tree)
+
+// If expression
+class IfExpr_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (IfExpr_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (IfExpr_AST,AST_Tree)
+
+// And
+class And_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (And_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (And_AST,AST_Tree)
+
+
+// Or
+class Or_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (Or_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (Or_AST,AST_Tree)
+
+
+// Tuple
+class Tuple_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (Tuple_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (Tuple_AST,AST_Tree)
+
+// List
+class List_AST : public AST_Tree {
+
+    NODE_CONSTRUCTORS (List_AST,AST_Tree);
+
+};
+
+NODE_FACTORY (List_AST,AST_Tree)

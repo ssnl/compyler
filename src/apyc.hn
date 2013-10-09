@@ -43,21 +43,21 @@
  * also often refer to as INDENT. A declaration such as
  *   %token IF "if"
  * defines a constant IF and makes it the syntactic category for the token
- * "if".  The built-in function yyexternal_token_name(...) maps between 
- * syntactic categories (like IF) and the token strings defined in these 
- * %token declarations (like "if").  
+ * "if".  The built-in function yyexternal_token_name(...) maps between
+ * syntactic categories (like IF) and the token strings defined in these
+ * %token declarations (like "if").
  *
  * The Horn system uses tokens as leaf nodes and as AST node operators.  A
  * rule such as
  *     if_stmt: "if"^ expression ":"! ...
  * with no action, by default creates an AST node whose operator is an "if"
  * token (with syntactic category IF, given the %token declaration above).
- * When the node type does not correspond to a token that appears in the 
+ * When the node type does not correspond to a token that appears in the
  * program, we define a dummy token type that serves only as an AST
  * node type.  For example, we can define
  *     %token DICT_DISPLAY ...
  * and then use
- *     dict_display: "{"! key_datum_list? "}"! 
+ *     dict_display: "{"! key_datum_list? "}"!
  *              { $$ = $^(DICT_DISPLAY, $*); }
  * in the grammar (using DICT_DISPLAY only in actions, not as a grammar
  * symbol).
@@ -88,8 +88,12 @@
 %token BINOP "@binop"
 %token UNOP "@unop"
 /* FIXME: MORE... */
+%token STMT_LIST "@stmt_list"
 
 %left '+' '-'
+%left '%' '*' '/'
+%left "&&" "||"
+%right "**"
 
 %%
 
@@ -98,10 +102,17 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
 
 /* REPLACE THE FOLLOWING WITH SOMETHING REAL. */
 
-stmt_list : print_stmt '\n'!
+stmt_list :
+      (statement '\n'!)+
+                      { $$ = $^(STMT_LIST, $*); }
+    | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
 
-print_stmt : "print"  expression_list 
+statement :
+        print_stmt
+      ;
+
+print_stmt : "print"  expression_list
                       { $$ = $^(PRINTLN, $^(EMPTY), $expression_list); }
     ;
 
@@ -113,8 +124,10 @@ expression_list :
 
 expression :
       INT_LITERAL
-    | expression '+' expression { $$ = make_binop($*); }
-    | expression '-' expression { $$ = make_binop($*); }
+    | expression ('+'|'-'|'*'|'/'|'%'|"**") expression %expand
+                      { $$ = make_binop($*); }
+    | expression_list
+    | '('! expression ')'!
     ;
 
 /* Normally, throw away whitespace other than newline. */
@@ -146,7 +159,7 @@ make_binop (const List_Ptr& operands)
 static AST_Ptr
 make_id (AST_Ptr& token)
 {
-    AST_Ptr result = AST::make_token (ID, token->text_size (), 
+    AST_Ptr result = AST::make_token (ID, token->text_size (),
                                       token->as_chars (), false);
     result->set_loc (token->loc ());
     return result;
