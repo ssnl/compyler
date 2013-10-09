@@ -32,7 +32,7 @@ AST_Token::append_text(const string& s)
     throw logic_error ("unimplemented operation: append_text");
 }
 
-/** Represents a ID. */
+/** Represents an ID. */
 class ID_Token : public AST_Token {
 private:
     void print (ostream& out, int indent) {

@@ -89,11 +89,12 @@
 %token UNOP "@unop"
 /* FIXME: MORE... */
 %token STMT_LIST "@stmt_list"
+%token EXPO "**"
 
 %left '+' '-'
 %left '%' '*' '/'
 %left "&&" "||"
-%right "**"
+%right EXPO
 
 %%
 
@@ -109,12 +110,9 @@ stmt_list :
     ;
 
 statement :
-        print_stmt
+        "print"! expression_list
+                      { $$ = $^(PRINTLN, $^(EMPTY), $*); }
       ;
-
-print_stmt : "print"  expression_list
-                      { $$ = $^(PRINTLN, $^(EMPTY), $expression_list); }
-    ;
 
 expression_list :
       expression (","! expression)*
@@ -124,9 +122,8 @@ expression_list :
 
 expression :
       INT_LITERAL
-    | expression ('+'|'-'|'*'|'/'|'%'|"**") expression %expand
+    | expression ('+'|'-'|'*'|'/'|'%'|EXPO) expression %expand
                       { $$ = make_binop($*); }
-    | expression_list
     | '('! expression ')'!
     ;
 

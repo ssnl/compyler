@@ -24,3 +24,9 @@ function run {
   echo
   rm out
 }
+
+function test {
+  cd tests
+  make
+  cd $DIR
+}
