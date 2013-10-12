@@ -87,10 +87,11 @@
 %token MODULE "@module"
 %token BINOP "@binop"
 %token UNOP "@unop"
-/* FIXME: MORE... */
+/* Extra Tokens */
 %token STMT_LIST "@stmt_list"
 %token EXPO "**"
-
+/* Associativity + Precedence */
+%left '<' '>' /* Add more */
 %left '+' '-'
 %left '%' '*' '/'
 %left "&&" "||"
@@ -121,16 +122,26 @@ expression_list :
     ;
 
 expression :
-      primary
-    | ('+'|'-') primary
-                      { $$ = make_unop($*); }
-    | expression ('+'|'-'|'*'|'/'|'%'|EXPO) expression %expand
+      compare_expr
+    ;
+
+compare_expr :
+    ;
+
+lcompare_expr :
+    ;
+
+arith_expr :
+      primary_expr
+    | arith_expr ('+'|'-'|'*'|'/'|'%'|EXPO) arith_expr %expand
                       { $$ = make_binop($*); }
     ;
 
-primary :
+primary_expr :
       INT_LITERAL
     | '('! expression ')'!
+    | ('+'|'-') primary_expr
+                      { $$ = make_unop($*); }
     ;
 
 /* Normally, throw away whitespace other than newline. */
