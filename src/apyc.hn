@@ -96,6 +96,8 @@
 %token LCOMPARE "@left_compare"
 %token AND "@and"
 %token OR "@or"
+%token IF_EXPR "@if_expr"
+%token TUPLE "@tuple"
 %token EXPO "**"
 /* Associativity + Precedence */
 %left "or"
@@ -132,8 +134,24 @@ expression_list :
     | /*empty*/       { $$ = $^(EXPR_LIST); }
     ;
 
+// tuple_ext_expr:
+//      expression
+//    | expression ','! (expression ','!)* expression?
+//                      { $$ = $^(TUPLE, $*); }
+//    ;
+
 expression :
+      root_expr
+    ;
+
+root_expr :
+      if_expr
+    ;
+
+if_expr :
       boolean_expr
+    | E0=boolean_expr "if"! T=if_expr "else"! E1=if_expr
+                    { $$ = $^(IF_EXPR, $T, $E0, $E1); }
     ;
 
 boolean_expr :
@@ -164,7 +182,11 @@ arith_expr :
 
 primary_expr :
       INT_LITERAL
-    | '('! expression ')'!
+    | '(' ')'
+                      { $$ = $^(TUPLE); }
+    | '('! expression ','!  (expression ','!)* expression? ')'!
+                      { $$ = $^(TUPLE, $*); }
+    | '('! root_expr ')'!
     | ('+'|'-') primary_expr
                       { $$ = make_unop($*); }
     ;

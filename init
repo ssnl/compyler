@@ -25,6 +25,27 @@ function run {
   rm out
 }
 
+function runpy {
+  make compile
+  ./apyc --phase=1 -o out1 $1
+  pyunparse -o out2 out1
+  python out2
+  rm out1
+  rm out2
+}
+
+function save {
+  make compile
+  ./apyc --phase=1 -o out $1
+}
+
+function savepy {
+  make compile
+  ./apyc --phase=1 -o out1 $1
+  pyunparse -o out out1
+  rm out1
+}
+
 function test {
   cd tests
   make
