@@ -37,6 +37,7 @@ function runpy {
 function save {
   make compile
   ./apyc --phase=1 -o out $1
+  echo Saved to out.
 }
 
 function savepy {
@@ -44,6 +45,7 @@ function savepy {
   ./apyc --phase=1 -o out1 $1
   pyunparse -o out out1
   rm out1
+  echo Saved to out.
 }
 
 function test {

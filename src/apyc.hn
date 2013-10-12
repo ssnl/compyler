@@ -190,7 +190,7 @@ primary_expr :
     | '['! expression ','! (expression ','!)* expression? ']'!
                       { $$ = $^(LIST, $*); }
     | '('! root_expr ')'!
-    | ('+'|'-'|"not") primary_expr
+    | ('+'|'-'|"not") primary_expr %expand
                       { $$ = make_unop($*); }
     ;
 
