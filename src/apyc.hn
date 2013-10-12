@@ -147,11 +147,11 @@ expression :
 
 root_expr :
       if_expr
+    | boolean_expr
     ;
 
 if_expr :
-      boolean_expr
-    | E0=boolean_expr "if"! T=if_expr "else"! E1=if_expr
+      E0=boolean_expr "if"! T=root_expr "else"! E1=root_expr
                     { $$ = $^(IF_EXPR, $T, $E0, $E1); }
     ;
 
@@ -190,7 +190,7 @@ primary_expr :
     | '['! expression ','! (expression ','!)* expression? ']'!
                       { $$ = $^(LIST, $*); }
     | '('! root_expr ')'!
-    | ('+'|'-') primary_expr
+    | ('+'|'-'|"not") primary_expr
                       { $$ = make_unop($*); }
     ;
 
