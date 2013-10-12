@@ -99,6 +99,7 @@
 %token IF_EXPR "@if_expr"
 %token TUPLE "@tuple"
 %token LIST "@list_display"
+%token DICT "@dict_display"
 %token EXPO "**"
 /* Associativity + Precedence */
 %left "or"
@@ -176,8 +177,20 @@ lcompare_expr :
     ;
 
 arith_expr :
+      unary_expr
+    | arith_expr ('+'|'-'|'*'|'/'|'%') arith_expr %expand
+                      { $$ = make_binop($*); }
+    ;
+
+unary_expr :
+      expo_expr
+    | ('+'|'-'|"not") unary_expr %expand
+                      { $$ = make_unop($*); }
+    ;
+
+expo_expr :
       primary_expr
-    | arith_expr ('+'|'-'|'*'|'/'|'%'|EXPO) arith_expr %expand
+    | expo_expr EXPO expo_expr
                       { $$ = make_binop($*); }
     ;
 
@@ -185,13 +198,13 @@ primary_expr :
       INT_LITERAL
     | '(' ')'
                       { $$ = $^(TUPLE); }
+    | '[' ']'
+                      { $$ = $^(LIST); }
     | '('! expression ','!  (expression ','!)* expression? ')'!
                       { $$ = $^(TUPLE, $*); }
-    | '['! expression ','! (expression ','!)* expression? ']'!
+    | '['! expression  (','! expression)* ','!? ']'!
                       { $$ = $^(LIST, $*); }
     | '('! root_expr ')'!
-    | ('+'|'-'|"not") primary_expr %expand
-                      { $$ = make_unop($*); }
     ;
 
 /* Normally, throw away whitespace other than newline. */
