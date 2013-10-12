@@ -230,7 +230,14 @@ primary_expr :
 
 INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' /* FIXME */;
 
-STRING : "\"\"" /* FIXME */ ;
+// NONBLANK : _ANY - ('\n' | '\t' | ' ' | '\r') ;
+
+// STRING : "\"\"" /* FIXME */ ;
+
+STRING : 
+      '\"' ((_ANY - '\"') "\\\"")* _ANY '\"'
+    | '\'' ((_ANY - '\'') "\\\'")* _ANY '\''
+    ;
 
 RAWSTRING : "r\"\"" /* FIXME */ ;
 
