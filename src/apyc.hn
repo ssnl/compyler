@@ -31,6 +31,9 @@
    *  TOKEN. */
   static AST_Ptr make_id (AST_Ptr& token);
 
+  /** Return a new KEY node corresponding to OPERANDS. */
+  static AST_Ptr make_expr (const int KEY, const List_Ptr& operands);
+
 %}
 
 %debug
@@ -89,9 +92,17 @@
 %token UNOP "@unop"
 /* Extra Tokens */
 %token STMT_LIST "@stmt_list"
+%token COMPARE "@compare"
+%token LCOMPARE "@left_compare"
+%token AND "@and"
+%token OR "@or"
 %token EXPO "**"
 /* Associativity + Precedence */
-%left '<' '>' /* Add more */
+%left "or"
+%left "and"
+%left "in" "notin"
+%left "is" "isnot"
+%left '<' '>' "<=" ">=" "==" "!="
 %left '+' '-'
 %left '%' '*' '/'
 %left "&&" "||"
@@ -122,13 +133,27 @@ expression_list :
     ;
 
 expression :
-      compare_expr
+      boolean_expr
+    ;
+
+boolean_expr :
+      arith_expr
+    | compare_expr
+    | boolean_expr (type="and"!|type="or"!) boolean_expr %expand
+                    { int token = $type.value()->as_string().compare("and") == 0 ? AND : OR;
+                      $$ = $^(token, $*);
+                    }
     ;
 
 compare_expr :
+      lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"notin"|"is"|"isnot") arith_expr %expand
+                    { $$ = make_expr(COMPARE, $*); }
     ;
 
 lcompare_expr :
+      arith_expr
+    | lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"notin"|"is"|"isnot") arith_expr %expand
+                    { $$ = make_expr(LCOMPARE, $*); }
     ;
 
 arith_expr :
@@ -147,7 +172,7 @@ primary_expr :
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
-INT_LITERAL : ('1' .. '9') ('0' .. '9')* /* FIXME */;
+INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' /* FIXME */;
 
 STRING : "\"\"" /* FIXME */ ;
 
@@ -177,6 +202,13 @@ make_id (AST_Ptr& token)
                                       token->as_chars (), false);
     result->set_loc (token->loc ());
     return result;
+}
+
+static AST_Ptr
+make_expr (const int KEY, const List_Ptr& operands)
+{
+    return YYMAKE_TREE (KEY, operands->at (0), make_id (operands->at (1)),
+                        operands->at (2));
 }
 
 int

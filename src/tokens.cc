@@ -58,14 +58,11 @@ private:
      *  overridden to provide additional processing during the
      *  construction of a node or token.] */
     Int_Token* post_make () {
-        // FIXME
-        // Really pleas this is really bad :(
+        // HELP ME PLEASE IT HURTS...
         int max = 1 << 30;
         value = atol(string(as_chars(), text_size()).c_str());
-        if (value == max) {
-            value = -max;
-        } else if (value > max) {
-            error (as_chars(), "integer too large");
+        if (value > max) {
+            error (as_chars(), "Integer too large");
         }
         return this;
     }
