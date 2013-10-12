@@ -98,6 +98,7 @@
 %token OR "@or"
 %token IF_EXPR "@if_expr"
 %token TUPLE "@tuple"
+%token LIST "@list_display"
 %token EXPO "**"
 /* Associativity + Precedence */
 %left "or"
@@ -186,6 +187,8 @@ primary_expr :
                       { $$ = $^(TUPLE); }
     | '('! expression ','!  (expression ','!)* expression? ')'!
                       { $$ = $^(TUPLE, $*); }
+    | '['! expression ','! (expression ','!)* expression? ']'!
+                      { $$ = $^(LIST, $*); }
     | '('! root_expr ')'!
     | ('+'|'-') primary_expr
                       { $$ = make_unop($*); }
