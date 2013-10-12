@@ -90,8 +90,13 @@
 %token MODULE "@module"
 %token BINOP "@binop"
 %token UNOP "@unop"
-/* Extra Tokens */
+/* Statements */
 %token STMT_LIST "@stmt_list"
+%token PRINT "@print"
+%token RETURN "@return"
+%token BREAK "@break"
+%token CONTINUE "@continue"
+/* Expressions */
 %token COMPARE "@compare"
 %token LCOMPARE "@left_compare"
 %token AND "@and"
@@ -128,6 +133,14 @@ stmt_list :
 statement :
         "print"! expression_list
                       { $$ = $^(PRINTLN, $^(EMPTY), $*); }
+      | "print"! expression0 "<<"! ','! expression_list
+                      { $$ = $^(PRINTLN, $*); }
+      | "return"! expression0
+                      { $$ = $^(RETURN, $*); }
+      | "break"!
+                      { $$ = $^(BREAK); }
+      | "continue"!
+                      { $$ = $^(CONTINUE); }
       ;
 
 expression_list :
@@ -141,6 +154,11 @@ expression_list :
 //    | expression ','! (expression ','!)* expression?
 //                      { $$ = $^(TUPLE, $*); }
 //    ;
+
+expression0 :
+      expression
+    | /* empty */     { $$ = $^(EMPTY); }
+    ;
 
 expression :
       root_expr
@@ -160,8 +178,8 @@ boolean_expr :
       arith_expr
     | compare_expr
     | boolean_expr (type="and"!|type="or"!) boolean_expr %expand
-                    { int token = $type.value()->as_string().compare("and") == 0 ? AND : OR;
-                      $$ = $^(token, $*);
+                    { int token_id = $type.value()->as_string().compare("and") == 0 ? AND : OR;
+                      $$ = $^(token_id, $*);
                     }
     ;
 
