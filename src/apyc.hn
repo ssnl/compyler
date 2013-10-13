@@ -44,6 +44,8 @@
 
 %}
 
+%glr-parser
+%expect-rr 2
 %debug
 %define error_function error
 
@@ -108,6 +110,9 @@
 %token BREAK "@break"
 %token CONTINUE "@continue"
 %token NATIVE "@native"
+/* Control Structures */
+%token IF "@if"
+%token FOR "@for"
 /* Assignments and Types */
 %token ASSIGN "@assign"
 %token TARGET_LIST "@target_list"
@@ -153,6 +158,11 @@ stmt_list :
 
 /* STATEMENT */
 statement :
+      basic_statement
+    | if_stmt
+    ;
+
+basic_statement :
       print_stmt
     | assign
     | "return"! expression0
@@ -161,9 +171,30 @@ statement :
                     { $$ = $^(BREAK); }
     | "continue"!
                     { $$ = $^(CONTINUE); }
-    | "native"! STRING
+    ;
+
+if_stmt :
+      "if"! expression ':'! basic_statement
+    | "if"! expression ':'! '\n'! INDENT! stmt_list DEDENT! elif_stmts
+    ;
+
+elif_stmts :
+      else_stmt
+    | "elif"! expression ':'! basic_statement '\n'! 
+    | "elif"! expression ':'! basic_statement '\n'! elif_stmts
+    | "elif"! expression ':'! '\n'! INDENT! stmt_list DEDENT! else_stmt
+    | "elif"! expression ':'! '\n'! INDENT! stmt_list DEDENT! elif_stmts
+    ;
+
+else_stmt :
+      "else"! expression ':'! basic_statement
+    | "else"! expression ':'! '\n'! INDENT! stmt_list DEDENT! "else" stmt_list
+
+native_stmt : 
+      "native"! STRING
                     { $$ = $^(NATIVE, $*); }
     ;
+
 
 print_stmt :
       "print"! ">>"! expression
@@ -201,16 +232,6 @@ target :
     ;
 //    | typed_id
 //    ;
-
-simple_target :
-      ID
-    | expression '.'! ID
-                    { $$ = $^(ATTR_REF, $*); }
-    | expression '['! tuple_ext_expr ']'!
-                    { $$ = $^(SUBSCRIPTION, $*); }
-    | expression '['! expression0 ':'! expression0 ']'!
-                    { $$ = $^(SLICING, $*); }
-    ;
 
 right_side :
       tuple_ext_expr
@@ -302,7 +323,7 @@ expo_expr :
 
 primary_expr :
       INT_LITERAL
-    | ID
+    | simple_target
     | str_expr
     | dict
     | '(' ')'
@@ -314,6 +335,16 @@ primary_expr :
     | '['! expression  (','! expression)* ','!? ']'!
                       { $$ = $^(LIST, $*); }
     | '('! root_expr ')'!
+    ;
+
+simple_target :
+      ID
+    | primary_expr '.'! ID
+                    { $$ = $^(ATTR_REF, $*); }
+    | primary_expr '['! tuple_ext_expr ']'!
+                    { $$ = $^(SUBSCRIPTION, $*); }
+    | primary_expr '['! expression0 ':'! expression0 ']'!
+                    { $$ = $^(SLICING, $*); }
     ;
 
 pair :
