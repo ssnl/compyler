@@ -228,10 +228,11 @@ primary_expr :
 
 str_expr :
       STRING
-    | STRING str_expr
-                      { string s = $STRING.value()->as_string() + $str_expr.value()->as_string();
-                        $$ = AST::make_token (STRING, s.length(),
-                                              s.c_str(), false);
+    | RAWSTRING
+    | (S=RAWSTRING|S=STRING) str_expr %expand
+                      { string s = ((AST_Token *) $str_expr.value().data())->string_text();
+                        ((AST_Token *) $S.value().data())->append_text(s);
+                        $$ = $S.value();
                       }
     ;
 
@@ -249,17 +250,34 @@ STRING :
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
                                               $TEXT+1, false);
                       }
-    | "\"\"\"" _ANY* "\"\"\""
+    | "\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
-    | "\'\'\'" _ANY* "\'\'\'"
+    | "\'\'\'" ((_ANY - '\'')+ ('\'' '\''?)?)* "\'\'\'"
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
     ;
 
-RAWSTRING : "r\"\"" /* FIXME */ ;
+RAWSTRING :
+      "r\"" ((_ANY - ('\"' | '\n'))* "\\\"")* (_ANY - ('\"' | '\n'))* '\"'
+                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
+                                              $TEXT+2, false);
+                      }
+    | "r\'" ((_ANY - ('\'' | '\n'))* "\\\'")* (_ANY - ('\'' | '\n'))* '\''
+                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
+                                              $TEXT+2, false);
+                      }
+    | "r\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
+                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
+                                              $TEXT+4, false);
+                      }
+    | "r\'\'\'" ((_ANY - '\'')+ ('\'' '\''?)?)* "\'\'\'"
+                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
+                                              $TEXT+4, false);
+                      }
+    ;
 
 %%
 
