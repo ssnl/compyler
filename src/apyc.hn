@@ -90,12 +90,19 @@
 %token MODULE "@module"
 %token BINOP "@binop"
 %token UNOP "@unop"
-/* Statements */
+/* Basic Statements */
 %token STMT_LIST "@stmt_list"
 %token PRINT "@print"
 %token RETURN "@return"
 %token BREAK "@break"
 %token CONTINUE "@continue"
+/* Assignments and Types */
+%token ASSIGN "@assign"
+%token TARGET_LIST "@target_list"
+%token ATTR_REF "@attributeref"
+%token SUBSCRIPTION "@subscription"
+%token SLICING "@slicing"
+%token TYPE "@type"
 /* Expressions */
 %token COMPARE "@compare"
 %token LCOMPARE "@left_compare"
@@ -106,6 +113,7 @@
 %token LIST "@list_display"
 %token DICT "@dict_display"
 %token PAIR "@pair"
+%token CALL "@call"
 %token EXPO "**"
 /* Associativity + Precedence */
 %left "or"
@@ -131,23 +139,66 @@ stmt_list :
     | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
 
+/* STATEMENT */
 statement :
-        "print"! expression_list
-                      { $$ = $^(PRINTLN, $^(EMPTY), $*); }
-      | "print"! expression0 "<<"! ','! expression_list
-                      { $$ = $^(PRINTLN, $*); }
-      | "return"! expression0
-                      { $$ = $^(RETURN, $*); }
-      | "break"!
-                      { $$ = $^(BREAK); }
-      | "continue"!
-                      { $$ = $^(CONTINUE); }
-      ;
+      print_stmt
+    | "return"! expression0
+                    { $$ = $^(RETURN, $*); }
+    | "break"!
+                    { $$ = $^(BREAK); }
+    | "continue"!
+                    { $$ = $^(CONTINUE); }
+    ;
+
+print_stmt :
+      "print"! ">>"! expression
+                    { $$ = $^(PRINTLN, $expression); }
+    | "print"! ">>"! expression ','! expression_list
+                    { $$ = $^(PRINTLN, $*); }
+    | "print"! ">>"! expression ','! plist
+                    { $$ = $^(PRINT, $*); }
+    | "print"! expression_list0
+                    { $$ = $^(PRINTLN, $^(EMPTY), $*); }
+    | "print"! plist
+                    { $$ = $^(PRINT, $^(EMPTY), $*); }
+    ;
+
+//assign :
+//      target_list "="! right_side
+//                    { $$ = $^(ASSIGN, $*) }
+//    ;
+//
+//target_list :
+//      target
+//    | target target+
+//                    { $$ = $^(TARGET_LIST, $*) }
+//    ;
+//
+//target :
+//      simple_target
+//    | typed_id
+//    ;
+//
+//simple_target :
+//    ;
+//
+//typed_id :
+//    ;
+
+/* EXPRESSIONS */
+plist :
+      expression (","! expression)* ","!
+                      { $$ = $^(EXPR_LIST, $*); }
+    ;
+
+expression_list0 :
+      expression_list
+    | /* empty */     { $$ = $^(EXPR_LIST); }
+    ;
 
 expression_list :
       expression (","! expression)*
                       { $$ = $^(EXPR_LIST, $*); }
-    | /*empty*/       { $$ = $^(EXPR_LIST); }
     ;
 
 // tuple_ext_expr:
@@ -247,8 +298,6 @@ str_expr :
                         $$ = $S.value();
                       }
     ;
-
-
 
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
