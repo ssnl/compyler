@@ -214,6 +214,7 @@ expo_expr :
 
 primary_expr :
       INT_LITERAL
+    | str_expr
     | '(' ')'
                       { $$ = $^(TUPLE); }
     | '[' ']'
@@ -225,18 +226,37 @@ primary_expr :
     | '('! root_expr ')'!
     ;
 
+str_expr :
+      STRING
+    | STRING str_expr
+                      { string s = $STRING.value()->as_string() + $str_expr.value()->as_string();
+                        $$ = AST::make_token (STRING, s.length(),
+                                              s.c_str(), false);
+                      }
+    ;
+
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
 INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' /* FIXME */;
 
-// NONBLANK : _ANY - ('\n' | '\t' | ' ' | '\r') ;
-
-// STRING : "\"\"" /* FIXME */ ;
-
-STRING : 
-      '\"' ((_ANY - '\"') "\\\"")* _ANY '\"'
-    | '\'' ((_ANY - '\'') "\\\'")* _ANY '\''
+STRING :
+      '\"' ((_ANY - ('\"' | '\n'))* "\\\"")* (_ANY - ('\"' | '\n'))* '\"'
+                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
+                                              $TEXT+1, false);
+                      }
+    | '\'' ((_ANY - ('\'' | '\n'))* "\\\'")* (_ANY - ('\'' | '\n'))* '\''
+                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
+                                              $TEXT+1, false);
+                      }
+    | "\"\"\"" _ANY* "\"\"\""
+                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
+                                              $TEXT+3, false);
+                      }
+    | "\'\'\'" _ANY* "\'\'\'"
+                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
+                                              $TEXT+3, false);
+                      }
     ;
 
 RAWSTRING : "r\"\"" /* FIXME */ ;
