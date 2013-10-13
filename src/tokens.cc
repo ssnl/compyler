@@ -62,7 +62,7 @@ private:
         int max = 1 << 30;
         value = atol(string(as_chars(), text_size()).c_str());
         if (value > max) {
-            error (as_chars(), "Integer too large");
+            error (as_chars(), "Integer overflow error");
         }
         return this;
     }

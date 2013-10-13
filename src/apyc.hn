@@ -239,7 +239,19 @@ str_expr :
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
-INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' /* FIXME */;
+UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
+                  "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
+                  "from")
+                      { error($TEXT, "Syntax Error: invalid syntax"); }
+    ;
+
+_DIGIT : '0' .. '9' ;
+
+_LETTER : 'A' .. 'Z' | 'a' .. 'z' ;
+
+ID : (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
+
+INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' ;
 
 STRING :
       '\"' ((_ANY - ('\"' | '\n'))* "\\\"")* (_ANY - ('\"' | '\n'))* '\"'
