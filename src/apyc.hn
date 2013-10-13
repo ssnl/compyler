@@ -105,6 +105,7 @@
 %token TUPLE "@tuple"
 %token LIST "@list_display"
 %token DICT "@dict_display"
+%token PAIR "@pair"
 %token EXPO "**"
 /* Associativity + Precedence */
 %left "or"
@@ -215,6 +216,7 @@ expo_expr :
 primary_expr :
       INT_LITERAL
     | str_expr
+    | dict
     | '(' ')'
                       { $$ = $^(TUPLE); }
     | '[' ']'
@@ -226,6 +228,16 @@ primary_expr :
     | '('! root_expr ')'!
     ;
 
+pair :
+      P1=expression ':'! P2=expression
+                      { $$ = $^(PAIR,$P1,$P2); }
+    ;
+
+dict :
+      '{'! ((pair '\n'! ','!)|(pair ','! '\n'!?))* pair? '}'!
+                      { $$ = $^(DICT, $*); }
+    ;
+
 str_expr :
       STRING
     | RAWSTRING
@@ -235,6 +247,8 @@ str_expr :
                         $$ = $S.value();
                       }
     ;
+
+
 
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
