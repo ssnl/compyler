@@ -8,12 +8,14 @@
 
 %{
   #include <string>
+  #include <stack>
   #include "apyc.h"
   #include "ast.h"
 
   using namespace std;
 
   static AST_Ptr theTree;
+  static stack <int> indent_stack;
 
   /* Utilities */
   /** Return a new unop node corresponding to OPERANDS, which is the list of
@@ -33,6 +35,12 @@
 
   /** Return a new KEY node corresponding to OPERANDS. */
   static AST_Ptr make_expr (const int KEY, const List_Ptr& operands);
+
+  /** Return the number of spaces in the leading whitespace (including tabs)
+   * of a line. From left to right, the tab is replaced with one to eight
+   * whitespace such that the number of whitespaces up to and including
+   * the replacement is a multiple of eight. */
+  static int count_leading_whitespaces (const char* text, const int text_size);
 
 %}
 
@@ -90,6 +98,9 @@
 %token MODULE "@module"
 %token BINOP "@binop"
 %token UNOP "@unop"
+/* Indentation */
+%token INDENT
+%token DEDENT
 /* Basic Statements */
 %token STMT_LIST "@stmt_list"
 %token PRINT "@print"
@@ -334,6 +345,35 @@ UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "fut
                       { error($TEXT, "syntax Error: invalid syntax"); }
     ;
 
+INDENTATION : _BOL ( ' ' | '\t' )* %prefer
+                      { int spaces = count_leading_whitespaces($TEXT, $TEXT_SIZE);
+                        if ( indent_stack.empty() ) {
+                          if ( spaces > 0 )
+                            error($TEXT, "indentation error: unexpected indent");
+                          indent_stack.push(0);
+                        } else {
+                          if ( indent_stack.top() == spaces )
+                            YYIGNORE;
+                          else if ( indent_stack.top() < spaces ) {
+                            indent_stack.push(spaces);
+                            YYSET_TOKEN(INDENT);
+                          }
+                          else {
+                            int dedent_count = 0;
+                            while ( indent_stack.top() > spaces ) {
+                              indent_stack.pop();
+                              dedent_count++;
+                            }
+                            if ( indent_stack.top() != spaces )
+                              error($TEXT, "indentation error: unindent does not match outer indentation level");
+                            for (int i = 0; i < dedent_count; i++) {
+                              yyqueue_token(DEDENT, NULL);
+                            }
+                          }
+                        }
+                      }
+    ;
+
 _DIGIT : '0' .. '9' ;
 
 _LETTER : 'A' .. 'Z' | 'a' .. 'z' ;
@@ -414,4 +454,17 @@ parse (FILE* f, const string& name)
     if (theTree != NULL) {
         theTree->print (cout, 0);
     }
+}
+
+static int
+count_leading_whitespaces (const char* text, const int text_size)
+{
+  int spaces = 0;
+  for (int i = 0; i < text_size; i++) {
+    if (text[i] == ' ')
+      spaces++;
+    else // replacing tab with the appropriate number of spaces.
+      spaces += 8 - (spaces % 8);
+  }
+  return spaces;
 }
