@@ -96,6 +96,7 @@
 %token RETURN "@return"
 %token BREAK "@break"
 %token CONTINUE "@continue"
+%token NATIVE "@native"
 /* Assignments and Types */
 %token ASSIGN "@assign"
 %token TARGET_LIST "@target_list"
@@ -142,12 +143,15 @@ stmt_list :
 /* STATEMENT */
 statement :
       print_stmt
+    | assign
     | "return"! expression0
                     { $$ = $^(RETURN, $*); }
     | "break"!
                     { $$ = $^(BREAK); }
     | "continue"!
                     { $$ = $^(CONTINUE); }
+    | "native"! STRING
+                    { $$ = $^(NATIVE, $*); }
     ;
 
 print_stmt :
@@ -163,27 +167,48 @@ print_stmt :
                     { $$ = $^(PRINT, $^(EMPTY), $*); }
     ;
 
-//assign :
-//      target_list "="! right_side
-//                    { $$ = $^(ASSIGN, $*) }
-//    ;
-//
-//target_list :
-//      target
-//    | target target+
-//                    { $$ = $^(TARGET_LIST, $*) }
-//    ;
-//
-//target :
-//      simple_target
+assign :
+      target_list "="! right_side
+                    { $$ = $^(ASSIGN, $*); }
+    ;
+
+target_list :
+      target
+    | tlist
+    | target (','! target)+
+                    { $$ = $^(TARGET_LIST, $*); }
+    | '('! target_list ')'!
+    ;
+
+tlist :
+      target (','! target)+ ','!
+                    { $$ = $^(TARGET_LIST, $*); }
+    ;
+
+target :
+      simple_target
+    ;
 //    | typed_id
 //    ;
-//
-//simple_target :
-//    ;
-//
-//typed_id :
-//    ;
+
+simple_target :
+      ID
+    | expression "." ID
+                    { $$ = $^(ATTR_REF, $*); }
+    | expression '['! tuple_ext_expr ']'!
+                    { $$ = $^(SUBSCRIPTION, $*); }
+    | expression '['! expression0 ':'! expression0 ']'!
+                    { $$ = $^(SLICING, $*); }
+    ;
+
+right_side :
+      tuple_ext_expr
+    | assign
+    ;
+
+// TYPES
+//typed_id : ID "::"! type
+
 
 /* EXPRESSIONS */
 plist :
@@ -201,11 +226,11 @@ expression_list :
                       { $$ = $^(EXPR_LIST, $*); }
     ;
 
-// tuple_ext_expr:
-//      expression
-//    | expression ','! (expression ','!)* expression?
-//                      { $$ = $^(TUPLE, $*); }
-//    ;
+tuple_ext_expr:
+      expression
+    | expression ','! (expression ','!)* expression
+                      { $$ = $^(TUPLE, $*); }
+    ;
 
 expression0 :
       expression
@@ -266,6 +291,7 @@ expo_expr :
 
 primary_expr :
       INT_LITERAL
+    | ID
     | str_expr
     | dict
     | '(' ')'
@@ -292,10 +318,10 @@ dict :
 str_expr :
       STRING
     | RAWSTRING
-    | (S=RAWSTRING|S=STRING) str_expr %expand
-                      { string s = ((AST_Token *) $str_expr.value().data())->string_text();
-                        ((AST_Token *) $S.value().data())->append_text(s);
-                        $$ = $S.value();
+    | str_expr (S=RAWSTRING|S=STRING) %expand
+                      { string s = ((AST_Token *) $S.value().data())->string_text();
+                        ((AST_Token *) $str_expr.value().data())->append_text(s);
+                        $$ = $str_expr.value();
                       }
     ;
 
@@ -305,7 +331,7 @@ str_expr :
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
                   "from")
-                      { error($TEXT, "Syntax Error: invalid syntax"); }
+                      { error($TEXT, "syntax Error: invalid syntax"); }
     ;
 
 _DIGIT : '0' .. '9' ;
@@ -321,15 +347,7 @@ STRING :
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
                                               $TEXT+1, false);
                       }
-    | '\'' ((_ANY - ('\'' | '\n'))* "\\\'")* (_ANY - ('\'' | '\n'))* '\''
-                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
-                                              $TEXT+1, false);
-                      }
     | "\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
-                      { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
-                                              $TEXT+3, false);
-                      }
-    | "\'\'\'" ((_ANY - '\'')+ ('\'' '\''?)?)* "\'\'\'"
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
@@ -340,15 +358,7 @@ RAWSTRING :
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
                                               $TEXT+2, false);
                       }
-    | "r\'" ((_ANY - ('\'' | '\n'))* "\\\'")* (_ANY - ('\'' | '\n'))* '\''
-                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
-                                              $TEXT+2, false);
-                      }
     | "r\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
-                      { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
-                                              $TEXT+4, false);
-                      }
-    | "r\'\'\'" ((_ANY - '\'')+ ('\'' '\''?)?)* "\'\'\'"
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
                                               $TEXT+4, false);
                       }
