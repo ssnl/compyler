@@ -161,8 +161,6 @@
 program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
         ;
 
-/* REPLACE THE FOLLOWING WITH SOMETHING REAL. */
-
 stmt_list :
       ( (statement '\n'!) | control_structure | definition | classdef | '\n'! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
@@ -205,6 +203,8 @@ formals :
 block :
       ( (statement '\n'!) | control_structure | definition | '\n'! )+ %expand
                       { $$ = $^(BLOCK, $*); }
+    | native_stmt '\n'!
+                      { $$ = $^(BLOCK,$native_stmt); }
     | /*empty*/       { $$ = $^(BLOCK); }
     ;
 
@@ -272,11 +272,10 @@ else_stmt :
                     { $$ =  $S; }
     ;
 
-// native_stmt : 
-//       "native"! STRING
-//                     { $$ = $^(NATIVE, $*); }
-//     ;
-
+native_stmt :
+      "native"! STRING
+                    { $$ = $^(NATIVE, $*); }
+    ;
 
 print_stmt :
       "print"! ">>"! expression
@@ -308,7 +307,6 @@ tlist :
       target (','! target)+ ','!
                     { $$ = $^(TARGET_LIST, $*); }
     ;
-
 
 // TYPES
 
@@ -368,9 +366,8 @@ right_side :
     | assign
     ;
 
-
-
 /* EXPRESSIONS */
+
 plist :
       expression (','! expression)* ','!
                       { $$ = $^(EXPR_LIST, $*); }
