@@ -16,6 +16,7 @@
 
   static AST_Ptr theTree;
   static stack <int> indent_stack;
+  static int bracket_count;
 
   /* Utilities */
   /** Return a new unop node corresponding to OPERANDS, which is the list of
@@ -465,6 +466,24 @@ str_expr :
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
+'(' :                 { bracket_count++; }
+    ;
+
+')' :                 { bracket_count--; }
+    ;
+
+'{' :                 { bracket_count++; }
+    ;
+
+'}' :                 { bracket_count--; }
+    ;
+
+'[' :                 { bracket_count++; }
+    ;
+
+']' :                 { bracket_count--; }
+    ;
+
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
                   "from")
@@ -479,7 +498,9 @@ INDENTATION : _BOL ( ' ' | '\t' )* %prefer
                           indent_stack.push(0);
                           YYIGNORE;
                         } else {
-                          if ( indent_stack.top() == spaces )
+                          //if (bracket_count > 0)
+                          //  cout << "Bracket count: " + bracket_count << endl;
+                          if ( bracket_count > 0 || indent_stack.top() == spaces )
                             YYIGNORE;
                           else if ( indent_stack.top() < spaces ) {
                             indent_stack.push(spaces);
