@@ -131,6 +131,9 @@
 %token TYPE_FORMALS_LIST "@type_formals_list"
 %token FORMALS_LIST "@formals_list"
 %token FUNCT_TYPE "@function_type"
+/* Special structures */
+%token DEFINITION "@def"
+%token CLASS "@class"
 /* Expressions */
 %token COMPARE "@compare"
 %token LCOMPARE "@left_compare"
@@ -162,7 +165,7 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
 /* REPLACE THE FOLLOWING WITH SOMETHING REAL. */
 
 stmt_list :
-      ( (statement '\n'!) | control_structure | '\n'! )+ %expand
+      ( (statement '\n'!) | control_structure | definition | classdef | '\n'! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
     | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
@@ -170,7 +173,40 @@ stmt_list :
 /* STATEMENT */
 statement :
       basic_statement
-    //| if_stmt
+    ;
+
+// CLASS
+
+classdef :
+      "class"! ID "of" '['! type_formals ']'! ':'! '\n'! INDENT! block DEDENT!
+                      { $$ = $^(CLASS,$ID,$type_formals,$block); }
+    | "class" ID ":" '\n'! INDENT! block DEDENT!
+                      { $$ = $^(CLASS,$ID,$^(TYPE_FORMALS_LIST),$block); }
+    ;
+
+type_formals :
+      type_var (','! type_var)*
+                      { $$ = $^(TYPE_FORMALS_LIST,$*); }
+    ;
+
+// DEFINITION
+
+definition :
+      "def"! ID '('! formals ')'! "::"! type ':'! '\n'! INDENT! block DEDENT!
+                      { $$ = $^(DEFINITION,$ID,$formals,$type,$block); }
+    | "def"! ID '('! formals ')'! ':'! '\n'! INDENT! block DEDENT!
+                      { $$ = $^(DEFINITION,$ID,$formals,$^(EMPTY),$block); }
+    ;
+
+formals :
+      (typed_id|ID) (','! (typed_id|ID))*
+                      { $$ = $^(FORMALS_LIST,$*); }
+    ;
+
+block :
+      ( (statement '\n'!) | control_structure | definition | '\n'! )+ %expand
+                      { $$ = $^(BLOCK, $*); }
+    | /*empty*/       { $$ = $^(BLOCK); }
     ;
 
 basic_statement :
@@ -183,12 +219,6 @@ basic_statement :
     | "continue"!
                     { $$ = $^(CONTINUE); }
     ;
-
-// block :
-//       ( (statement '\n'!) | control_structure | '\n'! )+ %expand
-//                       { $$ = $^(BLOCK, $*); }
-//     | /*empty*/       { $$ = $^(BLOCK); }
-//     ;
 
 control_structure :
       for_loop
@@ -299,7 +329,7 @@ type :
 type_id :
       ID "of"! '['! type_list0 ']'!
                     { $$ = make_type(TYPE, $*, 0); }
-                      //$$ = $^(TYPE, make_id(ID), $type_list0); 
+                    //$$ = $^(TYPE, make_id(ID), $type_list0); 
     | ID "of"! type_list1
                     { $$ = make_type(TYPE, $*, 0); }
                       //$$ = $^(TYPE, make_id(ID), $type); 
@@ -309,8 +339,8 @@ type_id :
     ;
 
 type_var :
-      '$'! ID
-                    { $$ = $^(TYPE_VAR, $ID); }
+      TYPE_VAR
+                    { $$ = $TYPE_VAR; }
     ;
 
 type_list0:
@@ -509,6 +539,8 @@ _LETTER : 'A' .. 'Z' | 'a' .. 'z' ;
 
 ID : (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
 
+TYPE_VAR : '$' (_LETTER | '_') (_LETTER | _DIGIT | '_')*;
+
 INT_LITERAL : ('1' .. '9') ('0' .. '9')* | '0' ;
 
 STRING :
@@ -571,8 +603,7 @@ make_type (const int KEY, const List_Ptr& operands, const int empty)
 {
     if (empty == 0) {
       return YYMAKE_TREE (KEY, make_id (operands->at (0)), operands->at (1));
-    }
-    else {
+    } else {
       return YYMAKE_TREE (KEY, make_id (operands->at (0)), YYMAKE_TREE(TYPE_LIST));
     }
 }
