@@ -326,7 +326,7 @@ type :
                     { $$ = $^(FUNCT_TYPE, $type, $type_list0); }
     ;
 
-type_id :
+type_id0 :
       ID "of"! '['! type_list0 ']'!
                     { $$ = $^(TYPE, $ID, $type_list0); }
                     //$$ = make_type(TYPE, $*, 0);
@@ -334,7 +334,11 @@ type_id :
     | ID "of"! type_list1
                     { $$ = $^(TYPE, $ID, $type_list1); }
                       //$$ = make_type(TYPE, $*, 0);
-                      //$$ = $^(TYPE, make_id(ID), $type); 
+                      //$$ = $^(TYPE, make_id(ID), $type);
+    ;
+
+type_id :
+      type_id0
     | ID
                     { $$ = $^(TYPE, $ID, $^(TYPE_LIST)); }
                       //$$ = make_type(TYPE, $*, 1);
@@ -398,6 +402,14 @@ expression0 :
 
 expression :
       root_expr
+    | function_call
+    ;
+
+function_call :
+      type_id0 '('! expression_list0 ')'!
+                      { $$ = $^(CALL,$type_id0,$expression_list0); }
+    | root_expr '('! expression_list0 ')'!
+                      { $$ = $^(CALL,$root_expr,$expression_list0); }
     ;
 
 root_expr :
