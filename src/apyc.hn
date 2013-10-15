@@ -36,6 +36,9 @@
   /** Return a new KEY node corresponding to OPERANDS. */
   static AST_Ptr make_expr (const int KEY, const List_Ptr& operands);
 
+  /** Return a new KEY node correspond to the OPERANDS. */
+  static AST_Ptr make_type (const int KEY, const List_Ptr& operands, const int empty);
+
   /** Return the number of spaces in the leading whitespace (including tabs)
    * of a line. From left to right, the tab is replaced with one to eight
    * whitespace such that the number of whitespaces up to and including
@@ -122,6 +125,12 @@
 %token SUBSCRIPTION "@subscription"
 %token SLICING "@slicing"
 %token TYPE "@type"
+%token TYPED_ID "@typed_id"
+%token TYPE_VAR "@type_var"
+%token TYPE_LIST "@type_list"
+%token TYPE_FORMALS_LIST "@type_formals_list"
+%token FORMALS_LIST "@formals_list"
+%token FUNCT_TYPE "@function_type"
 /* Expressions */
 %token COMPARE "@compare"
 %token LCOMPARE "@left_compare"
@@ -153,7 +162,7 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
 /* REPLACE THE FOLLOWING WITH SOMETHING REAL. */
 
 stmt_list :
-      ( (statement '\n'!) | (if_stmt) | (while_loop) | (for_loop) | '\n'! )+ %expand
+      ( (statement '\n'!) | control_structure | '\n'! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
     | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
@@ -174,6 +183,18 @@ basic_statement :
     | "continue"!
                     { $$ = $^(CONTINUE); }
     ;
+
+// block :
+//       ( (statement '\n'!) | control_structure | '\n'! )+ %expand
+//                       { $$ = $^(BLOCK, $*); }
+//     | /*empty*/       { $$ = $^(BLOCK); }
+//     ;
+
+control_structure :
+      for_loop
+    | while_loop
+    | if_stmt
+    ; 
 
 for_loop :
       "for"! T=target_list "in"! E=expression ':'! S=basic_statement '\n'!
@@ -259,19 +280,56 @@ tlist :
                     { $$ = $^(TARGET_LIST, $*); }
     ;
 
+
+// TYPES
+
+typed_id :
+      ID "::"! type
+                    { $$ = make_type(TYPED_ID, $*, 0); }
+                      //$$ = $^(TYPED_ID, make_id(ID), $type); 
+    ;
+
+type :
+      type_id
+    | type_var
+    | '('! type_list0 ')'! "->"! type
+                    { $$ = $^(FUNCT_TYPE, $type, $type_list0); }
+    ;
+
+type_id :
+      ID "of"! '['! type_list0 ']'!
+                    { $$ = make_type(TYPE, $*, 0); }
+                      //$$ = $^(TYPE, make_id(ID), $type_list0); 
+    | ID "of"! type
+                    { $$ = make_type(TYPE, $*, 0); }
+                      //$$ = $^(TYPE, make_id(ID), $type); 
+    | ID
+                    { $$ = make_type(TYPE, $*, 1); }
+                      //$$ = $^(TYPE, make_id(ID), $^(TYPE_LIST)); 
+    ;
+
+type_var :
+      '$'! ID
+                    { $$ = $^(TYPE_VAR, $ID); }
+    ;
+
+type_list0:
+      type ( ','! type )*
+                    { $$ = $^(TYPE_LIST, $*); }
+    ;
+
+// Assignment
+
 target :
       simple_target
+    | typed_id
     ;
-//    | typed_id
-//    ;
 
 right_side :
       tuple_ext_expr
     | assign
     ;
 
-// TYPES
-//typed_id : ID "::"! type
 
 
 /* EXPRESSIONS */
@@ -430,10 +488,11 @@ INDENTATION : _BOL ( ' ' | '\t' )* %prefer
                             }
                             if ( indent_stack.top() != spaces )
                               error($TEXT, "indentation error: unindent does not match outer indentation level");
-                            for (int i = 0; i < dedent_count; i++) {
-                              //yyqueue_token(DEDENT, NULL, NULL, $TEXT, $TEXT_SIZE);
-                              YYSET_TOKEN(DEDENT);
+                            for (int i = 0; i < dedent_count-1; i++) {
+                              yyqueue_token(DEDENT, 0, 0, "", 0);
+                              //YYSET_TOKEN(DEDENT);
                             }
+                            YYSET_TOKEN(DEDENT);
                           }
                         }
                       }
@@ -500,6 +559,17 @@ make_expr (const int KEY, const List_Ptr& operands)
 {
     return YYMAKE_TREE (KEY, operands->at (0), make_id (operands->at (1)),
                         operands->at (2));
+}
+
+static AST_Ptr
+make_type (const int KEY, const List_Ptr& operands, const int empty)
+{
+    if (empty == 0) {
+      return YYMAKE_TREE (KEY, make_id (operands->at (0)), operands->at (1));
+    }
+    else {
+      return YYMAKE_TREE (KEY, make_id (operands->at (0)), YYMAKE_TREE(TYPE_LIST));
+    }
 }
 
 int

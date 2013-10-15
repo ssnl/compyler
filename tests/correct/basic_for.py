@@ -7,4 +7,3 @@ for j in (0,4,8):
 	print j
 else:
 	print "done!"
-	
