@@ -1,3 +1,5 @@
+t::$MyType = 0
+
 i::int = 15
 print i
 

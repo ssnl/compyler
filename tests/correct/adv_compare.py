@@ -1,5 +1,5 @@
 print 1 == 1 < 2 == 2 > 1 == 1 < 3 != 4
-print 2 ** 3 > 4 isnot 2 - 1 is 1
+print 2 ** 3 > 4 is not 2 - 1 is 1
 print (4 * (3 + 2) <= 3) == 1
 print 2 == (3 + 2 < 3) == 0
 print 0 == (2 == 4) == 0

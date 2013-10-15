@@ -145,11 +145,13 @@
 %token PAIR "@pair"
 %token CALL "@call"
 %token EXPO "**"
+%token ISNOT
+%token NOTIN
 /* Associativity + Precedence */
 %left "or"
 %left "and"
-%left "in" "notin"
-%left "is" "isnot"
+%left "in" NOTIN
+%left "is" ISNOT
 %left '<' '>' "<=" ">=" "==" "!="
 %left '+' '-'
 %left '%' '*' '/'
@@ -344,12 +346,12 @@ type_var :
                     { $$ = $TYPE_VAR; }
     ;
 
-type_list0:
+type_list0 :
       type ( ','! type )*
                     { $$ = $^(TYPE_LIST, $*); }
     ;
 
-type_list1:
+type_list1 :
       type
                     { $$ = $^(TYPE_LIST, $*); }
     ;
@@ -418,14 +420,22 @@ boolean_expr :
     ;
 
 compare_expr :
-      lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"notin"|"is"|"isnot") arith_expr %expand
+      lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"is") arith_expr %expand
                     { $$ = make_expr(COMPARE, $*); }
+    | lcompare_expr ISNOT arith_expr
+                     { $$ = make_expr(COMPARE, $*); }
+    | lcompare_expr NOTIN arith_expr
+                     { $$ = make_expr(COMPARE, $*); }
     ;
 
-lcompare_expr :
-      arith_expr
-    | lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"notin"|"is"|"isnot") arith_expr %expand
+lcompare_expr : 
+     arith_expr
+    | lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"is") arith_expr %expand
                     { $$ = make_expr(LCOMPARE, $*); }
+    | lcompare_expr ISNOT arith_expr
+                     { $$ = make_expr(LCOMPARE, $*); }
+    | lcompare_expr NOTIN arith_expr
+                     { $$ = make_expr(LCOMPARE, $*); }
     ;
 
 arith_expr :
@@ -552,6 +562,14 @@ INDENTATION : _BOL ( ' ' | '\t' )* %prefer
                         }
                       }
     ;
+
+NOTIN : "not" (' ')+ "in"
+                      { $$ = AST::make_token(ID, 5, "notin", false); }
+      ;
+
+ISNOT : "is" (' ')+ "not"
+                      { $$ = AST::make_token(ID, 5, "isnot", false); }
+      ;
 
 _DIGIT : '0' .. '9' ;
 
