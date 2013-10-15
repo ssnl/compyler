@@ -32,6 +32,7 @@ AST_Token::append_text(const string& s)
     throw logic_error ("unimplemented operation: append_text");
 }
 
+/** Represents an type vairable (ie. $MyType, from x::$MyType) */
 class TypeVar_Token : public AST_Token {
 private:
     void print (ostream& out, int indent) {
