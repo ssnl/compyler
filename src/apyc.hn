@@ -300,7 +300,7 @@ type_id :
       ID "of"! '['! type_list0 ']'!
                     { $$ = make_type(TYPE, $*, 0); }
                       //$$ = $^(TYPE, make_id(ID), $type_list0); 
-    | ID "of"! type
+    | ID "of"! type_list1
                     { $$ = make_type(TYPE, $*, 0); }
                       //$$ = $^(TYPE, make_id(ID), $type); 
     | ID
@@ -315,6 +315,11 @@ type_var :
 
 type_list0:
       type ( ','! type )*
+                    { $$ = $^(TYPE_LIST, $*); }
+    ;
+
+type_list1:
+      type
                     { $$ = $^(TYPE_LIST, $*); }
     ;
 
