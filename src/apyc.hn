@@ -213,7 +213,7 @@ block :
 basic_statement :
       print_stmt
     | assign
-    | primary_expr
+    | unary_expr
     | "return"! expression0
                     { $$ = $^(RETURN, $*); }
     | "break"!
