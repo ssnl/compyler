@@ -200,6 +200,8 @@ definition :
 formals :
       (typed_id|ID) (','! (typed_id|ID))*
                       { $$ = $^(FORMALS_LIST,$*); }
+    | /*empty*/
+                      { $$ = $^(FORMALS_LIST); }
     ;
 
 block :
