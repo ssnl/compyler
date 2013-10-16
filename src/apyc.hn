@@ -164,7 +164,13 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
 
 stmt_list :
       ( (statement (NEWLINE!|';'!)) | control_structure | definition | classdef | NEWLINE! )+ %expand
-                      { $$ = $^(STMT_LIST, $*); }
+                        { $$ = $^(STMT_LIST, $*); }
+    | /* empty */       { $$ = $^(STMT_LIST); }
+    ;
+
+stmt_list0 :
+      ( (statement (NEWLINE!|';'!)) | control_structure | NEWLINE! )+ %expand
+                        { $$ = $^(STMT_LIST, $*); }
     | /* empty */       { $$ = $^(STMT_LIST); }
     ;
 
@@ -257,18 +263,18 @@ semi_stmt_list :
 for_loop :
       "for"! T=target_list "in"! E=tuple_ext_expr ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
-    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
+    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S=stmt_list0 DEDENT!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
-    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
+    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S1=stmt_list0 DEDENT! S2=else_stmt
                     { $$ = $^(FOR,$T,$E,$S1,$S2); }
     ;
 
 while_loop :
       "while"! E=expression ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }
-    | "while"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
+    | "while"! E=expression ':'! NEWLINE! INDENT! S=stmt_list0 DEDENT!
                     { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }
-    | "while"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
+    | "while"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list0 DEDENT! S2=else_stmt
                     { $$ = $^(WHILE,$E,$S1,$S2); }
     ;
 
@@ -277,9 +283,9 @@ if_stmt :
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
     | "if"! E=expression ':'! S=semi_stmt_list NEWLINE! S1 = elif_stmts
                     { $$ = $^(IF, $E, $S, $S1); }
-    | "if"! E=expression ':'! NEWLINE! I=INDENT! S1=stmt_list D=DEDENT!
+    | "if"! E=expression ':'! NEWLINE! I=INDENT! S1=stmt_list0 D=DEDENT!
                     { $$ = $^(IF, $E, $S1, $^(EMPTY)); }
-    | "if"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
+    | "if"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list0 DEDENT! S2=elif_stmts
                     { $$ = $^(IF, $E, $S1, $S2); }
     ;
 
@@ -290,16 +296,16 @@ elif_stmts :
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
     | "elif"! E=expression ':'! S1=semi_stmt_list NEWLINE! S2=elif_stmts
                     { $$ =  $^(IF, $E, $^(STMT_LIST, $S1), $S2); }
-    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
+    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list0 DEDENT! S2=elif_stmts
                     { $$ =  $^(IF, $E, $S1, $S2); }
-    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT!
+    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list0 DEDENT!
                     { $$ =  $^(IF, $E, $S1, $^(EMPTY)); }
     ;
 
 else_stmt :
       "else"!':'! B=semi_stmt_list NEWLINE!
                     { $$ =  $^(STMT_LIST, $B); }
-    | "else"!':'! NEWLINE! INDENT! S=stmt_list DEDENT!
+    | "else"!':'! NEWLINE! INDENT! S=stmt_list0 DEDENT!
                     { $$ =  $S; }
     ;
 
