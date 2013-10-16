@@ -718,7 +718,7 @@ STRING :
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
                                               $TEXT+1, false);
                       }
-    | "\"\"\"" (_LONGSTRINGPIECE1+ ('\"' '\"'?)?)* "\"\"\""
+    | "\"\"\"" ('\"' '\"'?)? (_LONGSTRINGPIECE1+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
@@ -726,7 +726,7 @@ STRING :
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
                                               $TEXT+1, false);
                       }
-    | "\'\'\'" (_LONGSTRINGPIECE2+ ('\'' '\''?)?)* "\'\'\'"
+    | "\'\'\'" ('\'' '\''?)? (_LONGSTRINGPIECE2+ ('\'' '\''?)?)* "\'\'\'"
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
@@ -748,7 +748,7 @@ RAWSTRING :
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
                                               $TEXT+2, false);
                       }
-    | ("r\"\"\"" | "R\"\"\"") (_LONGSTRINGPIECE1+ ('\"' '\"'?)?)* "\"\"\""
+    | ("r\"\"\"" | "R\"\"\"") ('\"' '\"'?)? (_LONGSTRINGPIECE1+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
                                               $TEXT+4, false);
                       }
@@ -756,7 +756,7 @@ RAWSTRING :
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
                                               $TEXT+2, false);
                       }
-    | ("r\'\'\'" | "R\'\'\'") (_LONGSTRINGPIECE2+ ('\'' '\''?)?)* "\'\'\'"
+    | ("r\'\'\'" | "R\'\'\'") ('\'' '\''?)? (_LONGSTRINGPIECE2+ ('\'' '\''?)?)* "\'\'\'"
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
                                               $TEXT+4, false);
                       }
