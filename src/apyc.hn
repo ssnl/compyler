@@ -613,7 +613,7 @@ NEWLINE : '\n'        { if (bracket_count > 0) {
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
                   "from")
-                      { error($TEXT, "syntax error: invalid syntax"); }
+                      { error($TEXT, "syntax error: invalid syntax"); YYIGNORE; }
     ;
 
 // Matching the leading whitespaces (and tabs) of a line.
@@ -639,8 +639,10 @@ INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
                               indent_stack.pop();
                               dedent_count++;
                             }
-                            if ( indent_stack.top() != spaces )
+                            if ( indent_stack.top() != spaces ) {
                               error($TEXT, "indentation error: unindent does not match outer indentation level");
+                              YYIGNORE;
+                            }
                             for (int i = 0; i < dedent_count-1; i++) {
                               yyqueue_token(DEDENT, NULL);
                             }
@@ -702,12 +704,19 @@ STRING :
                       }
     ;
 
+BADSTRING :
+      '\"' _STRINGPIECE*
+                      { error($TEXT, "syntax error: invalid string"); YYIGNORE; }
+    | ("r\"" | "R\"") _STRINGPIECE*
+                      { error($TEXT, "syntax error: invalid rawstring"); YYIGNORE; }
+    ;
+
 RAWSTRING :
-      "r\"" _STRINGPIECE* "\""
+      ("r\"" | "R\"") _STRINGPIECE* "\""
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
                                               $TEXT+2, false);
                       }
-    | "r\"\"\"" (_LONGSTRINGPIECE+ ('\"' '\"'?)?)* "\"\"\""
+    | ("r\"\"\"" | "R\"\"\"") (_LONGSTRINGPIECE+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
                                               $TEXT+4, false);
                       }

@@ -1,0 +1,2 @@
+  def burp():
+    print "burp";
