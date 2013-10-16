@@ -160,7 +160,7 @@
 
 %%
 
-program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
+program : stmt_list  { theTree = $^(MODULE, $*); $$ = NULL; }
         ;
 
 stmt_list :
@@ -517,10 +517,52 @@ str_expr :
 // Throw away comments, excluding newline.
 * : '#' (_ANY - '\n')* ;
 
-// Throw empty lines.
-EMPTY_LINE : _BOL (' ' | '\t' )* '\n' %prefer 
-                      { YYIGNORE; }
-           ;
+// Throw away empty lines.
+* : _BOL (' ' | '\t' )*  '\r'? '\n'  %prefer ;
+
+// Generate enough DEDENT to match all unmatched INDENT before EOF.
+END_OF_FILE : _BOL ( ' ' | '\t' )* _EOF   %prefer
+                      { 
+                        int dedent_count = 0;
+                        while ( indent_stack.top() > 0 ) {
+                          dedent_count++;
+                          indent_stack.pop();
+                        }
+                        // Need to generate DEDENT tokens
+                        if (dedent_count > 0) {
+                          for (int i = 0; i < dedent_count-1; i++) {
+                            yyqueue_token(DEDENT, NULL);
+                          }
+                          // Put the EOF token back into queue.
+                          yyqueue_token(0, NULL);
+                          YYSET_TOKEN(DEDENT);
+                        } else {
+
+                          YYSET_TOKEN(0);
+                        }
+                      }
+            | _EOF %prefer
+                      { 
+                        int dedent_count = 0;
+                        while ( indent_stack.top() > 0 ) {
+                          dedent_count++;
+                          indent_stack.pop();
+                        }
+                        // Need to generate DEDENT tokens
+                        if (dedent_count > 0) {
+                          for (int i = 0; i < dedent_count-1; i++) {
+                            yyqueue_token(DEDENT, NULL);
+                          }
+                          // Put the EOF token back into queue.
+                          yyqueue_token(0, NULL);
+                          YYSET_TOKEN(DEDENT);
+                        } else {
+
+                          YYSET_TOKEN(0);
+                        }
+                      }
+            ;
+
 
 
 '(' :                 { bracket_count++; }
@@ -547,7 +589,7 @@ NEWLINE : '\n'        { if (bracket_count > 0) {
                           YYSET_TOKEN(NEWLINE);
                         }
                       }
-        ;
+    ;
 
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
@@ -555,6 +597,16 @@ UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "fut
                       { error($TEXT, "syntax error: invalid syntax"); }
     ;
 
+/*// Throw empty lines.
+EMPTY_LINE : _BOL (' ' | '\t' )* '\n' %prefer 
+                      { YYIGNORE; }
+    ;*/
+
+/*LAST_LINE : _BOL ( ' ' | '\t' )* _EOF  %prefer
+                      { YYSET_TOKEN(0); }
+    ;
+*/
+    
 // Matching the leading whitespaces (and tabs) of a line.
 INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
                       { int spaces = count_leading_whitespaces($TEXT, $TEXT_SIZE);
@@ -581,8 +633,7 @@ INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
                             if ( indent_stack.top() != spaces )
                               error($TEXT, "indentation error: unindent does not match outer indentation level");
                             for (int i = 0; i < dedent_count-1; i++) {
-                              yyqueue_token(DEDENT, 0, 0, "", 0);
-                              //YYSET_TOKEN(DEDENT);
+                              yyqueue_token(DEDENT, NULL);
                             }
                             YYSET_TOKEN(DEDENT);
                           }
@@ -593,7 +644,7 @@ INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
 // Ignore lines consisting of only whitespaces, tabs ,and/or comments.
 BLANK_LINE : _BOL ( ' ' | '\t' )* '#' (_ANY - '\n')*  %prefer
                       { YYIGNORE; }
-           ;
+      ;
 
 NOTIN : "not" (' ')+ "in"
                       { $$ = AST::make_token(ID, 5, "notin", false); }
