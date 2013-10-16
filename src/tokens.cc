@@ -72,10 +72,9 @@ private:
      *  overridden to provide additional processing during the
      *  construction of a node or token.] */
     Int_Token* post_make () {
-        // HELP ME PLEASE IT HURTS...
         // The maximun int literal can be is 2^30
         int max = 1 << 30;
-        
+
         const char* text = string(as_chars(), text_size()).c_str();
         int base;
         // Check if it is decimal, octal, or hex

@@ -37,11 +37,10 @@
   /** Return a new KEY node corresponding to OPERANDS. */
   static AST_Ptr make_expr (const int KEY, const List_Ptr& operands);
 
-
   /** Return the number of spaces in the leading whitespace (including tabs)
-   * of a line. From left to right, the tab is replaced with one to eight
-   * whitespace such that the number of whitespaces up to and including
-   * the replacement is a multiple of eight. */
+   *  of a line. From left to right, the tab is replaced with one to eight
+   *  whitespace such that the number of whitespaces up to and including
+   *  the replacement is a multiple of eight. */
   static int count_leading_whitespaces (const char* text, const int text_size);
 
 %}
@@ -160,13 +159,13 @@
 
 %%
 
-program : stmt_list  { theTree = $^(MODULE, $*); $$ = NULL; }
+program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
         ;
 
 stmt_list :
-      ( (statement (NEWLINE!|';'!)) | control_structure | definition | classdef | "pass"! | NEWLINE! )+ %expand
+      ( (statement (NEWLINE!|';'!)) | control_structure | definition | classdef | NEWLINE! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
-    | /*empty*/       { $$ = $^(STMT_LIST); }
+    | /* empty */       { $$ = $^(STMT_LIST); }
     ;
 
 /* STATEMENT */
@@ -177,10 +176,14 @@ statement :
 // CLASS
 
 classdef :
-      "class"! ID "of" '['! type_formals ']'! ':'! NEWLINE! INDENT! block DEDENT!
+      "class"! ID "of"! '['! type_formals ']'! ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(CLASS,$ID,$type_formals,$block); }
-    | "class" ID ":" NEWLINE! INDENT! block DEDENT!
+    | "class"! ID ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(CLASS,$ID,$^(TYPE_FORMALS_LIST),$block); }
+    | "class"! ID "of"! '['! type_formals ']'! ':'! semi_block NEWLINE!
+                      { $$ = $^(CLASS,$ID,$type_formals,$semi_block); }
+    | "class"! ID ':'! semi_block NEWLINE!
+                      { $$ = $^(CLASS,$ID,$^(TYPE_FORMALS_LIST),$semi_block); }
     ;
 
 type_formals :
@@ -195,6 +198,18 @@ definition :
                       { $$ = $^(DEFINITION,$ID,$formals,$type,$block); }
     | "def"! ID '('! formals ')'! ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(DEFINITION,$ID,$formals,$^(EMPTY),$block); }
+    | "def"! ID '('! formals ')'! "::"! type ':'! semi_block NEWLINE!
+                      { $$ = $^(DEFINITION,$ID,$formals,$type,$semi_block); }
+    | "def"! ID '('! formals ')'! ':'! semi_block NEWLINE!
+                      { $$ = $^(DEFINITION,$ID,$formals,$^(EMPTY),$semi_block); }
+    | "def"! ID '('! formals ')'! ':'! native_stmt ';'!? NEWLINE!
+                      { $$ = $^(DEFINITION, $ID, $formals, $^(EMPTY), $^(BLOCK, $native_stmt)); }
+    | "def"! ID '('! formals ')'! ':'! NEWLINE INDENT native_stmt ';'!? NEWLINE! DEDENT!
+                      { $$ = $^(DEFINITION, $ID, $formals, $^(EMPTY), $^(BLOCK, $native_stmt)); }
+    | "def"! ID '('! formals ')'! "::"! type':'! native_stmt ';'!? NEWLINE!
+                      { $$ = $^(DEFINITION, $ID, $formals, $type, $^(BLOCK, $native_stmt)); }
+    | "def"! ID '('! formals ')'! "::"! type ':'! NEWLINE INDENT native_stmt ';'!? NEWLINE! DEDENT!
+                      { $$ = $^(DEFINITION, $ID, $formals, $type, $^(BLOCK, $native_stmt)); }
     ;
 
 formals :
@@ -205,17 +220,21 @@ formals :
     ;
 
 block :
-      ( (statement NEWLINE!) | control_structure | definition | NEWLINE! | "pass"!)+ %expand
+      ( (statement (NEWLINE!|';'!)) | control_structure | definition | NEWLINE! )+ %expand
                       { $$ = $^(BLOCK, $*); }
-    | native_stmt NEWLINE!
-                      { $$ = $^(BLOCK,$native_stmt); }
     | /*empty*/       { $$ = $^(BLOCK); }
+    ;
+
+semi_block :
+      statement (';'! statement)* ';'!? %expand
+                      { $$ = $^(BLOCK, $*); }
     ;
 
 basic_statement :
       print_stmt
     | assign
     | expression
+    | "pass"!
     | "return"! expression0
                     { $$ = $^(RETURN, $*); }
     | "break"!
@@ -228,7 +247,7 @@ control_structure :
       for_loop
     | while_loop
     | if_stmt
-    ; 
+    ;
 
 for_loop :
       "for"! T=target_list "in"! E=expression ':'! S=basic_statement NEWLINE!
@@ -522,7 +541,7 @@ str_expr :
 
 // Generate enough DEDENT to match all unmatched INDENT before EOF.
 END_OF_FILE : _BOL ( ' ' | '\t' )* _EOF   %prefer
-                      { 
+                      {
                         int dedent_count = 0;
                         while ( indent_stack.top() > 0 ) {
                           dedent_count++;
@@ -542,7 +561,7 @@ END_OF_FILE : _BOL ( ' ' | '\t' )* _EOF   %prefer
                         }
                       }
             | _EOF %prefer
-                      { 
+                      {
                         int dedent_count = 0;
                         while ( indent_stack.top() > 0 ) {
                           dedent_count++;
@@ -597,16 +616,6 @@ UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "fut
                       { error($TEXT, "syntax error: invalid syntax"); }
     ;
 
-/*// Throw empty lines.
-EMPTY_LINE : _BOL (' ' | '\t' )* '\n' %prefer 
-                      { YYIGNORE; }
-    ;*/
-
-/*LAST_LINE : _BOL ( ' ' | '\t' )* _EOF  %prefer
-                      { YYSET_TOKEN(0); }
-    ;
-*/
-    
 // Matching the leading whitespaces (and tabs) of a line.
 INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
                       { int spaces = count_leading_whitespaces($TEXT, $TEXT_SIZE);
