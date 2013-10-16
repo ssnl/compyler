@@ -514,6 +514,8 @@ str_expr :
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
+* : '#' (_ANY - '\n')* ;
+
 '(' :                 { bracket_count++; }
     ;
 
@@ -532,7 +534,13 @@ str_expr :
 ']' :                 { bracket_count--; }
     ;
 
-NEWLINE : '\n' ;
+NEWLINE : '\n'        { if (bracket_count > 0) {
+                          YYIGNORE;
+                        } else {
+                          YYSET_TOKEN(NEWLINE);
+                        }
+                      }
+        ;
 
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
@@ -596,30 +604,37 @@ _HEX_INTEGER : '0' ('x' | 'X' ) (_HEX_DIGIT)+ ;
 
 _DECIMAL_INTEGER : ('1' .. '9') ('0' .. '9')* | '0' ;
 
-
 INT_LITERAL :  _DECIMAL_INTEGER | _OCTAL_INTEGER | _HEX_INTEGER ;
 
 ID : (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
 
 TYPE_VAR : '$' (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
 
+_3_OCTAL : _OCTAL_DIGIT _OCTAL_DIGIT? _OCTAL_DIGIT? ;
+
+_ESCAPESEQ : '\\' _ANY | '\\' _3_OCTAL ;
+
+_STRINGPIECE : (_ANY - ('\"' | '\n' | '\\')) | _ESCAPESEQ ;
+
+_LONGSTRINGPIECE : (_ANY - ('\\'|'\"')) | _ESCAPESEQ ;
+
 STRING :
-      '\"' ((_ANY - ('\"' | '\n'))* "\\\"")* (_ANY - ('\"' | '\n'))* '\"'
+      '\"' _STRINGPIECE* '\"'
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 2,
                                               $TEXT+1, false);
                       }
-    | "\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
+    | "\"\"\"" (_LONGSTRINGPIECE+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (STRING, $TEXT_SIZE - 6,
                                               $TEXT+3, false);
                       }
     ;
 
 RAWSTRING :
-      "r\"" ((_ANY - ('\"' | '\n'))* "\\\"")* (_ANY - ('\"' | '\n'))* '\"'
+      "r\"" _STRINGPIECE* "\""
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 3,
                                               $TEXT+2, false);
                       }
-    | "r\"\"\"" ((_ANY - '\"')+ ('\"' '\"'?)?)* "\"\"\""
+    | "r\"\"\"" (_LONGSTRINGPIECE+ ('\"' '\"'?)?)* "\"\"\""
                       { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE - 7,
                                               $TEXT+4, false);
                       }
