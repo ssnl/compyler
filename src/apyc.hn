@@ -310,7 +310,7 @@ native_stmt :
 
 print_stmt :
       "print"! ">>"! expression
-                    { $$ = $^(PRINTLN, $expression); }
+                    { $$ = $^(PRINTLN, $expression, $^(EXPR_LIST)); }
     | "print"! ">>"! expression ','! expression_list
                     { $$ = $^(PRINTLN, $*); }
     | "print"! ">>"! expression ','! plist
@@ -364,8 +364,6 @@ type_id :
       type_id0
     | ID
                     { $$ = $^(TYPE, $ID, $^(TYPE_LIST)); }
-                      //$$ = make_type(TYPE, $*, 1);
-                      //$$ = $^(TYPE, make_id(ID), $^(TYPE_LIST));
     ;
 
 type_var :
@@ -579,16 +577,14 @@ END_OF_FILE : _BOL ( ' ' | '\t' )* _EOF   %prefer
                         }
                         // Need to generate DEDENT tokens
                         if (dedent_count > 0) {
-                          for (int i = 0; i < dedent_count-1; i++) {
+                          for (int i = 0; i < dedent_count; i++) {
                             yyqueue_token(DEDENT, NULL);
                           }
-                          // Put the EOF token back into queue.
-                          yyqueue_token(0, NULL);
-                          YYSET_TOKEN(DEDENT);
-                        } else {
-
-                          YYSET_TOKEN(0);
                         }
+                        // Put the EOF token back into queue.
+                        yyqueue_token(0, NULL);
+                        // Insert a NEWLINE token.
+                        YYSET_TOKEN(NEWLINE);
                       }
             ;
 
@@ -695,9 +691,9 @@ ID : (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
 
 TYPE_VAR : '$' (_LETTER | '_') (_LETTER | _DIGIT | '_')* ;
 
-_3_OCTAL : _OCTAL_DIGIT _OCTAL_DIGIT? _OCTAL_DIGIT? ;
+_OCTAL : _OCTAL_DIGIT _OCTAL_DIGIT? _OCTAL_DIGIT? ;
 
-_ESCAPESEQ : '\\' _ANY | '\\' _3_OCTAL ;
+_ESCAPESEQ : '\\' _ANY | '\\' _OCTAL ;
 
 _STRINGPIECE : (_ANY - ('\"' | '\n' | '\\')) | _ESCAPESEQ ;
 
