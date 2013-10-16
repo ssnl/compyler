@@ -76,7 +76,7 @@ private:
         // The maximun int literal can be is 2^30
         int max = 1 << 30;
         
-        /*char* text = string(as_chars(), text_size())
+        const char* text = string(as_chars(), text_size()).c_str();
         int base;
         // Check if it is decimal, octal, or hex
         if (text_size() > 1 && text[0] == '0') {
@@ -90,15 +90,21 @@ private:
         } else {
             // It is decimal
             base = 10;
-        }*/
+        }
 
         // Converting string to numerial value based on the prefix
         // Prefix "0" parse to octal
         // Prefix "0x" or "0X" parse to hex
         // Otherwise parse to decimal
-        value = strtol(string(as_chars(), text_size()).c_str(), NULL, 0);
+        value = strtol(string(as_chars(), text_size()).c_str(), NULL, base);
         if (value > max) {
-            error (as_chars(), "Integer overflow error");
+          if (base == 10) {
+            error (as_chars(), "Decimal integer overflow error");
+          } else if (base == 16) {
+            error (as_chars(), "Hexadecimal integer overflow error");
+          } else {
+            error (as_chars(), "Octal integer overflow error");
+          }
         }
         return this;
     }

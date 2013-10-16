@@ -1,0 +1,3 @@
+print 0xdeadBEEF
+print 0127345343457457
+print 2874923492463

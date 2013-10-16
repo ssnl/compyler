@@ -27,4 +27,3 @@ print b.y
 
 c = AnotherClass()
 print c.p
-

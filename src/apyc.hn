@@ -164,7 +164,7 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
         ;
 
 stmt_list :
-      ( (statement '\n'!) | control_structure | definition | classdef | '\n'! )+ %expand
+      ( (statement NEWLINE!) | control_structure | definition | classdef | NEWLINE! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
     | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
@@ -177,9 +177,9 @@ statement :
 // CLASS
 
 classdef :
-      "class"! ID "of" '['! type_formals ']'! ':'! '\n'! INDENT! block DEDENT!
+      "class"! ID "of" '['! type_formals ']'! ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(CLASS,$ID,$type_formals,$block); }
-    | "class" ID ":" '\n'! INDENT! block DEDENT!
+    | "class" ID ":" NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(CLASS,$ID,$^(TYPE_FORMALS_LIST),$block); }
     ;
 
@@ -191,9 +191,9 @@ type_formals :
 // DEFINITION
 
 definition :
-      "def"! ID '('! formals ')'! "::"! type ':'! '\n'! INDENT! block DEDENT!
+      "def"! ID '('! formals ')'! "::"! type ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(DEFINITION,$ID,$formals,$type,$block); }
-    | "def"! ID '('! formals ')'! ':'! '\n'! INDENT! block DEDENT!
+    | "def"! ID '('! formals ')'! ':'! NEWLINE! INDENT! block DEDENT!
                       { $$ = $^(DEFINITION,$ID,$formals,$^(EMPTY),$block); }
     ;
 
@@ -205,9 +205,9 @@ formals :
     ;
 
 block :
-      ( (statement '\n'!) | control_structure | definition | '\n'! )+ %expand
+      ( (statement NEWLINE!) | control_structure | definition | NEWLINE! )+ %expand
                       { $$ = $^(BLOCK, $*); }
-    | native_stmt '\n'!
+    | native_stmt NEWLINE!
                       { $$ = $^(BLOCK,$native_stmt); }
     | /*empty*/       { $$ = $^(BLOCK); }
     ;
@@ -231,49 +231,49 @@ control_structure :
     ; 
 
 for_loop :
-      "for"! T=target_list "in"! E=expression ':'! S=basic_statement '\n'!
+      "for"! T=target_list "in"! E=expression ':'! S=basic_statement NEWLINE!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
-    | "for"! T=target_list "in"! E=expression ':'! '\n'! INDENT! S=stmt_list DEDENT!
+    | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }   
-    | "for"! T=target_list "in"! E=expression ':'! '\n'! INDENT! S1=stmt_list DEDENT! S2=else_stmt
+    | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
                     { $$ = $^(FOR,$T,$E,$S1,$S2); }
     ;
 
 while_loop :
-      "while"! E=expression ':'! S=basic_statement '\n'!
+      "while"! E=expression ':'! S=basic_statement NEWLINE!
                     { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }
-    | "while"! E=expression ':'! '\n'! INDENT! S=stmt_list DEDENT!
+    | "while"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
                     { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }   
-    | "while"! E=expression ':'! '\n'! INDENT! S1=stmt_list DEDENT! S2=else_stmt
+    | "while"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
                     { $$ = $^(WHILE,$E,$S1,$S2); }
     ;
 
 if_stmt :
-      "if"! E=expression ':'! S=basic_statement '\n'!
+      "if"! E=expression ':'! S=basic_statement NEWLINE!
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
-    | "if"! E=expression ':'! '\n'! I=INDENT! S1=stmt_list D=DEDENT!
+    | "if"! E=expression ':'! NEWLINE! I=INDENT! S1=stmt_list D=DEDENT!
                     { $$ = $^(IF, $E, $S1, $^(EMPTY)); }
-    | "if"! E=expression ':'! '\n'! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
+    | "if"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
                     { $$ = $^(IF, $E, $S1, $S2); }
     ;
 
 elif_stmts :
       S=else_stmt
                     { $$ = $S; }
-    | "elif"! E=expression ':'! S=basic_statement '\n'!
+    | "elif"! E=expression ':'! S=basic_statement NEWLINE!
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
-    | "elif"! E=expression ':'! S1=basic_statement '\n'! S2=elif_stmts
+    | "elif"! E=expression ':'! S1=basic_statement NEWLINE! S2=elif_stmts
                     { $$ =  $^(IF, $E, $^(STMT_LIST, $S1), $S2); }
-    | "elif"! E=expression ':'! '\n'! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
+    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
                     { $$ =  $^(IF, $E, $S1, $S2); }
-    | "elif"! E=expression ':'! '\n'! INDENT! S1=stmt_list DEDENT!
+    | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT!
                     { $$ =  $^(IF, $E, $S1, $^(EMPTY)); }
     ;
 
 else_stmt :
-      "else"!':'! B=basic_statement '\n'!
+      "else"!':'! B=basic_statement NEWLINE!
                     { $$ =  $^(STMT_LIST, $B); }
-    | "else"!':'! '\n'! INDENT! S=stmt_list DEDENT!
+    | "else"!':'! NEWLINE! INDENT! S=stmt_list DEDENT!
                     { $$ =  $S; }
     ;
 
@@ -497,7 +497,7 @@ pair :
     ;
 
 dict :
-      '{'! ((pair '\n'! ','!) | (pair ','! '\n'!?))* pair? '}'!
+      '{'! ((pair NEWLINE! ','!) | (pair ','! NEWLINE!?))* pair? '}'!
                       { $$ = $^(DICT, $*); }
     ;
 
@@ -531,6 +531,8 @@ str_expr :
 
 ']' :                 { bracket_count--; }
     ;
+
+NEWLINE : '\n' ;
 
 UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "future" |
                   "global" | "import" | "lambda" | "raise" | "try" | "with" | "yield" |
