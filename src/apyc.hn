@@ -514,7 +514,10 @@ str_expr :
 /* Normally, throw away whitespace other than newline. */
 * : (' ' | '\t' | '\r')+ ;
 
+// Throw away comments, excluding newline.
 * : '#' (_ANY - '\n')* ;
+
+
 
 '(' :                 { bracket_count++; }
     ;
@@ -548,7 +551,8 @@ UNUSED_KEYWORD : ("as" | "assert" | "del" | "except" | "exec" | "finally" | "fut
                       { error($TEXT, "syntax error: invalid syntax"); }
     ;
 
-INDENTATION : _BOL ( ' ' | '\t' )* %prefer
+// Matching the leading whitespaces (and tabs) of a line.
+INDENTATION : _BOL ( ' ' | '\t' )*  %prefer
                       { int spaces = count_leading_whitespaces($TEXT, $TEXT_SIZE);
                         if ( indent_stack.empty() ) {
                           if ( spaces > 0 )
@@ -581,6 +585,11 @@ INDENTATION : _BOL ( ' ' | '\t' )* %prefer
                         }
                       }
     ;
+
+// Ignore lines consisting of only whitespaces, tabs ,and/or comments.
+BLANK_LINE : _BOL ( ' ' | '\t' )* '#' (_ANY - '\n')*  %prefer
+                      { YYIGNORE; }
+           ;
 
 NOTIN : "not" (' ')+ "in"
                       { $$ = AST::make_token(ID, 5, "notin", false); }
