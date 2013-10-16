@@ -219,7 +219,7 @@ definition :
     ;
 
 formals :
-      (typed_id|ID) (','! (typed_id|ID))*
+      (typed_id|ID) (','! (typed_id|ID))* ','!?
                       { $$ = $^(FORMALS_LIST,$*); }
     | /*empty*/
                       { $$ = $^(FORMALS_LIST); }
@@ -438,7 +438,11 @@ expression :
 function_call :
       type_id0 '('! expression_list0 ')'!
                       { $$ = $^(CALL,$type_id0,$expression_list0); }
+    | type_id0 '('! expression_list0  ','! ')'!
+                      { $$ = $^(CALL,$type_id0,$expression_list0); }
     | primary_expr '('! expression_list0 ')'!
+                      { $$ = $^(CALL,$primary_expr,$expression_list0); }
+    | primary_expr '('! expression_list0  ','! ')'!
                       { $$ = $^(CALL,$primary_expr,$expression_list0); }
     ;
 
