@@ -517,6 +517,10 @@ str_expr :
 // Throw away comments, excluding newline.
 * : '#' (_ANY - '\n')* ;
 
+// Throw empty lines.
+EMPTY_LINE : _BOL (' ' | '\t' )* '\n' %prefer 
+                      { YYIGNORE; }
+           ;
 
 
 '(' :                 { bracket_count++; }
