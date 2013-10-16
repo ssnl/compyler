@@ -412,7 +412,7 @@ expression_list :
 
 tuple_ext_expr:
       expression
-    | expression ','! (expression ','!)* expression
+    | expression ','! (expression ','!)* expression?
                       { $$ = $^(TUPLE, $*); }
     ;
 
