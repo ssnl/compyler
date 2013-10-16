@@ -336,6 +336,7 @@ assign :
 target_list :
       target
     | target ','!
+                    { $$ = $^(TARGET_LIST, $*); }
     | tlist
     | target (','! target)+
                     { $$ = $^(TARGET_LIST, $*); }
