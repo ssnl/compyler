@@ -47,7 +47,7 @@
 
 %glr-parser
 %expect 1
-%expect-rr 4
+%expect-rr 5
 %debug
 %define error_function error
 
@@ -341,7 +341,15 @@ target_list :
     | target (','! target)+
                     { $$ = $^(TARGET_LIST, $*); }
     | '('! target_list ')'!
-    | '['! target_list ']'!
+    | target_list_br
+    ;
+
+target_list_br :
+      '['! tlist ']'!
+    | '['! target ','!? ']'!
+                    { $$ = $^(TARGET_LIST, $*); }
+    | '['! target (','! target)+ ']'!
+                    { $$ = $^(TARGET_LIST, $*); }
     ;
 
 tlist :

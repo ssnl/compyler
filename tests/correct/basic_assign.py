@@ -10,3 +10,6 @@ print i - j
 print x + y
 x = y = 4
 print x - y
+[a, b] = 3, 2
+print a
+print b
