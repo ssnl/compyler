@@ -153,7 +153,7 @@
 %left "is" ISNOT
 %left '<' '>' "<=" ">=" "==" "!="
 %left '+' '-'
-%left '%' '*' '/'
+%left '%' '*' '/' "//"
 %left "&&" "||"
 %right EXPO
 
@@ -474,7 +474,7 @@ lcompare_expr :
 
 arith_expr :
       unary_expr
-    | arith_expr ('+'|'-'|'*'|'/'|'%') arith_expr %expand
+    | arith_expr ('+'|'-'|'*'|'/'|"//"|'%') arith_expr %expand
                       { $$ = make_binop($*); }
     ;
 
