@@ -351,6 +351,8 @@ type :
     | type_var
     | '('! type_list0 ')'! "->"! type
                     { $$ = $^(FUNCT_TYPE, $type, $type_list0); }
+    | '('! ')'! "->"! type
+                    { $$ = $^(FUNCT_TYPE, $type, $^(TYPE_LIST)); }
     ;
 
 type_id0 :
