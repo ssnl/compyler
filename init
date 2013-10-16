@@ -28,7 +28,7 @@ function run {
 function runpy {
   make compile
   ./apyc --phase=1 -o out1 $1
-  pyunparse -o out2 out1
+  pyunparse --remove-extensions -o out2 out1
   python out2
   rm out1
   rm out2

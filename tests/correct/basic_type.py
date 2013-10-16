@@ -20,3 +20,6 @@ print m
 
 n::dict of $sometype = 5000
 print n
+
+print g[2:]
+
