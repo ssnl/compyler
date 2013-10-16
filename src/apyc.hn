@@ -249,27 +249,34 @@ control_structure :
     | if_stmt
     ;
 
+semi_stmt_list :
+      statement (';'! statement)* ';'!? %expand
+                      { $$ = $^(STMT_LIST, $*); }
+    ;
+
 for_loop :
-      "for"! T=target_list "in"! E=expression ':'! S=basic_statement NEWLINE!
+      "for"! T=target_list "in"! E=expression ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
     | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
-                    { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }   
+                    { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
     | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
                     { $$ = $^(FOR,$T,$E,$S1,$S2); }
     ;
 
 while_loop :
-      "while"! E=expression ':'! S=basic_statement NEWLINE!
+      "while"! E=expression ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }
     | "while"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
-                    { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }   
+                    { $$ = $^(WHILE,$E,$S,$^(EMPTY)); }
     | "while"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
                     { $$ = $^(WHILE,$E,$S1,$S2); }
     ;
 
 if_stmt :
-      "if"! E=expression ':'! S=basic_statement NEWLINE!
+      "if"! E=expression ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
+    | "if"! E=expression ':'! S=semi_stmt_list NEWLINE! S1 = elif_stmts
+                    { $$ = $^(IF, $E, $S, $S1); }
     | "if"! E=expression ':'! NEWLINE! I=INDENT! S1=stmt_list D=DEDENT!
                     { $$ = $^(IF, $E, $S1, $^(EMPTY)); }
     | "if"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
@@ -279,9 +286,9 @@ if_stmt :
 elif_stmts :
       S=else_stmt
                     { $$ = $S; }
-    | "elif"! E=expression ':'! S=basic_statement NEWLINE!
+    | "elif"! E=expression ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(IF, $E, $S, $^(EMPTY)); }
-    | "elif"! E=expression ':'! S1=basic_statement NEWLINE! S2=elif_stmts
+    | "elif"! E=expression ':'! S1=semi_stmt_list NEWLINE! S2=elif_stmts
                     { $$ =  $^(IF, $E, $^(STMT_LIST, $S1), $S2); }
     | "elif"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=elif_stmts
                     { $$ =  $^(IF, $E, $S1, $S2); }
@@ -290,7 +297,7 @@ elif_stmts :
     ;
 
 else_stmt :
-      "else"!':'! B=basic_statement NEWLINE!
+      "else"!':'! B=semi_stmt_list NEWLINE!
                     { $$ =  $^(STMT_LIST, $B); }
     | "else"!':'! NEWLINE! INDENT! S=stmt_list DEDENT!
                     { $$ =  $S; }
@@ -358,7 +365,7 @@ type_id :
     | ID
                     { $$ = $^(TYPE, $ID, $^(TYPE_LIST)); }
                       //$$ = make_type(TYPE, $*, 1);
-                      //$$ = $^(TYPE, make_id(ID), $^(TYPE_LIST)); 
+                      //$$ = $^(TYPE, make_id(ID), $^(TYPE_LIST));
     ;
 
 type_var :
@@ -455,7 +462,7 @@ compare_expr :
                      { $$ = make_expr(COMPARE, $*); }
     ;
 
-lcompare_expr : 
+lcompare_expr :
      arith_expr
     | lcompare_expr ('<'|'>'|"<="|">="|"=="|"!="|"in"|"is") arith_expr %expand
                     { $$ = make_expr(LCOMPARE, $*); }
@@ -535,6 +542,9 @@ str_expr :
 
 // Throw away comments, excluding newline.
 * : '#' (_ANY - '\n')* ;
+
+// Throw away escaped spaces
+* : '\\' '\r'? '\n' (' ' | '\t')* ;
 
 // Throw away empty lines.
 * : _BOL (' ' | '\t' )*  '\r'? '\n'  %prefer ;
