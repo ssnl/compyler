@@ -46,6 +46,7 @@
 %}
 
 %glr-parser
+%expect 1
 %expect-rr 4
 %debug
 %define error_function error
@@ -442,7 +443,7 @@ function_call :
                       { $$ = $^(CALL,$type_id0,$expression_list0); }
     | primary_expr '('! expression_list0 ')'!
                       { $$ = $^(CALL,$primary_expr,$expression_list0); }
-    | primary_expr '('! expression_list0  ','! ')'!
+    | primary_expr '('! expression_list0 ','! ')'!
                       { $$ = $^(CALL,$primary_expr,$expression_list0); }
     ;
 
