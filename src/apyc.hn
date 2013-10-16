@@ -164,7 +164,7 @@ program : stmt_list   { theTree = $^(MODULE, $*); $$ = NULL; }
         ;
 
 stmt_list :
-      ( (statement (NEWLINE!|';'!)) | control_structure | definition | classdef | NEWLINE! )+ %expand
+      ( (statement (NEWLINE!|';'!)) | control_structure | definition | classdef | "pass"! | NEWLINE! )+ %expand
                       { $$ = $^(STMT_LIST, $*); }
     | /*empty*/       { $$ = $^(STMT_LIST); }
     ;
@@ -205,7 +205,7 @@ formals :
     ;
 
 block :
-      ( (statement NEWLINE!) | control_structure | definition | NEWLINE! )+ %expand
+      ( (statement NEWLINE!) | control_structure | definition | NEWLINE! | "pass"!)+ %expand
                       { $$ = $^(BLOCK, $*); }
     | native_stmt NEWLINE!
                       { $$ = $^(BLOCK,$native_stmt); }
