@@ -5,6 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <cstdlib>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -72,8 +73,30 @@ private:
      *  construction of a node or token.] */
     Int_Token* post_make () {
         // HELP ME PLEASE IT HURTS...
+        // The maximun int literal can be is 2^30
         int max = 1 << 30;
-        value = atol(string(as_chars(), text_size()).c_str());
+        
+        /*char* text = string(as_chars(), text_size())
+        int base;
+        // Check if it is decimal, octal, or hex
+        if (text_size() > 1 && text[0] == '0') {
+            if (text_size() > 2 && (text[1] == 'x' || text[1] == 'X') ) {
+                // prefix "0x" or "0X", it is hex
+                base = 16;
+            } else {
+                // prefix "0", it is octal
+                base = 8;
+            }
+        } else {
+            // It is decimal
+            base = 10;
+        }*/
+
+        // Converting string to numerial value based on the prefix
+        // Prefix "0" parse to octal
+        // Prefix "0x" or "0X" parse to hex
+        // Otherwise parse to decimal
+        value = strtol(string(as_chars(), text_size()).c_str(), NULL, 0);
         if (value > max) {
             error (as_chars(), "Integer overflow error");
         }
