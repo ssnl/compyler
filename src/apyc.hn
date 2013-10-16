@@ -46,7 +46,7 @@
 %}
 
 %glr-parser
-%expect-rr 3
+%expect-rr 4
 %debug
 %define error_function error
 
@@ -255,11 +255,11 @@ semi_stmt_list :
     ;
 
 for_loop :
-      "for"! T=target_list "in"! E=expression ':'! S=semi_stmt_list NEWLINE!
+      "for"! T=target_list "in"! E=tuple_ext_expr ':'! S=semi_stmt_list NEWLINE!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
-    | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
+    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S=stmt_list DEDENT!
                     { $$ = $^(FOR,$T,$E,$S,$^(EMPTY)); }
-    | "for"! T=target_list "in"! E=expression ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
+    | "for"! T=target_list "in"! E=tuple_ext_expr ':'! NEWLINE! INDENT! S1=stmt_list DEDENT! S2=else_stmt
                     { $$ = $^(FOR,$T,$E,$S1,$S2); }
     ;
 
@@ -328,10 +328,12 @@ assign :
 
 target_list :
       target
+    | target ','!
     | tlist
     | target (','! target)+
                     { $$ = $^(TARGET_LIST, $*); }
     | '('! target_list ')'!
+    | '['! target_list ']'!
     ;
 
 tlist :
