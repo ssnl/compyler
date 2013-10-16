@@ -25,3 +25,6 @@ elif "yes":
  print "yes"
 elif "":
 	print "no"
+
+if (True):
+  print "no"
