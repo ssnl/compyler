@@ -1,0 +1,53 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Add local bin
+export PATH=$DIR/bin/:$PATH
+
+# Add functions to easily compile
+function compile {
+  if [ -z $2 ]
+  then
+    g++ -g $1
+  else
+    g++ -g -o $2 $1
+  fi
+}
+
+function run {
+  make compile
+  ./apyc --phase=1 -o out $1
+  cat out
+  echo
+  rm out
+}
+
+function runpy {
+  make compile
+  ./apyc --phase=1 -o out1 $1
+  pyunparse --remove-extensions -o out2 out1
+  python out2
+  rm out1
+  rm out2
+}
+
+function save {
+  make compile
+  ./apyc --phase=1 -o out $1
+  echo Saved to out.
+}
+
+function savepy {
+  make compile
+  ./apyc --phase=1 -o out1 $1
+  pyunparse -o out out1
+  rm out1
+  echo Saved to out.
+}
+
+function test {
+  cd tests
+  make
+  cd $DIR
+}
