@@ -5,7 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
-#include <cerrno>
+#include <cstdlib>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -14,13 +14,13 @@ using namespace std;
 
 /** Default print for tokens. */
 void
-AST_Token::_print (ostream& out, int indent)
+AST_Token::print (ostream& out, int indent)
 {
     out << "(<Token>)";
 }
 
 /** Default implementation. */
-gcstring
+string
 AST_Token::string_text () const
 {
     throw logic_error ("unimplemented operation: string_text");
@@ -28,124 +28,103 @@ AST_Token::string_text () const
 
 /** Default implementation. */
 void
-AST_Token::append_text(const gcstring& s)
+AST_Token::append_text(const string& s)
 {
     throw logic_error ("unimplemented operation: append_text");
 }
 
-
-/** The supertype of tokens with a type. */
-class Typed_Token : public AST_Token {
-public:
-
-    Type_Ptr getType () {
-        if (_type == NULL)
-            _type = computeType ();
-        return _type;
+/** Represents an type vairable (ie. $MyType, from x::$MyType) */
+class TypeVar_Token : public AST_Token {
+private:
+    void print (ostream& out, int indent) {
+        out << "(type_var " << lineNumber() << " "
+            << string(as_chars(), text_size()).c_str() << ")";
     }
 
-protected:
+    TOKEN_CONSTRUCTORS(TypeVar_Token, AST_Token);
+};
 
-    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities, 
-                          bool& errors) {
-        if (_type == NULL) {
-            _type = computeType ();
-        }
-        return this;
+TOKEN_FACTORY(TypeVar_Token, TYPE_VAR);
+
+/** Represents an ID. */
+class ID_Token : public AST_Token {
+private:
+    void print (ostream& out, int indent) {
+        out << "(id " << lineNumber() << " "
+            << string(as_chars(), text_size()).c_str() << ")";
     }
 
-    /** Computes my type, which is then cached by getType(). */
-    virtual Type_Ptr computeType () {
-        return NULL;
-    }
+    TOKEN_CONSTRUCTORS(ID_Token, AST_Token);
+};
 
-    Type_Ptr _type;
-
-    TOKEN_BASE_CONSTRUCTORS (Typed_Token, AST_Token);
-
-};    
+TOKEN_FACTORY(ID_Token, ID);
 
 /** Represents an integer literal. */
-class Int_Token : public Typed_Token {
-protected:
+class Int_Token : public AST_Token {
+private:
 
-    void _print (ostream& out, int indent) {
-	out << "(int_literal " << lineNumber () << " " << value
-	    << ")";
+    void print (ostream& out, int indent) {
+        out << "(int_literal " << lineNumber () << " " << value << ")";
     }
 
-    TOKEN_CONSTRUCTORS(Int_Token, Typed_Token);
-
+    /** Initialize value from the text of the lexeme, checking that
+     *  the literal is in range.  [The post_make method may be
+     *  overridden to provide additional processing during the
+     *  construction of a node or token.] */
     Int_Token* post_make () {
-        gcstring text = as_string ();
-        errno = 0;
-        value = strtol (text.c_str (), (char**) NULL, 0);
-        if (errno != 0 || value > (1L<<30)) {
-            error (loc (), "literal value out of range: %s",
-                   text.c_str ());
-            value = 0;
+        // The maximun int literal can be is 2^30
+        int max = 1 << 30;
+
+        const char* text = string(as_chars(), text_size()).c_str();
+        int base;
+        // Check if it is decimal, octal, or hex
+        if (text_size() > 1 && text[0] == '0') {
+            if (text_size() > 2 && (text[1] == 'x' || text[1] == 'X') ) {
+                // prefix "0x" or "0X", it is hex
+                base = 16;
+            } else {
+                // prefix "0", it is octal
+                base = 8;
+            }
+        } else {
+            // It is decimal
+            base = 10;
+        }
+
+        // Converting string to numerial value based on the prefix
+        // Prefix "0" parse to octal
+        // Prefix "0x" or "0X" parse to hex
+        // Otherwise parse to decimal
+        value = strtol(string(as_chars(), text_size()).c_str(), NULL, base);
+        if (value > max) {
+          if (base == 10) {
+            error (as_chars(), "Decimal integer overflow error");
+          } else if (base == 16) {
+            error (as_chars(), "Hexadecimal integer overflow error");
+          } else {
+            error (as_chars(), "Octal integer overflow error");
+          }
         }
         return this;
-    }
-
-    Type_Ptr computeType () {
-        return intDecl->asType ();
     }
 
     long value;
 
+    TOKEN_CONSTRUCTORS(Int_Token, AST_Token);
 };
 
 TOKEN_FACTORY(Int_Token, INT_LITERAL);
 
-/** Represents an identifier. */
-class Id_Token : public Typed_Token {
-protected:
-
-    void _print (ostream& out, int indent) {
-	out << "(id " << lineNumber () << " " << as_string ();
-        if (getDecl () != NULL)
-            out << " " << getDecl ()->getIndex ();
-        out << ")";
-    }
-
-    TOKEN_CONSTRUCTORS (Id_Token, Typed_Token);
-
-    int numDecls () {
-        return _me.size ();
-    }
-
-    Decl* getDecl (int k = 0) {
-        if (k >= (int) _me.size ())
-            return NULL;
-        else
-            return _me[k];
-    }
-
-    void addDecl (Decl* decl) {
-        _me.push_back (decl);
-    }
-
-    void removeDecl (int k) {
-        assert (k >= 0 && k < (int) _me.size ());
-        _me.erase (_me.begin () + k);
-    }
-
-private:
-
-    Decl_Vector _me;
-
-};
-
-TOKEN_FACTORY(Id_Token, ID);
 
 /** Represents a string. */
-class String_Token : public Typed_Token {
+class String_Token : public AST_Token {
 private:
-    
+
+    /** Set literal_text from the text of this lexeme, converting
+     *  escape sequences as necessary. */
     String_Token* post_make () {
         if (syntax () == RAWSTRING) {
-            literal_text = gcstring (as_chars (), text_size ());
+            literal_text = string (as_chars (), text_size ());
         } else {
             int v;
             const char* s = as_chars ();
@@ -169,8 +148,8 @@ private:
                     case '\'': v = '\''; break;
                     case '"': case '\\': v = s[i-1]; break;
                     case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': 
-                    { 
+                    case '5': case '6': case '7':
+                    {
                         v = s[i-1] - '0';
                         for (int j = 0; j < 2; j += 1) {
                             if ('0' > s[i] || s[i] > '7')
@@ -181,7 +160,7 @@ private:
                         break;
                     }
                     case 'x': {
-                        if (i+2 > text_size () || 
+                        if (i+2 > text_size () ||
                             !isxdigit (s[i]) || !isxdigit (s[i+1])) {
                             error (s, "bad hexadecimal escape sequence");
                             break;
@@ -193,13 +172,13 @@ private:
                     }
                 } else
                     v = s[i-1];
-                literal_text += (char) v;        
+                literal_text += (char) v;
             }
         }
         return this;
     }
 
-    void _print (ostream& out, int indent) {
+    void print (ostream& out, int indent) {
         out << "(string_literal " << lineNumber () << " \"";
         for (size_t i = 0; i < literal_text.size (); i += 1) {
             char c = literal_text[i];
@@ -212,22 +191,18 @@ private:
         out << "\")";
     }
 
-    gcstring string_text () const {
+    string string_text () const {
         return literal_text;
     }
 
-    void append_text(const gcstring& s) {
+    void append_text(const string& s) {
         literal_text += s;
     }
 
-    Type_Ptr computeType () {
-        return strDecl->asType ();
-    }
-        
-    TOKEN_CONSTRUCTORS(String_Token, Typed_Token);
+    TOKEN_CONSTRUCTORS(String_Token, AST_Token);
     static const String_Token raw_factory;
 
-    gcstring literal_text;
+    string literal_text;
 };
 
 TOKEN_FACTORY(String_Token, STRING);
@@ -235,7 +210,6 @@ TOKEN_FACTORY(String_Token, STRING);
 /** A dummy token whose creation registers String_Token as the class
  *  to use for RAWSTRING tokens produced by the lexer.  (The
  *  TOKEN_FACTORY macro above registers String_Token as the class for
- *  non-raw STRING tokens as well.)
- */ 
+ *  non-raw the STRING tokens as well.)
+ *  */
 const String_Token String_Token::raw_factory (RAWSTRING);
-

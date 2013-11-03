@@ -11,32 +11,37 @@
 
 using namespace std;
 
-/*****   MODULE    *****/
-
-/** A module, representing a complete source file. */
-class Module_AST : public AST_Tree {
-public:
-
-    int lineNumber () {
-        return 0;
-    }
-
-    NODE_CONSTRUCTORS (Module_AST, AST_Tree);
-
-};
-
-NODE_FACTORY (Module_AST, MODULE);
-
-
 /*****   PRINTLN   *****/
 
 /** A print statement without trailing comma. */
 class Println_AST : public AST_Tree {
-public:
+protected:
 
     NODE_CONSTRUCTORS (Println_AST, AST_Tree);
+
+    const char* externalName () {
+	return "println";
+    }
 
 };
 
 NODE_FACTORY (Println_AST, PRINTLN);
 
+/***** STMT_LIST *****/
+
+/** A list of statements. */
+class StmtList_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (StmtList_AST, AST_Tree);
+
+    AST_Ptr doOuterSemantics () {
+        for_each_child_var (c, this) {
+            c = c->doOuterSemantics ();
+        } end_for;
+        return this;
+    }
+
+};
+
+NODE_FACTORY (StmtList_AST, STMT_LIST);

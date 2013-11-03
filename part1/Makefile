@@ -1,4 +1,4 @@
-# Top-level Makefile for Project 2.
+# Top-level Makefile for Project 1.
 # 
 # Targets:
 #   gmake [ default ]        Compiles sources in src directory
@@ -14,7 +14,7 @@
 
 APYC = $(shell echo `pwd`/apyc)
 
-.PHONY: default compile check check1 check2 clean really-clean depend
+.PHONY: default compile check clean really-clean depend
 
 default: compile
 
@@ -23,12 +23,6 @@ compile:
 
 check:
 	$(MAKE) -C tests APYC=$(APYC) check
-
-check1:
-	$(MAKE) -C tests APYC=$(APYC) check1
-
-check2:
-	$(MAKE) -C tests APYC=$(APYC) check2
 
 clean:
 	$(RM) *~ apyc
@@ -42,4 +36,3 @@ really-clean: clean
 
 depend:
 	$(MAKE) -C src depend
-

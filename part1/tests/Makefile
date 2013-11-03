@@ -2,17 +2,18 @@
 
 APYC = ../apyc
 
-check: check1 check2
+GOODTEST = python test-proj1 
 
-check%:
+BADTEST = python test-proj1 --errors
+
+check: 
 	$(MAKE) -C .. compile
 	@echo Testing correct programs...
 	rm -f errflag
-	-if [ -f runtime$*.py ]; then run="--runtime=runtime$*.py"; fi; \
-	python test-proj$* --compiler=$(APYC) $$run correct$*/*.py || touch errflag
+	-$(GOODTEST) --compiler=$(APYC) correct/*.py || touch errflag
 	@echo
 	@echo Testing erroneous programs...
-	-python test-proj$* --errors --compiler=$(APYC) error$*/*.py || touch errflag
+	-$(BADTEST) --compiler=$(APYC) error/*.py || touch errflag
 	@if test -f errflag; then code=1; else code=0; fi; \
         rm -f errflag; exit $$code
 

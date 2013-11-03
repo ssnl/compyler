@@ -1,0 +1,7 @@
+apyc.o: apyc.cc apyc.h
+ast.o: ast.cc apyc.h ast.h horn-common.h apyc-parser.hh
+tokens.o: tokens.cc apyc.h ast.h horn-common.h apyc-parser.hh
+stmts.o: stmts.cc apyc.h ast.h horn-common.h apyc-parser.hh
+exprs.o: exprs.cc apyc.h ast.h horn-common.h apyc-parser.hh
+apyc-parser.o: apyc-parser.cc horn-parse-lex.cc horn-common.h apyc.h \
+  ast.h apyc-lexer.cc

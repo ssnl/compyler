@@ -1,5 +1,5 @@
-THE FILES HERE ARE INTENDED TO BE HELPFUL, NOT TO LIMIT WHAT YOU CAN DO.
-***IGNORE THEM ENTIRELY, IF YOU PREFER!***  However, as indicated in the handout,
+The files here are intended to be helpful, NOT to limit what you can do.
+>>Ignore them entirely, if you prefer!<<  However, as indicated in the handout,
 whatever you turn in must satisfy the following criteria:
 
 1. 'gmake' must compile your program from scratch, producing an executable
@@ -9,25 +9,19 @@ whatever you turn in must satisfy the following criteria:
    PROG.
 4. The command
       ./apyc --phase=1 FOO1.py
-   must produce AST file FOO1.ast.
+   should produce AST file FOO1.ast.
 5. The command
       ./apyc --phase=1 -o BAR FOO1.py
-   must produce AST file BAR.
-6. Your program must exit with code 1 if there are any errors in any of the
+   will produce AST file BAR.
+6. Likewise, --phase=2 produces decorated, semantically analyzed trees in 
+   FOO1.dast and BAR.
+7. Your program must exit with code 1 if there are any errors in any of the
    files, or if there are other errors (such as missing, unreadable, 
    or unwritable files).  It must produce a proper error message for syntax
    errors.
-7. Your program must exit with code 0 otherwise.
-8. We have also added a -dp option, which turns on parser debugging
+8. Your program must exit with code 0 otherwise.
+9. We have also added a -dp option, which turns on parser debugging
    output when present.
-
-For the purposes of this first project assignment, the suggested
-skeleton is admittedly object-oriented overkill.  It isn't REALLY
-necessary to create a full-fledged AST with different node types for
-different types of expressions and statements to fulfill the specs of
-this project---which is just to print an external version of the AST.
-However, this structure will be useful in later phases, when the
-differences between types of nodes become more important.
 
 Don't let anything in your finished program remain mysterious to you.
 Try to understand everything that's here, and if you can't, then feel
@@ -37,8 +31,8 @@ We judge your program by how it runs ON THE INSTRUCTIONAL SYSTEMS.  It's
 no good protesting that it works at home; your "customer" is not running on 
 your home setup!
 
-Be sure to submit your program properly (by copying to your teams (NOT your
-personal) tags directory as proj1-N for integer numeral N.  I further suggest
+Be sure to submit your program properly (by copying to your team's (NOT your
+personal) tags directory as proj2-N for integer numeral N.  I further suggest
 that you check out the tag directories that you submit into new working
 directories and make sure they compile and run properly (so that you can 
 see if you are accidentally missing files).
@@ -58,43 +52,77 @@ This keeps the Makefile informed of what depends on what.
 
 MANIFEST:
 
-   README:     This file.
+  Makefile:   General directions for building and testing the program.
+  README:     This file.
+  staff-version: A tag file used to identify the version of the staff
+                 skeleton that was last merged into the source
+                 files.
 
-   Makefile:   General directions for building and testing the program and
-               cleaning up.  This mostly delegates to subdirectories src and
-               tests.
-
-   staff-version: A tag file used to identify the version of the staff
-                  skeleton that was last merged into the source
-                  files.
-
-   Directory src/: 
-        apyc.cc:    Contains the main program and some general utilities.
-        apyc.h:     Some high-level interfaces between modules.
-        ast.h:      Base classes for AST nodes.
-        ast.cc:     Method definitions for base classes and
-                    definitions for a few widely used AST subtypes.
+  Directory src/
+        Makefile    General instructions for building and testing the program.
+	apyc.cc:    Contains the main program and some general utilities.
+	apyc.h:     Some high-level interfaces between modules.
+	ast.h:      Base classes for AST nodes.
+	ast.cc:     Method definitions for base classes and
+     	            definitions for a few widely used AST subtypes.
         exprs.cc:   AST subclass definitions for expression-related types.
-        stmts.cc:   AST subclass definitions for statement-related types.
-        tokens.cc:  Definitions of token (leaf) AST subclasses.
+	stmts.cc:   AST subclass definitions for statement-related types.
+	tokens.cc:  Definitions of token (leaf) AST subclasses.
+        types.cc:   Definitions of nodes representing types.
+        environ.cc: Definitions for environs (symbol tables).
+        decls.cc:   Definitions related to declarations.
+        modules.cc: Definitions related to modules.
 
-        apyc.hn:    The parser/lexer grammar file.
+	apyc.hn:    The parser/lexer grammar file.
 
-        Makefile:   General directions for building the program.
 
-    Directory tests/:
-        test-proj1:  A testing script for project 1.  It
-                     runs the compiler, unparses the resulting AST,
-                     runs Python on the result, and checks the output.
+  tests/
+      tests/test-proj1:  A testing script for project 1.  It
+	       runs the compiler, unparses the resulting AST,
+	       runs Python on the result, and checks the output.
+      tests/test-proj2:  A testing script for project 2.  It
+	       runs the compiler, unparses the resulting AST,
+	       runs Python on the result, and checks the output.
 
-        Makefile:   General directions for testing the program.
+      tests/correct2/     Tests that are supposed to be correct programs
+	       for phase 2:
+	  trivial.py, trivial.in, trivial.std:
+	       A sample program, input file, and expected output file.
 
-        Directory correct/:  Tests that are supposed to be correct programs.
+      tests/error2/       Tests that are supposed to cause errors for
+	       phase 2.
+	  triviallybad.py:
+	       A sample erroneous program.
 
-                trivial.py, trivial.in, trivial.std:
-                     A sample program, input file, and expected output file.
 
-        Directory error/:    Tests that are supposed to cause errors.
+MERGING UPDATES FROM A SKELETON
+-------------------------------
 
-                triviallybad.py:
-                     A sample erroneous program.
+When new versions of the skeleton come out (it's bound to happen), you
+can merge in changes to the skeleton with changes you've made by using
+the following procedure:
+
+1. Commit the current version of your project (svn commit).  Use svn
+   status to make sure everything you think is checked in really is.
+
+2. Look at the file staff-version in your directory, which should say
+   something like "Skeleton version: proj2-N." (where N is some
+   number).  This represents the last version of the skeleton you
+   merged in our checked out. 
+
+3. In your project 2 directory (NOT a subdirectory!) merge changes
+   with the command (on the instructional servers)
+
+       svn merge $STAFFREPOS/tags/proj2-N $STAFFREPOS/proj2
+
+4. You may have conflicts (places where both the skeleton and your
+   version have changed in conflicting ways).  SVN will prompt you to
+   resolve these (in the conflicted file, they will be marked with
+   >>>>> and <<<<).  You can do it later (postponing resolution until
+   after the merge), editing the file to what you want, and then use 
+   'svn resolve --accept working FILE' (where FILE is a conflicted
+   file) to tell SVN you've fixed the conflict (svn status will tell
+   you about remaining conflicted files).
+
+5. When any conflicts are removed, svn commit the changes caused by the
+   merge.

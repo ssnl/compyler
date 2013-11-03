@@ -1,0 +1,6621 @@
+Terminals unused in grammar
+
+   "@println"
+   EMPTY
+   "@expr_list"
+   "@module"
+   "@binop"
+   "@unop"
+   "@stmt_list"
+   "@print"
+   "@return"
+   "@break"
+   "@continue"
+   "@native"
+   "@if"
+   "@for"
+   "@while"
+   "@block"
+   "@assign"
+   "@target_list"
+   "@attributeref"
+   "@subscription"
+   "@slicing"
+   "@type"
+   "@typed_id"
+   "@type_list"
+   "@type_formals_list"
+   "@formals_list"
+   "@function_type"
+   "@def"
+   "@class"
+   "@compare"
+   "@left_compare"
+   "@and"
+   "@or"
+   "@if_expr"
+   "@tuple"
+   "@list_display"
+   "@dict_display"
+   "@pair"
+   "@call"
+   "&&"
+   "||"
+   BADSTRING
+   BLANK_LINE
+   END_OF_FILE
+   INDENTATION
+   UNUSED_KEYWORD
+
+
+State 51 conflicts: 4 reduce/reduce
+State 198 conflicts: 1 reduce/reduce
+State 227 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: stmt_list
+
+    2 stmt_list: __13
+    3          | %empty
+
+    4 stmt_list0: __15
+    5           | %empty
+
+    6 statement: basic_statement
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" NEWLINE INDENT block DEDENT
+    8         | "class" ID ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" "[" type_formals "]" ":" semi_block NEWLINE
+   10         | "class" ID ":" semi_block NEWLINE
+
+   11 type_formals: type_var __28
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" ID "(" formals ")" ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals ")" "::" type ":" semi_block NEWLINE
+   15           | "def" ID "(" formals ")" ":" semi_block NEWLINE
+   16           | "def" ID "(" formals ")" ":" native_stmt __34 NEWLINE
+   17           | "def" ID "(" formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" ID "(" formals ")" "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+   20 formals: __8 __16 __18
+   21        | %empty
+
+   22 block: __14
+   23      | %empty
+
+   24 semi_block: statement __26 __19
+
+   25 basic_statement: print_stmt
+   26                | assign
+   27                | expression
+   28                | "pass"
+   29                | "return" expression0
+   30                | "break"
+   31                | "continue"
+
+   32 control_structure: for_loop
+   33                  | while_loop
+   34                  | if_stmt
+
+   35 semi_stmt_list: statement __26 __19
+
+   36 for_loop: "for" target_list "in" tuple_ext_expr ":" semi_stmt_list NEWLINE
+   37         | "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+   39 while_loop: "while" expression ":" semi_stmt_list NEWLINE
+   40           | "while" expression ":" NEWLINE INDENT stmt_list0 DEDENT
+   41           | "while" expression ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+   42 if_stmt: "if" expression ":" semi_stmt_list NEWLINE
+   43        | "if" expression ":" semi_stmt_list NEWLINE elif_stmts
+   44        | "if" expression ":" NEWLINE INDENT stmt_list0 DEDENT
+   45        | "if" expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+
+   46 elif_stmts: else_stmt
+   47           | "elif" expression ":" semi_stmt_list NEWLINE
+   48           | "elif" expression ":" semi_stmt_list NEWLINE elif_stmts
+   49           | "elif" expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+   50           | "elif" expression ":" NEWLINE INDENT stmt_list0 DEDENT
+
+   51 else_stmt: "else" ":" semi_stmt_list NEWLINE
+   52          | "else" ":" NEWLINE INDENT stmt_list0 DEDENT
+
+   53 native_stmt: "native" STRING
+
+   54 print_stmt: "print" ">>" expression
+   55           | "print" ">>" expression "," expression_list
+   56           | "print" ">>" expression "," plist
+   57           | "print" expression_list0
+   58           | "print" plist
+
+   59 assign: target_list "=" right_side
+
+   60 target_list: target
+   61            | target ","
+   62            | tlist
+   63            | target __9
+   64            | "(" target_list ")"
+   65            | target_list_br
+
+   66 target_list_br: "[" tlist "]"
+   67               | "[" target __32 "]"
+   68               | "[" target __10 "]"
+
+   69 tlist: target __9 ","
+
+   70 typed_id: ID "::" type
+
+   71 type: type_id
+   72     | type_var
+   73     | "(" type_list0 ")" "->" type
+   74     | "(" ")" "->" type
+
+   75 type_id0: ID "of" "[" type_list0 "]"
+   76         | ID "of" type_list1
+
+   77 type_id: type_id0
+   78        | ID
+
+   79 type_var: "@type_var"
+
+   80 type_list0: type __27
+
+   81 type_list1: type
+
+   82 target: simple_target
+   83       | typed_id
+
+   84 right_side: tuple_ext_expr
+   85           | assign
+
+   86 plist: expression __25 ","
+
+   87 expression_list0: expression_list
+   88                 | %empty
+
+   89 expression_list: expression __25
+
+   90 tuple_ext_expr: expression
+   91               | expression "," __30 __20
+
+   92 expression0: expression
+   93            | %empty
+
+   94 expression: root_expr
+
+   95 function_call: type_id0 "(" expression_list0 ")"
+   96              | type_id0 "(" expression_list0 "," ")"
+   97              | primary_expr "(" expression_list0 ")"
+   98              | primary_expr "(" expression_list0 "," ")"
+
+   99 root_expr: if_expr
+  100          | boolean_expr
+
+  101 if_expr: boolean_expr "if" root_expr "else" root_expr
+
+  102 boolean_expr: arith_expr
+  103             | compare_expr
+  104             | boolean_expr "and" boolean_expr
+  105             | boolean_expr "or" boolean_expr
+
+  106 compare_expr: lcompare_expr "<" arith_expr
+  107             | lcompare_expr ">" arith_expr
+  108             | lcompare_expr "<=" arith_expr
+  109             | lcompare_expr ">=" arith_expr
+  110             | lcompare_expr "==" arith_expr
+  111             | lcompare_expr "!=" arith_expr
+  112             | lcompare_expr "in" arith_expr
+  113             | lcompare_expr "is" arith_expr
+  114             | lcompare_expr ISNOT arith_expr
+  115             | lcompare_expr NOTIN arith_expr
+
+  116 lcompare_expr: arith_expr
+  117              | lcompare_expr "<" arith_expr
+  118              | lcompare_expr ">" arith_expr
+  119              | lcompare_expr "<=" arith_expr
+  120              | lcompare_expr ">=" arith_expr
+  121              | lcompare_expr "==" arith_expr
+  122              | lcompare_expr "!=" arith_expr
+  123              | lcompare_expr "in" arith_expr
+  124              | lcompare_expr "is" arith_expr
+  125              | lcompare_expr ISNOT arith_expr
+  126              | lcompare_expr NOTIN arith_expr
+
+  127 arith_expr: unary_expr
+  128           | arith_expr "+" arith_expr
+  129           | arith_expr "-" arith_expr
+  130           | arith_expr "*" arith_expr
+  131           | arith_expr "/" arith_expr
+  132           | arith_expr "//" arith_expr
+  133           | arith_expr "%" arith_expr
+
+  134 unary_expr: expo_expr
+  135           | "+" unary_expr
+  136           | "-" unary_expr
+  137           | "not" unary_expr
+
+  138 expo_expr: primary_expr
+  139          | expo_expr "**" expo_expr
+
+  140 primary_expr: INT_LITERAL
+  141             | simple_target
+  142             | str_expr
+  143             | dict
+  144             | "(" ")"
+  145             | "[" "]"
+  146             | "(" expression "," __33 __22 ")"
+  147             | "[" expression __31 __21 "]"
+  148             | "(" root_expr ")"
+  149             | function_call
+
+  150 simple_target: ID
+  151              | primary_expr "." ID
+  152              | primary_expr "[" tuple_ext_expr "]"
+  153              | primary_expr "[" expression0 ":" expression0 "]"
+
+  154 pair: expression ":" expression
+
+  155 dict: "{" __24 __17 "}"
+
+  156 str_expr: STRING
+  157         | RAWSTRING
+  158         | str_expr RAWSTRING
+  159         | str_expr STRING
+
+  160 __0: pair NEWLINE ","
+  161    | pair "," __23
+
+  162 __1: statement __11
+  163    | control_structure
+  164    | definition
+  165    | classdef
+  166    | NEWLINE
+
+  167 __2: statement __11
+  168    | control_structure
+  169    | definition
+  170    | NEWLINE
+
+  171 __3: statement __11
+  172    | control_structure
+  173    | NEWLINE
+
+  174 __4: statement __12
+  175    | control_structure
+  176    | definition
+  177    | classdef
+  178    | NEWLINE
+
+  179 __5: statement __12
+  180    | control_structure
+  181    | definition
+  182    | NEWLINE
+
+  183 __6: statement __12
+  184    | control_structure
+  185    | NEWLINE
+
+  186 __7: typed_id
+  187    | ID
+
+  188 __8: typed_id
+  189    | ID
+
+  190 __9: "," target
+  191    | __9 "," target
+
+  192 __10: "," target
+  193     | __10 "," target
+
+  194 __11: NEWLINE
+  195     | ";"
+
+  196 __12: NEWLINE
+  197     | ";"
+
+  198 __13: __4
+  199     | __13 __1
+
+  200 __14: __5
+  201     | __14 __2
+
+  202 __15: __6
+  203     | __15 __3
+
+  204 __16: %empty
+  205     | __16 "," __7
+
+  206 __17: %empty
+  207     | pair
+
+  208 __18: %empty
+  209     | ","
+
+  210 __19: %empty
+  211     | ";"
+
+  212 __20: %empty
+  213     | expression
+
+  214 __21: %empty
+  215     | ","
+
+  216 __22: %empty
+  217     | expression
+
+  218 __23: %empty
+  219     | NEWLINE
+
+  220 __24: %empty
+  221     | __24 __0
+
+  222 __25: %empty
+  223     | __25 "," expression
+
+  224 __26: %empty
+  225     | __26 ";" statement
+
+  226 __27: %empty
+  227     | __27 "," type
+
+  228 __28: %empty
+  229     | __28 "," type_var
+
+  230 __29: %empty
+  231     | ";"
+
+  232 __30: %empty
+  233     | __30 expression ","
+
+  234 __31: %empty
+  235     | __31 "," expression
+
+  236 __32: %empty
+  237     | ","
+
+  238 __33: %empty
+  239     | __33 expression ","
+
+  240 __34: %empty
+  241     | ";"
+
+  242 __35: %empty
+  243     | ";"
+
+  244 __36: %empty
+  245     | ";"
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+"%" (37) 133
+"(" (40) 12 13 14 15 16 17 18 19 64 73 74 95 96 97 98 144 146 148
+")" (41) 12 13 14 15 16 17 18 19 64 73 74 95 96 97 98 144 146 148
+"*" (42) 130
+"+" (43) 128 135
+"," (44) 55 56 61 69 86 91 96 98 146 160 161 190 191 192 193 205 209
+    215 223 227 229 233 235 237 239
+"-" (45) 129 136
+"." (46) 151
+"/" (47) 131
+":" (58) 7 8 9 10 12 13 14 15 16 17 18 19 36 37 38 39 40 41 42 43 44
+    45 47 48 49 50 51 52 153 154
+";" (59) 195 197 211 225 231 241 243 245
+"<" (60) 106 117
+"=" (61) 59
+">" (62) 107 118
+"[" (91) 7 9 66 67 68 75 145 147 152 153
+"]" (93) 7 9 66 67 68 75 145 147 152 153
+"{" (123) 155
+"}" (125) 155
+error (256)
+ID (258) 7 8 9 10 12 13 14 15 16 17 18 19 70 75 76 78 150 151 187 189
+"@println" (259)
+EMPTY (260)
+"@expr_list" (261)
+"@module" (262)
+"@binop" (263)
+"@unop" (264)
+INDENT (265) 7 8 12 13 17 19 37 38 40 41 44 45 49 50 52
+DEDENT (266) 7 8 12 13 17 19 37 38 40 41 44 45 49 50 52
+"@stmt_list" (267)
+"@print" (268)
+"@return" (269)
+"@break" (270)
+"@continue" (271)
+"@native" (272)
+"@if" (273)
+"@for" (274)
+"@while" (275)
+"@block" (276)
+"@assign" (277)
+"@target_list" (278)
+"@attributeref" (279)
+"@subscription" (280)
+"@slicing" (281)
+"@type" (282)
+"@typed_id" (283)
+"@type_var" (284) 79
+"@type_list" (285)
+"@type_formals_list" (286)
+"@formals_list" (287)
+"@function_type" (288)
+"@def" (289)
+"@class" (290)
+"@compare" (291)
+"@left_compare" (292)
+"@and" (293)
+"@or" (294)
+"@if_expr" (295)
+"@tuple" (296)
+"@list_display" (297)
+"@dict_display" (298)
+"@pair" (299)
+"@call" (300)
+"**" (301) 139
+ISNOT (302) 114 125
+NOTIN (303) 115 126
+"&&" (304)
+"||" (305)
+"!=" (306) 111 122
+"->" (307) 73 74
+"//" (308) 132
+"::" (309) 12 14 18 19 70
+"<=" (310) 108 119
+"==" (311) 110 121
+">=" (312) 109 120
+">>" (313) 54 55 56
+"and" (314) 104
+"break" (315) 30
+"class" (316) 7 8 9 10
+"continue" (317) 31
+"def" (318) 12 13 14 15 16 17 18 19
+"elif" (319) 47 48 49 50
+"else" (320) 51 52 101
+"for" (321) 36 37 38
+"if" (322) 42 43 44 45 101
+"in" (323) 36 37 38 112 123
+"is" (324) 113 124
+"native" (325) 53
+"not" (326) 137
+"of" (327) 7 9 75 76
+"or" (328) 105
+"pass" (329) 28
+"print" (330) 54 55 56 57 58
+"return" (331) 29
+"while" (332) 39 40 41
+BADSTRING (333)
+BLANK_LINE (334)
+END_OF_FILE (335)
+INDENTATION (336)
+INT_LITERAL (337) 140
+NEWLINE (338) 7 8 9 10 12 13 14 15 16 17 18 19 36 37 38 39 40 41 42
+    43 44 45 47 48 49 50 51 52 160 166 170 173 178 182 185 194 196
+    219
+RAWSTRING (339) 157 158
+STRING (340) 53 156 159
+UNUSED_KEYWORD (341)
+
+
+Nonterminals, with rules where they appear
+
+$accept (105)
+    on left: 0
+program (106)
+    on left: 1, on right: 0
+stmt_list (107)
+    on left: 2 3, on right: 1
+stmt_list0 (108)
+    on left: 4 5, on right: 37 38 40 41 44 45 49 50 52
+statement (109)
+    on left: 6, on right: 24 35 162 167 171 174 179 183 225
+classdef (110)
+    on left: 7 8 9 10, on right: 165 177
+type_formals (111)
+    on left: 11, on right: 7 9
+definition (112)
+    on left: 12 13 14 15 16 17 18 19, on right: 164 169 176 181
+formals (113)
+    on left: 20 21, on right: 12 13 14 15 16 17 18 19
+block (114)
+    on left: 22 23, on right: 7 8 12 13
+semi_block (115)
+    on left: 24, on right: 9 10 14 15
+basic_statement (116)
+    on left: 25 26 27 28 29 30 31, on right: 6
+control_structure (117)
+    on left: 32 33 34, on right: 163 168 172 175 180 184
+semi_stmt_list (118)
+    on left: 35, on right: 36 39 42 43 47 48 51
+for_loop (119)
+    on left: 36 37 38, on right: 32
+while_loop (120)
+    on left: 39 40 41, on right: 33
+if_stmt (121)
+    on left: 42 43 44 45, on right: 34
+elif_stmts (122)
+    on left: 46 47 48 49 50, on right: 43 45 48 49
+else_stmt (123)
+    on left: 51 52, on right: 38 41 46
+native_stmt (124)
+    on left: 53, on right: 16 17 18 19
+print_stmt (125)
+    on left: 54 55 56 57 58, on right: 25
+assign (126)
+    on left: 59, on right: 26 85
+target_list (127)
+    on left: 60 61 62 63 64 65, on right: 36 37 38 59 64
+target_list_br (128)
+    on left: 66 67 68, on right: 65
+tlist (129)
+    on left: 69, on right: 62 66
+typed_id (130)
+    on left: 70, on right: 83 186 188
+type (131)
+    on left: 71 72 73 74, on right: 12 14 18 19 70 73 74 80 81 227
+type_id0 (132)
+    on left: 75 76, on right: 77 95 96
+type_id (133)
+    on left: 77 78, on right: 71
+type_var (134)
+    on left: 79, on right: 11 72 229
+type_list0 (135)
+    on left: 80, on right: 73 75
+type_list1 (136)
+    on left: 81, on right: 76
+target (137)
+    on left: 82 83, on right: 60 61 63 67 68 69 190 191 192 193
+right_side (138)
+    on left: 84 85, on right: 59
+plist (139)
+    on left: 86, on right: 56 58
+expression_list0 (140)
+    on left: 87 88, on right: 57 95 96 97 98
+expression_list (141)
+    on left: 89, on right: 55 87
+tuple_ext_expr (142)
+    on left: 90 91, on right: 36 37 38 84 152
+expression0 (143)
+    on left: 92 93, on right: 29 153
+expression (144)
+    on left: 94, on right: 27 39 40 41 42 43 44 45 47 48 49 50 54 55
+    56 86 89 90 91 92 146 147 154 213 217 223 233 235 239
+function_call (145)
+    on left: 95 96 97 98, on right: 149
+root_expr (146)
+    on left: 99 100, on right: 94 101 148
+if_expr (147)
+    on left: 101, on right: 99
+boolean_expr (148)
+    on left: 102 103 104 105, on right: 100 101 104 105
+compare_expr (149)
+    on left: 106 107 108 109 110 111 112 113 114 115, on right: 103
+lcompare_expr (150)
+    on left: 116 117 118 119 120 121 122 123 124 125 126, on right:
+    106 107 108 109 110 111 112 113 114 115 117 118 119 120 121 122
+    123 124 125 126
+arith_expr (151)
+    on left: 127 128 129 130 131 132 133, on right: 102 106 107 108
+    109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124
+    125 126 128 129 130 131 132 133
+unary_expr (152)
+    on left: 134 135 136 137, on right: 127 135 136 137
+expo_expr (153)
+    on left: 138 139, on right: 134 139
+primary_expr (154)
+    on left: 140 141 142 143 144 145 146 147 148 149, on right: 97
+    98 138 151 152 153
+simple_target (155)
+    on left: 150 151 152 153, on right: 82 141
+pair (156)
+    on left: 154, on right: 160 161 207
+dict (157)
+    on left: 155, on right: 143
+str_expr (158)
+    on left: 156 157 158 159, on right: 142 158 159
+__0 (159)
+    on left: 160 161, on right: 221
+__1 (160)
+    on left: 162 163 164 165 166, on right: 199
+__2 (161)
+    on left: 167 168 169 170, on right: 201
+__3 (162)
+    on left: 171 172 173, on right: 203
+__4 (163)
+    on left: 174 175 176 177 178, on right: 198
+__5 (164)
+    on left: 179 180 181 182, on right: 200
+__6 (165)
+    on left: 183 184 185, on right: 202
+__7 (166)
+    on left: 186 187, on right: 205
+__8 (167)
+    on left: 188 189, on right: 20
+__9 (168)
+    on left: 190 191, on right: 63 69 191
+__10 (169)
+    on left: 192 193, on right: 68 193
+__11 (170)
+    on left: 194 195, on right: 162 167 171
+__12 (171)
+    on left: 196 197, on right: 174 179 183
+__13 (172)
+    on left: 198 199, on right: 2 199
+__14 (173)
+    on left: 200 201, on right: 22 201
+__15 (174)
+    on left: 202 203, on right: 4 203
+__16 (175)
+    on left: 204 205, on right: 20 205
+__17 (176)
+    on left: 206 207, on right: 155
+__18 (177)
+    on left: 208 209, on right: 20
+__19 (178)
+    on left: 210 211, on right: 24 35
+__20 (179)
+    on left: 212 213, on right: 91
+__21 (180)
+    on left: 214 215, on right: 147
+__22 (181)
+    on left: 216 217, on right: 146
+__23 (182)
+    on left: 218 219, on right: 161
+__24 (183)
+    on left: 220 221, on right: 155 221
+__25 (184)
+    on left: 222 223, on right: 86 89 223
+__26 (185)
+    on left: 224 225, on right: 24 35 225
+__27 (186)
+    on left: 226 227, on right: 80 227
+__28 (187)
+    on left: 228 229, on right: 11 229
+__29 (188)
+    on left: 230 231, on right: 19
+__30 (189)
+    on left: 232 233, on right: 91 233
+__31 (190)
+    on left: 234 235, on right: 147 235
+__32 (191)
+    on left: 236 237, on right: 67
+__33 (192)
+    on left: 238 239, on right: 146 239
+__34 (193)
+    on left: 240 241, on right: 16
+__35 (194)
+    on left: 242 243, on right: 17
+__36 (195)
+    on left: 244 245, on right: 18
+
+
+State 0
+
+    0 $accept: . program $end
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "class"      shift, and go to state 7
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 19
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 3 (stmt_list)
+
+    program            go to state 22
+    stmt_list          go to state 23
+    statement          go to state 24
+    classdef           go to state 25
+    definition         go to state 26
+    basic_statement    go to state 27
+    control_structure  go to state 28
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __4                go to state 54
+    __13               go to state 55
+
+
+State 1
+
+   70 typed_id: ID . "::" type
+   75 type_id0: ID . "of" "[" type_list0 "]"
+   76         | ID . "of" type_list1
+  150 simple_target: ID .
+
+    "::"  shift, and go to state 56
+    "of"  shift, and go to state 57
+
+    $default  reduce using rule 150 (simple_target)
+
+
+State 2
+
+  135 unary_expr: "+" . unary_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    unary_expr     go to state 61
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 3
+
+  136 unary_expr: "-" . unary_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    unary_expr     go to state 63
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 4
+
+   64 target_list: "(" . target_list ")"
+  144 primary_expr: "(" . ")"
+  146             | "(" . expression "," __33 __22 ")"
+  148             | "(" . root_expr ")"
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    ")"          shift, and go to state 64
+    "["          shift, and go to state 5
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    target_list     go to state 65
+    target_list_br  go to state 35
+    tlist           go to state 36
+    typed_id        go to state 37
+    type_id0        go to state 38
+    target          go to state 39
+    expression      go to state 66
+    function_call   go to state 41
+    root_expr       go to state 67
+    if_expr         go to state 43
+    boolean_expr    go to state 44
+    compare_expr    go to state 45
+    lcompare_expr   go to state 46
+    arith_expr      go to state 47
+    unary_expr      go to state 48
+    expo_expr       go to state 49
+    primary_expr    go to state 50
+    simple_target   go to state 51
+    dict            go to state 52
+    str_expr        go to state 53
+
+
+State 5
+
+   66 target_list_br: "[" . tlist "]"
+   67               | "[" . target __32 "]"
+   68               | "[" . target __10 "]"
+  145 primary_expr: "[" . "]"
+  147             | "[" . expression __31 __21 "]"
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "]"          shift, and go to state 68
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    tlist          go to state 69
+    typed_id       go to state 37
+    type_id0       go to state 38
+    target         go to state 70
+    expression     go to state 71
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 51
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 6
+
+   30 basic_statement: "break" .
+
+    $default  reduce using rule 30 (basic_statement)
+
+
+State 7
+
+    7 classdef: "class" . ID "of" "[" type_formals "]" ":" NEWLINE INDENT block DEDENT
+    8         | "class" . ID ":" NEWLINE INDENT block DEDENT
+    9         | "class" . ID "of" "[" type_formals "]" ":" semi_block NEWLINE
+   10         | "class" . ID ":" semi_block NEWLINE
+
+    ID  shift, and go to state 72
+
+
+State 8
+
+   31 basic_statement: "continue" .
+
+    $default  reduce using rule 31 (basic_statement)
+
+
+State 9
+
+   12 definition: "def" . ID "(" formals ")" "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" . ID "(" formals ")" ":" NEWLINE INDENT block DEDENT
+   14           | "def" . ID "(" formals ")" "::" type ":" semi_block NEWLINE
+   15           | "def" . ID "(" formals ")" ":" semi_block NEWLINE
+   16           | "def" . ID "(" formals ")" ":" native_stmt __34 NEWLINE
+   17           | "def" . ID "(" formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" . ID "(" formals ")" "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" . ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ID  shift, and go to state 73
+
+
+State 10
+
+   36 for_loop: "for" . target_list "in" tuple_ext_expr ":" semi_stmt_list NEWLINE
+   37         | "for" . target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" . target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 1
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    target_list     go to state 74
+    target_list_br  go to state 35
+    tlist           go to state 36
+    typed_id        go to state 37
+    type_id0        go to state 38
+    target          go to state 39
+    function_call   go to state 41
+    primary_expr    go to state 75
+    simple_target   go to state 51
+    dict            go to state 52
+    str_expr        go to state 53
+
+
+State 11
+
+   42 if_stmt: "if" . expression ":" semi_stmt_list NEWLINE
+   43        | "if" . expression ":" semi_stmt_list NEWLINE elif_stmts
+   44        | "if" . expression ":" NEWLINE INDENT stmt_list0 DEDENT
+   45        | "if" . expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 76
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 12
+
+  137 unary_expr: "not" . unary_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    unary_expr     go to state 77
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 13
+
+   28 basic_statement: "pass" .
+
+    $default  reduce using rule 28 (basic_statement)
+
+
+State 14
+
+   54 print_stmt: "print" . ">>" expression
+   55           | "print" . ">>" expression "," expression_list
+   56           | "print" . ">>" expression "," plist
+   57           | "print" . expression_list0
+   58           | "print" . plist
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    ">>"         shift, and go to state 78
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 88 (expression_list0)
+
+    type_id0          go to state 38
+    plist             go to state 79
+    expression_list0  go to state 80
+    expression_list   go to state 81
+    expression        go to state 82
+    function_call     go to state 41
+    root_expr         go to state 42
+    if_expr           go to state 43
+    boolean_expr      go to state 44
+    compare_expr      go to state 45
+    lcompare_expr     go to state 46
+    arith_expr        go to state 47
+    unary_expr        go to state 48
+    expo_expr         go to state 49
+    primary_expr      go to state 50
+    simple_target     go to state 62
+    dict              go to state 52
+    str_expr          go to state 53
+
+
+State 15
+
+   29 basic_statement: "return" . expression0
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 93 (expression0)
+
+    type_id0       go to state 38
+    expression0    go to state 83
+    expression     go to state 84
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 16
+
+   39 while_loop: "while" . expression ":" semi_stmt_list NEWLINE
+   40           | "while" . expression ":" NEWLINE INDENT stmt_list0 DEDENT
+   41           | "while" . expression ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 85
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 17
+
+  155 dict: "{" . __24 __17 "}"
+
+    $default  reduce using rule 220 (__24)
+
+    __24  go to state 86
+
+
+State 18
+
+  140 primary_expr: INT_LITERAL .
+
+    $default  reduce using rule 140 (primary_expr)
+
+
+State 19
+
+  178 __4: NEWLINE .
+
+    $default  reduce using rule 178 (__4)
+
+
+State 20
+
+  157 str_expr: RAWSTRING .
+
+    $default  reduce using rule 157 (str_expr)
+
+
+State 21
+
+  156 str_expr: STRING .
+
+    $default  reduce using rule 156 (str_expr)
+
+
+State 22
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 87
+
+
+State 23
+
+    1 program: stmt_list .
+
+    $default  reduce using rule 1 (program)
+
+
+State 24
+
+  174 __4: statement . __12
+
+    ";"      shift, and go to state 88
+    NEWLINE  shift, and go to state 89
+
+    __12  go to state 90
+
+
+State 25
+
+  177 __4: classdef .
+
+    $default  reduce using rule 177 (__4)
+
+
+State 26
+
+  176 __4: definition .
+
+    $default  reduce using rule 176 (__4)
+
+
+State 27
+
+    6 statement: basic_statement .
+
+    $default  reduce using rule 6 (statement)
+
+
+State 28
+
+  175 __4: control_structure .
+
+    $default  reduce using rule 175 (__4)
+
+
+State 29
+
+   32 control_structure: for_loop .
+
+    $default  reduce using rule 32 (control_structure)
+
+
+State 30
+
+   33 control_structure: while_loop .
+
+    $default  reduce using rule 33 (control_structure)
+
+
+State 31
+
+   34 control_structure: if_stmt .
+
+    $default  reduce using rule 34 (control_structure)
+
+
+State 32
+
+   25 basic_statement: print_stmt .
+
+    $default  reduce using rule 25 (basic_statement)
+
+
+State 33
+
+   26 basic_statement: assign .
+
+    $default  reduce using rule 26 (basic_statement)
+
+
+State 34
+
+   59 assign: target_list . "=" right_side
+
+    "="  shift, and go to state 91
+
+
+State 35
+
+   65 target_list: target_list_br .
+
+    $default  reduce using rule 65 (target_list)
+
+
+State 36
+
+   62 target_list: tlist .
+
+    $default  reduce using rule 62 (target_list)
+
+
+State 37
+
+   83 target: typed_id .
+
+    $default  reduce using rule 83 (target)
+
+
+State 38
+
+   95 function_call: type_id0 . "(" expression_list0 ")"
+   96              | type_id0 . "(" expression_list0 "," ")"
+
+    "("  shift, and go to state 92
+
+
+State 39
+
+   60 target_list: target .
+   61            | target . ","
+   63            | target . __9
+   69 tlist: target . __9 ","
+
+    ","  shift, and go to state 93
+
+    $default  reduce using rule 60 (target_list)
+
+    __9  go to state 94
+
+
+State 40
+
+   27 basic_statement: expression .
+
+    $default  reduce using rule 27 (basic_statement)
+
+
+State 41
+
+  149 primary_expr: function_call .
+
+    $default  reduce using rule 149 (primary_expr)
+
+
+State 42
+
+   94 expression: root_expr .
+
+    $default  reduce using rule 94 (expression)
+
+
+State 43
+
+   99 root_expr: if_expr .
+
+    $default  reduce using rule 99 (root_expr)
+
+
+State 44
+
+  100 root_expr: boolean_expr .
+  101 if_expr: boolean_expr . "if" root_expr "else" root_expr
+  104 boolean_expr: boolean_expr . "and" boolean_expr
+  105             | boolean_expr . "or" boolean_expr
+
+    "and"  shift, and go to state 95
+    "if"   shift, and go to state 96
+    "or"   shift, and go to state 97
+
+    $default  reduce using rule 100 (root_expr)
+
+
+State 45
+
+  103 boolean_expr: compare_expr .
+
+    $default  reduce using rule 103 (boolean_expr)
+
+
+State 46
+
+  106 compare_expr: lcompare_expr . "<" arith_expr
+  107             | lcompare_expr . ">" arith_expr
+  108             | lcompare_expr . "<=" arith_expr
+  109             | lcompare_expr . ">=" arith_expr
+  110             | lcompare_expr . "==" arith_expr
+  111             | lcompare_expr . "!=" arith_expr
+  112             | lcompare_expr . "in" arith_expr
+  113             | lcompare_expr . "is" arith_expr
+  114             | lcompare_expr . ISNOT arith_expr
+  115             | lcompare_expr . NOTIN arith_expr
+  117 lcompare_expr: lcompare_expr . "<" arith_expr
+  118              | lcompare_expr . ">" arith_expr
+  119              | lcompare_expr . "<=" arith_expr
+  120              | lcompare_expr . ">=" arith_expr
+  121              | lcompare_expr . "==" arith_expr
+  122              | lcompare_expr . "!=" arith_expr
+  123              | lcompare_expr . "in" arith_expr
+  124              | lcompare_expr . "is" arith_expr
+  125              | lcompare_expr . ISNOT arith_expr
+  126              | lcompare_expr . NOTIN arith_expr
+
+    ISNOT  shift, and go to state 98
+    NOTIN  shift, and go to state 99
+    "<"    shift, and go to state 100
+    ">"    shift, and go to state 101
+    "!="   shift, and go to state 102
+    "<="   shift, and go to state 103
+    "=="   shift, and go to state 104
+    ">="   shift, and go to state 105
+    "in"   shift, and go to state 106
+    "is"   shift, and go to state 107
+
+
+State 47
+
+  102 boolean_expr: arith_expr .
+  116 lcompare_expr: arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 116 (lcompare_expr)
+    NOTIN     reduce using rule 116 (lcompare_expr)
+    "<"       reduce using rule 116 (lcompare_expr)
+    ">"       reduce using rule 116 (lcompare_expr)
+    "!="      reduce using rule 116 (lcompare_expr)
+    "<="      reduce using rule 116 (lcompare_expr)
+    "=="      reduce using rule 116 (lcompare_expr)
+    ">="      reduce using rule 116 (lcompare_expr)
+    "in"      reduce using rule 116 (lcompare_expr)
+    "is"      reduce using rule 116 (lcompare_expr)
+    $default  reduce using rule 102 (boolean_expr)
+
+
+State 48
+
+  127 arith_expr: unary_expr .
+
+    $default  reduce using rule 127 (arith_expr)
+
+
+State 49
+
+  134 unary_expr: expo_expr .
+  139 expo_expr: expo_expr . "**" expo_expr
+
+    "**"  shift, and go to state 114
+
+    $default  reduce using rule 134 (unary_expr)
+
+
+State 50
+
+   97 function_call: primary_expr . "(" expression_list0 ")"
+   98              | primary_expr . "(" expression_list0 "," ")"
+  138 expo_expr: primary_expr .
+  151 simple_target: primary_expr . "." ID
+  152              | primary_expr . "[" tuple_ext_expr "]"
+  153              | primary_expr . "[" expression0 ":" expression0 "]"
+
+    "("  shift, and go to state 115
+    "."  shift, and go to state 116
+    "["  shift, and go to state 117
+
+    $default  reduce using rule 138 (expo_expr)
+
+
+State 51
+
+   82 target: simple_target .
+  141 primary_expr: simple_target .
+
+    ")"       reduce using rule 82 (target)
+    ")"       [reduce using rule 141 (primary_expr)]
+    ","       reduce using rule 82 (target)
+    ","       [reduce using rule 141 (primary_expr)]
+    "="       reduce using rule 82 (target)
+    "]"       reduce using rule 82 (target)
+    "]"       [reduce using rule 141 (primary_expr)]
+    "in"      reduce using rule 82 (target)
+    "in"      [reduce using rule 141 (primary_expr)]
+    $default  reduce using rule 141 (primary_expr)
+
+
+State 52
+
+  143 primary_expr: dict .
+
+    $default  reduce using rule 143 (primary_expr)
+
+
+State 53
+
+  142 primary_expr: str_expr .
+  158 str_expr: str_expr . RAWSTRING
+  159         | str_expr . STRING
+
+    RAWSTRING  shift, and go to state 118
+    STRING     shift, and go to state 119
+
+    $default  reduce using rule 142 (primary_expr)
+
+
+State 54
+
+  198 __13: __4 .
+
+    $default  reduce using rule 198 (__13)
+
+
+State 55
+
+    2 stmt_list: __13 .
+  199 __13: __13 . __1
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "class"      shift, and go to state 7
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 120
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 2 (stmt_list)
+
+    statement          go to state 121
+    classdef           go to state 122
+    definition         go to state 123
+    basic_statement    go to state 27
+    control_structure  go to state 124
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __1                go to state 125
+
+
+State 56
+
+   70 typed_id: ID "::" . type
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type      go to state 129
+    type_id0  go to state 130
+    type_id   go to state 131
+    type_var  go to state 132
+
+
+State 57
+
+   75 type_id0: ID "of" . "[" type_list0 "]"
+   76         | ID "of" . type_list1
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+    "["          shift, and go to state 133
+
+    type        go to state 134
+    type_id0    go to state 130
+    type_id     go to state 131
+    type_var    go to state 132
+    type_list1  go to state 135
+
+
+State 58
+
+   75 type_id0: ID . "of" "[" type_list0 "]"
+   76         | ID . "of" type_list1
+  150 simple_target: ID .
+
+    "of"  shift, and go to state 57
+
+    $default  reduce using rule 150 (simple_target)
+
+
+State 59
+
+  144 primary_expr: "(" . ")"
+  146             | "(" . expression "," __33 __22 ")"
+  148             | "(" . root_expr ")"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    ")"          shift, and go to state 64
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 66
+    function_call  go to state 41
+    root_expr      go to state 67
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 60
+
+  145 primary_expr: "[" . "]"
+  147             | "[" . expression __31 __21 "]"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "]"          shift, and go to state 68
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 71
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 61
+
+  135 unary_expr: "+" unary_expr .
+
+    $default  reduce using rule 135 (unary_expr)
+
+
+State 62
+
+  141 primary_expr: simple_target .
+
+    $default  reduce using rule 141 (primary_expr)
+
+
+State 63
+
+  136 unary_expr: "-" unary_expr .
+
+    $default  reduce using rule 136 (unary_expr)
+
+
+State 64
+
+  144 primary_expr: "(" ")" .
+
+    $default  reduce using rule 144 (primary_expr)
+
+
+State 65
+
+   64 target_list: "(" target_list . ")"
+
+    ")"  shift, and go to state 136
+
+
+State 66
+
+  146 primary_expr: "(" expression . "," __33 __22 ")"
+
+    ","  shift, and go to state 137
+
+
+State 67
+
+   94 expression: root_expr .
+  148 primary_expr: "(" root_expr . ")"
+
+    ")"  shift, and go to state 138
+
+    $default  reduce using rule 94 (expression)
+
+
+State 68
+
+  145 primary_expr: "[" "]" .
+
+    $default  reduce using rule 145 (primary_expr)
+
+
+State 69
+
+   66 target_list_br: "[" tlist . "]"
+
+    "]"  shift, and go to state 139
+
+
+State 70
+
+   67 target_list_br: "[" target . __32 "]"
+   68               | "[" target . __10 "]"
+   69 tlist: target . __9 ","
+
+    ","  shift, and go to state 140
+
+    $default  reduce using rule 236 (__32)
+
+    __9   go to state 141
+    __10  go to state 142
+    __32  go to state 143
+
+
+State 71
+
+  147 primary_expr: "[" expression . __31 __21 "]"
+
+    $default  reduce using rule 234 (__31)
+
+    __31  go to state 144
+
+
+State 72
+
+    7 classdef: "class" ID . "of" "[" type_formals "]" ":" NEWLINE INDENT block DEDENT
+    8         | "class" ID . ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID . "of" "[" type_formals "]" ":" semi_block NEWLINE
+   10         | "class" ID . ":" semi_block NEWLINE
+
+    ":"   shift, and go to state 145
+    "of"  shift, and go to state 146
+
+
+State 73
+
+   12 definition: "def" ID . "(" formals ")" "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" ID . "(" formals ")" ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID . "(" formals ")" "::" type ":" semi_block NEWLINE
+   15           | "def" ID . "(" formals ")" ":" semi_block NEWLINE
+   16           | "def" ID . "(" formals ")" ":" native_stmt __34 NEWLINE
+   17           | "def" ID . "(" formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" ID . "(" formals ")" "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" ID . "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    "("  shift, and go to state 147
+
+
+State 74
+
+   36 for_loop: "for" target_list . "in" tuple_ext_expr ":" semi_stmt_list NEWLINE
+   37         | "for" target_list . "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" target_list . "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    "in"  shift, and go to state 148
+
+
+State 75
+
+   97 function_call: primary_expr . "(" expression_list0 ")"
+   98              | primary_expr . "(" expression_list0 "," ")"
+  151 simple_target: primary_expr . "." ID
+  152              | primary_expr . "[" tuple_ext_expr "]"
+  153              | primary_expr . "[" expression0 ":" expression0 "]"
+
+    "("  shift, and go to state 115
+    "."  shift, and go to state 116
+    "["  shift, and go to state 117
+
+
+State 76
+
+   42 if_stmt: "if" expression . ":" semi_stmt_list NEWLINE
+   43        | "if" expression . ":" semi_stmt_list NEWLINE elif_stmts
+   44        | "if" expression . ":" NEWLINE INDENT stmt_list0 DEDENT
+   45        | "if" expression . ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+
+    ":"  shift, and go to state 149
+
+
+State 77
+
+  137 unary_expr: "not" unary_expr .
+
+    $default  reduce using rule 137 (unary_expr)
+
+
+State 78
+
+   54 print_stmt: "print" ">>" . expression
+   55           | "print" ">>" . expression "," expression_list
+   56           | "print" ">>" . expression "," plist
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 150
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 79
+
+   58 print_stmt: "print" plist .
+
+    $default  reduce using rule 58 (print_stmt)
+
+
+State 80
+
+   57 print_stmt: "print" expression_list0 .
+
+    $default  reduce using rule 57 (print_stmt)
+
+
+State 81
+
+   87 expression_list0: expression_list .
+
+    $default  reduce using rule 87 (expression_list0)
+
+
+State 82
+
+   86 plist: expression . __25 ","
+   89 expression_list: expression . __25
+
+    $default  reduce using rule 222 (__25)
+
+    __25  go to state 151
+
+
+State 83
+
+   29 basic_statement: "return" expression0 .
+
+    $default  reduce using rule 29 (basic_statement)
+
+
+State 84
+
+   92 expression0: expression .
+
+    $default  reduce using rule 92 (expression0)
+
+
+State 85
+
+   39 while_loop: "while" expression . ":" semi_stmt_list NEWLINE
+   40           | "while" expression . ":" NEWLINE INDENT stmt_list0 DEDENT
+   41           | "while" expression . ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ":"  shift, and go to state 152
+
+
+State 86
+
+  155 dict: "{" __24 . __17 "}"
+  221 __24: __24 . __0
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 206 (__17)
+
+    type_id0       go to state 38
+    expression     go to state 153
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    pair           go to state 154
+    dict           go to state 52
+    str_expr       go to state 53
+    __0            go to state 155
+    __17           go to state 156
+
+
+State 87
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 88
+
+  197 __12: ";" .
+
+    $default  reduce using rule 197 (__12)
+
+
+State 89
+
+  196 __12: NEWLINE .
+
+    $default  reduce using rule 196 (__12)
+
+
+State 90
+
+  174 __4: statement __12 .
+
+    $default  reduce using rule 174 (__4)
+
+
+State 91
+
+   59 assign: target_list "=" . right_side
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    assign          go to state 157
+    target_list     go to state 34
+    target_list_br  go to state 35
+    tlist           go to state 36
+    typed_id        go to state 37
+    type_id0        go to state 38
+    target          go to state 39
+    right_side      go to state 158
+    tuple_ext_expr  go to state 159
+    expression      go to state 160
+    function_call   go to state 41
+    root_expr       go to state 42
+    if_expr         go to state 43
+    boolean_expr    go to state 44
+    compare_expr    go to state 45
+    lcompare_expr   go to state 46
+    arith_expr      go to state 47
+    unary_expr      go to state 48
+    expo_expr       go to state 49
+    primary_expr    go to state 50
+    simple_target   go to state 51
+    dict            go to state 52
+    str_expr        go to state 53
+
+
+State 92
+
+   95 function_call: type_id0 "(" . expression_list0 ")"
+   96              | type_id0 "(" . expression_list0 "," ")"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 88 (expression_list0)
+
+    type_id0          go to state 38
+    expression_list0  go to state 161
+    expression_list   go to state 81
+    expression        go to state 162
+    function_call     go to state 41
+    root_expr         go to state 42
+    if_expr           go to state 43
+    boolean_expr      go to state 44
+    compare_expr      go to state 45
+    lcompare_expr     go to state 46
+    arith_expr        go to state 47
+    unary_expr        go to state 48
+    expo_expr         go to state 49
+    primary_expr      go to state 50
+    simple_target     go to state 62
+    dict              go to state 52
+    str_expr          go to state 53
+
+
+State 93
+
+   61 target_list: target "," .
+  190 __9: "," . target
+
+    ID           shift, and go to state 1
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 61 (target_list)
+
+    typed_id       go to state 37
+    type_id0       go to state 38
+    target         go to state 163
+    function_call  go to state 41
+    primary_expr   go to state 75
+    simple_target  go to state 51
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 94
+
+   63 target_list: target __9 .
+   69 tlist: target __9 . ","
+  191 __9: __9 . "," target
+
+    ","  shift, and go to state 164
+
+    $default  reduce using rule 63 (target_list)
+
+
+State 95
+
+  104 boolean_expr: boolean_expr "and" . boolean_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    boolean_expr   go to state 165
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 96
+
+  101 if_expr: boolean_expr "if" . root_expr "else" root_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    root_expr      go to state 166
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 97
+
+  105 boolean_expr: boolean_expr "or" . boolean_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    boolean_expr   go to state 167
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 98
+
+  114 compare_expr: lcompare_expr ISNOT . arith_expr
+  125 lcompare_expr: lcompare_expr ISNOT . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 168
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 99
+
+  115 compare_expr: lcompare_expr NOTIN . arith_expr
+  126 lcompare_expr: lcompare_expr NOTIN . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 169
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 100
+
+  106 compare_expr: lcompare_expr "<" . arith_expr
+  117 lcompare_expr: lcompare_expr "<" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 170
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 101
+
+  107 compare_expr: lcompare_expr ">" . arith_expr
+  118 lcompare_expr: lcompare_expr ">" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 171
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 102
+
+  111 compare_expr: lcompare_expr "!=" . arith_expr
+  122 lcompare_expr: lcompare_expr "!=" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 172
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 103
+
+  108 compare_expr: lcompare_expr "<=" . arith_expr
+  119 lcompare_expr: lcompare_expr "<=" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 173
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 104
+
+  110 compare_expr: lcompare_expr "==" . arith_expr
+  121 lcompare_expr: lcompare_expr "==" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 174
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 105
+
+  109 compare_expr: lcompare_expr ">=" . arith_expr
+  120 lcompare_expr: lcompare_expr ">=" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 175
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 106
+
+  112 compare_expr: lcompare_expr "in" . arith_expr
+  123 lcompare_expr: lcompare_expr "in" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 176
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 107
+
+  113 compare_expr: lcompare_expr "is" . arith_expr
+  124 lcompare_expr: lcompare_expr "is" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 177
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 108
+
+  128 arith_expr: arith_expr "+" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 178
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 109
+
+  129 arith_expr: arith_expr "-" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 179
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 110
+
+  133 arith_expr: arith_expr "%" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 180
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 111
+
+  130 arith_expr: arith_expr "*" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 181
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 112
+
+  131 arith_expr: arith_expr "/" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 182
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 113
+
+  132 arith_expr: arith_expr "//" . arith_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    arith_expr     go to state 183
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 114
+
+  139 expo_expr: expo_expr "**" . expo_expr
+
+    ID           shift, and go to state 58
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    expo_expr      go to state 184
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 115
+
+   97 function_call: primary_expr "(" . expression_list0 ")"
+   98              | primary_expr "(" . expression_list0 "," ")"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 88 (expression_list0)
+
+    type_id0          go to state 38
+    expression_list0  go to state 185
+    expression_list   go to state 81
+    expression        go to state 162
+    function_call     go to state 41
+    root_expr         go to state 42
+    if_expr           go to state 43
+    boolean_expr      go to state 44
+    compare_expr      go to state 45
+    lcompare_expr     go to state 46
+    arith_expr        go to state 47
+    unary_expr        go to state 48
+    expo_expr         go to state 49
+    primary_expr      go to state 50
+    simple_target     go to state 62
+    dict              go to state 52
+    str_expr          go to state 53
+
+
+State 116
+
+  151 simple_target: primary_expr "." . ID
+
+    ID  shift, and go to state 186
+
+
+State 117
+
+  152 simple_target: primary_expr "[" . tuple_ext_expr "]"
+  153              | primary_expr "[" . expression0 ":" expression0 "]"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 93 (expression0)
+
+    type_id0        go to state 38
+    tuple_ext_expr  go to state 187
+    expression0     go to state 188
+    expression      go to state 189
+    function_call   go to state 41
+    root_expr       go to state 42
+    if_expr         go to state 43
+    boolean_expr    go to state 44
+    compare_expr    go to state 45
+    lcompare_expr   go to state 46
+    arith_expr      go to state 47
+    unary_expr      go to state 48
+    expo_expr       go to state 49
+    primary_expr    go to state 50
+    simple_target   go to state 62
+    dict            go to state 52
+    str_expr        go to state 53
+
+
+State 118
+
+  158 str_expr: str_expr RAWSTRING .
+
+    $default  reduce using rule 158 (str_expr)
+
+
+State 119
+
+  159 str_expr: str_expr STRING .
+
+    $default  reduce using rule 159 (str_expr)
+
+
+State 120
+
+  166 __1: NEWLINE .
+
+    $default  reduce using rule 166 (__1)
+
+
+State 121
+
+  162 __1: statement . __11
+
+    ";"      shift, and go to state 190
+    NEWLINE  shift, and go to state 191
+
+    __11  go to state 192
+
+
+State 122
+
+  165 __1: classdef .
+
+    $default  reduce using rule 165 (__1)
+
+
+State 123
+
+  164 __1: definition .
+
+    $default  reduce using rule 164 (__1)
+
+
+State 124
+
+  163 __1: control_structure .
+
+    $default  reduce using rule 163 (__1)
+
+
+State 125
+
+  199 __13: __13 __1 .
+
+    $default  reduce using rule 199 (__13)
+
+
+State 126
+
+   75 type_id0: ID . "of" "[" type_list0 "]"
+   76         | ID . "of" type_list1
+   78 type_id: ID .
+
+    "of"  shift, and go to state 57
+
+    $default  reduce using rule 78 (type_id)
+
+
+State 127
+
+   79 type_var: "@type_var" .
+
+    $default  reduce using rule 79 (type_var)
+
+
+State 128
+
+   73 type: "(" . type_list0 ")" "->" type
+   74     | "(" . ")" "->" type
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+    ")"          shift, and go to state 193
+
+    type        go to state 194
+    type_id0    go to state 130
+    type_id     go to state 131
+    type_var    go to state 132
+    type_list0  go to state 195
+
+
+State 129
+
+   70 typed_id: ID "::" type .
+
+    $default  reduce using rule 70 (typed_id)
+
+
+State 130
+
+   77 type_id: type_id0 .
+
+    $default  reduce using rule 77 (type_id)
+
+
+State 131
+
+   71 type: type_id .
+
+    $default  reduce using rule 71 (type)
+
+
+State 132
+
+   72 type: type_var .
+
+    $default  reduce using rule 72 (type)
+
+
+State 133
+
+   75 type_id0: ID "of" "[" . type_list0 "]"
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type        go to state 194
+    type_id0    go to state 130
+    type_id     go to state 131
+    type_var    go to state 132
+    type_list0  go to state 196
+
+
+State 134
+
+   81 type_list1: type .
+
+    $default  reduce using rule 81 (type_list1)
+
+
+State 135
+
+   76 type_id0: ID "of" type_list1 .
+
+    $default  reduce using rule 76 (type_id0)
+
+
+State 136
+
+   64 target_list: "(" target_list ")" .
+
+    $default  reduce using rule 64 (target_list)
+
+
+State 137
+
+  146 primary_expr: "(" expression "," . __33 __22 ")"
+
+    $default  reduce using rule 238 (__33)
+
+    __33  go to state 197
+
+
+State 138
+
+  148 primary_expr: "(" root_expr ")" .
+
+    $default  reduce using rule 148 (primary_expr)
+
+
+State 139
+
+   66 target_list_br: "[" tlist "]" .
+
+    $default  reduce using rule 66 (target_list_br)
+
+
+State 140
+
+  190 __9: "," . target
+  192 __10: "," . target
+  237 __32: "," .
+
+    ID           shift, and go to state 1
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 237 (__32)
+
+    typed_id       go to state 37
+    type_id0       go to state 38
+    target         go to state 198
+    function_call  go to state 41
+    primary_expr   go to state 75
+    simple_target  go to state 51
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 141
+
+   69 tlist: target __9 . ","
+  191 __9: __9 . "," target
+
+    ","  shift, and go to state 164
+
+
+State 142
+
+   68 target_list_br: "[" target __10 . "]"
+  193 __10: __10 . "," target
+
+    ","  shift, and go to state 199
+    "]"  shift, and go to state 200
+
+
+State 143
+
+   67 target_list_br: "[" target __32 . "]"
+
+    "]"  shift, and go to state 201
+
+
+State 144
+
+  147 primary_expr: "[" expression __31 . __21 "]"
+  235 __31: __31 . "," expression
+
+    ","  shift, and go to state 202
+
+    $default  reduce using rule 214 (__21)
+
+    __21  go to state 203
+
+
+State 145
+
+    8 classdef: "class" ID ":" . NEWLINE INDENT block DEDENT
+   10         | "class" ID ":" . semi_block NEWLINE
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 204
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 205
+    semi_block       go to state 206
+    basic_statement  go to state 27
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 146
+
+    7 classdef: "class" ID "of" . "[" type_formals "]" ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" . "[" type_formals "]" ":" semi_block NEWLINE
+
+    "["  shift, and go to state 207
+
+
+State 147
+
+   12 definition: "def" ID "(" . formals ")" "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" ID "(" . formals ")" ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" . formals ")" "::" type ":" semi_block NEWLINE
+   15           | "def" ID "(" . formals ")" ":" semi_block NEWLINE
+   16           | "def" ID "(" . formals ")" ":" native_stmt __34 NEWLINE
+   17           | "def" ID "(" . formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" ID "(" . formals ")" "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" . formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ID  shift, and go to state 208
+
+    $default  reduce using rule 21 (formals)
+
+    formals   go to state 209
+    typed_id  go to state 210
+    __8       go to state 211
+
+
+State 148
+
+   36 for_loop: "for" target_list "in" . tuple_ext_expr ":" semi_stmt_list NEWLINE
+   37         | "for" target_list "in" . tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" target_list "in" . tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0        go to state 38
+    tuple_ext_expr  go to state 212
+    expression      go to state 160
+    function_call   go to state 41
+    root_expr       go to state 42
+    if_expr         go to state 43
+    boolean_expr    go to state 44
+    compare_expr    go to state 45
+    lcompare_expr   go to state 46
+    arith_expr      go to state 47
+    unary_expr      go to state 48
+    expo_expr       go to state 49
+    primary_expr    go to state 50
+    simple_target   go to state 62
+    dict            go to state 52
+    str_expr        go to state 53
+
+
+State 149
+
+   42 if_stmt: "if" expression ":" . semi_stmt_list NEWLINE
+   43        | "if" expression ":" . semi_stmt_list NEWLINE elif_stmts
+   44        | "if" expression ":" . NEWLINE INDENT stmt_list0 DEDENT
+   45        | "if" expression ":" . NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 213
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 214
+    basic_statement  go to state 27
+    semi_stmt_list   go to state 215
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 150
+
+   54 print_stmt: "print" ">>" expression .
+   55           | "print" ">>" expression . "," expression_list
+   56           | "print" ">>" expression . "," plist
+
+    ","  shift, and go to state 216
+
+    $default  reduce using rule 54 (print_stmt)
+
+
+State 151
+
+   86 plist: expression __25 . ","
+   89 expression_list: expression __25 .
+  223 __25: __25 . "," expression
+
+    ","  shift, and go to state 217
+
+    $default  reduce using rule 89 (expression_list)
+
+
+State 152
+
+   39 while_loop: "while" expression ":" . semi_stmt_list NEWLINE
+   40           | "while" expression ":" . NEWLINE INDENT stmt_list0 DEDENT
+   41           | "while" expression ":" . NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 218
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 214
+    basic_statement  go to state 27
+    semi_stmt_list   go to state 219
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 153
+
+  154 pair: expression . ":" expression
+
+    ":"  shift, and go to state 220
+
+
+State 154
+
+  160 __0: pair . NEWLINE ","
+  161    | pair . "," __23
+  207 __17: pair .
+
+    ","      shift, and go to state 221
+    NEWLINE  shift, and go to state 222
+
+    $default  reduce using rule 207 (__17)
+
+
+State 155
+
+  221 __24: __24 __0 .
+
+    $default  reduce using rule 221 (__24)
+
+
+State 156
+
+  155 dict: "{" __24 __17 . "}"
+
+    "}"  shift, and go to state 223
+
+
+State 157
+
+   85 right_side: assign .
+
+    $default  reduce using rule 85 (right_side)
+
+
+State 158
+
+   59 assign: target_list "=" right_side .
+
+    $default  reduce using rule 59 (assign)
+
+
+State 159
+
+   84 right_side: tuple_ext_expr .
+
+    $default  reduce using rule 84 (right_side)
+
+
+State 160
+
+   90 tuple_ext_expr: expression .
+   91               | expression . "," __30 __20
+
+    ","  shift, and go to state 224
+
+    $default  reduce using rule 90 (tuple_ext_expr)
+
+
+State 161
+
+   95 function_call: type_id0 "(" expression_list0 . ")"
+   96              | type_id0 "(" expression_list0 . "," ")"
+
+    ")"  shift, and go to state 225
+    ","  shift, and go to state 226
+
+
+State 162
+
+   89 expression_list: expression . __25
+
+    $default  reduce using rule 222 (__25)
+
+    __25  go to state 227
+
+
+State 163
+
+  190 __9: "," target .
+
+    $default  reduce using rule 190 (__9)
+
+
+State 164
+
+   69 tlist: target __9 "," .
+  191 __9: __9 "," . target
+
+    ID           shift, and go to state 1
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 69 (tlist)
+
+    typed_id       go to state 37
+    type_id0       go to state 38
+    target         go to state 228
+    function_call  go to state 41
+    primary_expr   go to state 75
+    simple_target  go to state 51
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 165
+
+  104 boolean_expr: boolean_expr . "and" boolean_expr
+  104             | boolean_expr "and" boolean_expr .
+  105             | boolean_expr . "or" boolean_expr
+
+    $default  reduce using rule 104 (boolean_expr)
+
+
+State 166
+
+  101 if_expr: boolean_expr "if" root_expr . "else" root_expr
+
+    "else"  shift, and go to state 229
+
+
+State 167
+
+  104 boolean_expr: boolean_expr . "and" boolean_expr
+  105             | boolean_expr . "or" boolean_expr
+  105             | boolean_expr "or" boolean_expr .
+
+    "and"  shift, and go to state 95
+
+    $default  reduce using rule 105 (boolean_expr)
+
+
+State 168
+
+  114 compare_expr: lcompare_expr ISNOT arith_expr .
+  125 lcompare_expr: lcompare_expr ISNOT arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 125 (lcompare_expr)
+    NOTIN     reduce using rule 125 (lcompare_expr)
+    "<"       reduce using rule 125 (lcompare_expr)
+    ">"       reduce using rule 125 (lcompare_expr)
+    "!="      reduce using rule 125 (lcompare_expr)
+    "<="      reduce using rule 125 (lcompare_expr)
+    "=="      reduce using rule 125 (lcompare_expr)
+    ">="      reduce using rule 125 (lcompare_expr)
+    "in"      reduce using rule 125 (lcompare_expr)
+    "is"      reduce using rule 125 (lcompare_expr)
+    $default  reduce using rule 114 (compare_expr)
+
+
+State 169
+
+  115 compare_expr: lcompare_expr NOTIN arith_expr .
+  126 lcompare_expr: lcompare_expr NOTIN arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 126 (lcompare_expr)
+    NOTIN     reduce using rule 126 (lcompare_expr)
+    "<"       reduce using rule 126 (lcompare_expr)
+    ">"       reduce using rule 126 (lcompare_expr)
+    "!="      reduce using rule 126 (lcompare_expr)
+    "<="      reduce using rule 126 (lcompare_expr)
+    "=="      reduce using rule 126 (lcompare_expr)
+    ">="      reduce using rule 126 (lcompare_expr)
+    "in"      reduce using rule 126 (lcompare_expr)
+    "is"      reduce using rule 126 (lcompare_expr)
+    $default  reduce using rule 115 (compare_expr)
+
+
+State 170
+
+  106 compare_expr: lcompare_expr "<" arith_expr .
+  117 lcompare_expr: lcompare_expr "<" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 117 (lcompare_expr)
+    NOTIN     reduce using rule 117 (lcompare_expr)
+    "<"       reduce using rule 117 (lcompare_expr)
+    ">"       reduce using rule 117 (lcompare_expr)
+    "!="      reduce using rule 117 (lcompare_expr)
+    "<="      reduce using rule 117 (lcompare_expr)
+    "=="      reduce using rule 117 (lcompare_expr)
+    ">="      reduce using rule 117 (lcompare_expr)
+    "in"      reduce using rule 117 (lcompare_expr)
+    "is"      reduce using rule 117 (lcompare_expr)
+    $default  reduce using rule 106 (compare_expr)
+
+
+State 171
+
+  107 compare_expr: lcompare_expr ">" arith_expr .
+  118 lcompare_expr: lcompare_expr ">" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 118 (lcompare_expr)
+    NOTIN     reduce using rule 118 (lcompare_expr)
+    "<"       reduce using rule 118 (lcompare_expr)
+    ">"       reduce using rule 118 (lcompare_expr)
+    "!="      reduce using rule 118 (lcompare_expr)
+    "<="      reduce using rule 118 (lcompare_expr)
+    "=="      reduce using rule 118 (lcompare_expr)
+    ">="      reduce using rule 118 (lcompare_expr)
+    "in"      reduce using rule 118 (lcompare_expr)
+    "is"      reduce using rule 118 (lcompare_expr)
+    $default  reduce using rule 107 (compare_expr)
+
+
+State 172
+
+  111 compare_expr: lcompare_expr "!=" arith_expr .
+  122 lcompare_expr: lcompare_expr "!=" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 122 (lcompare_expr)
+    NOTIN     reduce using rule 122 (lcompare_expr)
+    "<"       reduce using rule 122 (lcompare_expr)
+    ">"       reduce using rule 122 (lcompare_expr)
+    "!="      reduce using rule 122 (lcompare_expr)
+    "<="      reduce using rule 122 (lcompare_expr)
+    "=="      reduce using rule 122 (lcompare_expr)
+    ">="      reduce using rule 122 (lcompare_expr)
+    "in"      reduce using rule 122 (lcompare_expr)
+    "is"      reduce using rule 122 (lcompare_expr)
+    $default  reduce using rule 111 (compare_expr)
+
+
+State 173
+
+  108 compare_expr: lcompare_expr "<=" arith_expr .
+  119 lcompare_expr: lcompare_expr "<=" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 119 (lcompare_expr)
+    NOTIN     reduce using rule 119 (lcompare_expr)
+    "<"       reduce using rule 119 (lcompare_expr)
+    ">"       reduce using rule 119 (lcompare_expr)
+    "!="      reduce using rule 119 (lcompare_expr)
+    "<="      reduce using rule 119 (lcompare_expr)
+    "=="      reduce using rule 119 (lcompare_expr)
+    ">="      reduce using rule 119 (lcompare_expr)
+    "in"      reduce using rule 119 (lcompare_expr)
+    "is"      reduce using rule 119 (lcompare_expr)
+    $default  reduce using rule 108 (compare_expr)
+
+
+State 174
+
+  110 compare_expr: lcompare_expr "==" arith_expr .
+  121 lcompare_expr: lcompare_expr "==" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 121 (lcompare_expr)
+    NOTIN     reduce using rule 121 (lcompare_expr)
+    "<"       reduce using rule 121 (lcompare_expr)
+    ">"       reduce using rule 121 (lcompare_expr)
+    "!="      reduce using rule 121 (lcompare_expr)
+    "<="      reduce using rule 121 (lcompare_expr)
+    "=="      reduce using rule 121 (lcompare_expr)
+    ">="      reduce using rule 121 (lcompare_expr)
+    "in"      reduce using rule 121 (lcompare_expr)
+    "is"      reduce using rule 121 (lcompare_expr)
+    $default  reduce using rule 110 (compare_expr)
+
+
+State 175
+
+  109 compare_expr: lcompare_expr ">=" arith_expr .
+  120 lcompare_expr: lcompare_expr ">=" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 120 (lcompare_expr)
+    NOTIN     reduce using rule 120 (lcompare_expr)
+    "<"       reduce using rule 120 (lcompare_expr)
+    ">"       reduce using rule 120 (lcompare_expr)
+    "!="      reduce using rule 120 (lcompare_expr)
+    "<="      reduce using rule 120 (lcompare_expr)
+    "=="      reduce using rule 120 (lcompare_expr)
+    ">="      reduce using rule 120 (lcompare_expr)
+    "in"      reduce using rule 120 (lcompare_expr)
+    "is"      reduce using rule 120 (lcompare_expr)
+    $default  reduce using rule 109 (compare_expr)
+
+
+State 176
+
+  112 compare_expr: lcompare_expr "in" arith_expr .
+  123 lcompare_expr: lcompare_expr "in" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 123 (lcompare_expr)
+    NOTIN     reduce using rule 123 (lcompare_expr)
+    "<"       reduce using rule 123 (lcompare_expr)
+    ">"       reduce using rule 123 (lcompare_expr)
+    "!="      reduce using rule 123 (lcompare_expr)
+    "<="      reduce using rule 123 (lcompare_expr)
+    "=="      reduce using rule 123 (lcompare_expr)
+    ">="      reduce using rule 123 (lcompare_expr)
+    "in"      reduce using rule 123 (lcompare_expr)
+    "is"      reduce using rule 123 (lcompare_expr)
+    $default  reduce using rule 112 (compare_expr)
+
+
+State 177
+
+  113 compare_expr: lcompare_expr "is" arith_expr .
+  124 lcompare_expr: lcompare_expr "is" arith_expr .
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "+"   shift, and go to state 108
+    "-"   shift, and go to state 109
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    ISNOT     reduce using rule 124 (lcompare_expr)
+    NOTIN     reduce using rule 124 (lcompare_expr)
+    "<"       reduce using rule 124 (lcompare_expr)
+    ">"       reduce using rule 124 (lcompare_expr)
+    "!="      reduce using rule 124 (lcompare_expr)
+    "<="      reduce using rule 124 (lcompare_expr)
+    "=="      reduce using rule 124 (lcompare_expr)
+    ">="      reduce using rule 124 (lcompare_expr)
+    "in"      reduce using rule 124 (lcompare_expr)
+    "is"      reduce using rule 124 (lcompare_expr)
+    $default  reduce using rule 113 (compare_expr)
+
+
+State 178
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  128           | arith_expr "+" arith_expr .
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    $default  reduce using rule 128 (arith_expr)
+
+
+State 179
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  129           | arith_expr "-" arith_expr .
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    "%"   shift, and go to state 110
+    "*"   shift, and go to state 111
+    "/"   shift, and go to state 112
+    "//"  shift, and go to state 113
+
+    $default  reduce using rule 129 (arith_expr)
+
+
+State 180
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+  133           | arith_expr "%" arith_expr .
+
+    $default  reduce using rule 133 (arith_expr)
+
+
+State 181
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  130           | arith_expr "*" arith_expr .
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    $default  reduce using rule 130 (arith_expr)
+
+
+State 182
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  131           | arith_expr "/" arith_expr .
+  132           | arith_expr . "//" arith_expr
+  133           | arith_expr . "%" arith_expr
+
+    $default  reduce using rule 131 (arith_expr)
+
+
+State 183
+
+  128 arith_expr: arith_expr . "+" arith_expr
+  129           | arith_expr . "-" arith_expr
+  130           | arith_expr . "*" arith_expr
+  131           | arith_expr . "/" arith_expr
+  132           | arith_expr . "//" arith_expr
+  132           | arith_expr "//" arith_expr .
+  133           | arith_expr . "%" arith_expr
+
+    $default  reduce using rule 132 (arith_expr)
+
+
+State 184
+
+  139 expo_expr: expo_expr . "**" expo_expr
+  139          | expo_expr "**" expo_expr .
+
+    "**"  shift, and go to state 114
+
+    $default  reduce using rule 139 (expo_expr)
+
+
+State 185
+
+   97 function_call: primary_expr "(" expression_list0 . ")"
+   98              | primary_expr "(" expression_list0 . "," ")"
+
+    ")"  shift, and go to state 230
+    ","  shift, and go to state 231
+
+
+State 186
+
+  151 simple_target: primary_expr "." ID .
+
+    $default  reduce using rule 151 (simple_target)
+
+
+State 187
+
+  152 simple_target: primary_expr "[" tuple_ext_expr . "]"
+
+    "]"  shift, and go to state 232
+
+
+State 188
+
+  153 simple_target: primary_expr "[" expression0 . ":" expression0 "]"
+
+    ":"  shift, and go to state 233
+
+
+State 189
+
+   90 tuple_ext_expr: expression .
+   91               | expression . "," __30 __20
+   92 expression0: expression .
+
+    ","  shift, and go to state 224
+
+    ":"       reduce using rule 92 (expression0)
+    $default  reduce using rule 90 (tuple_ext_expr)
+
+
+State 190
+
+  195 __11: ";" .
+
+    $default  reduce using rule 195 (__11)
+
+
+State 191
+
+  194 __11: NEWLINE .
+
+    $default  reduce using rule 194 (__11)
+
+
+State 192
+
+  162 __1: statement __11 .
+
+    $default  reduce using rule 162 (__1)
+
+
+State 193
+
+   74 type: "(" ")" . "->" type
+
+    "->"  shift, and go to state 234
+
+
+State 194
+
+   80 type_list0: type . __27
+
+    $default  reduce using rule 226 (__27)
+
+    __27  go to state 235
+
+
+State 195
+
+   73 type: "(" type_list0 . ")" "->" type
+
+    ")"  shift, and go to state 236
+
+
+State 196
+
+   75 type_id0: ID "of" "[" type_list0 . "]"
+
+    "]"  shift, and go to state 237
+
+
+State 197
+
+  146 primary_expr: "(" expression "," __33 . __22 ")"
+  239 __33: __33 . expression ","
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 216 (__22)
+
+    type_id0       go to state 38
+    expression     go to state 238
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+    __22           go to state 239
+
+
+State 198
+
+  190 __9: "," target .
+  192 __10: "," target .
+
+    ","       reduce using rule 190 (__9)
+    ","       [reduce using rule 192 (__10)]
+    "]"       reduce using rule 192 (__10)
+    $default  reduce using rule 190 (__9)
+
+
+State 199
+
+  193 __10: __10 "," . target
+
+    ID           shift, and go to state 1
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    typed_id       go to state 37
+    type_id0       go to state 38
+    target         go to state 240
+    function_call  go to state 41
+    primary_expr   go to state 75
+    simple_target  go to state 51
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 200
+
+   68 target_list_br: "[" target __10 "]" .
+
+    $default  reduce using rule 68 (target_list_br)
+
+
+State 201
+
+   67 target_list_br: "[" target __32 "]" .
+
+    $default  reduce using rule 67 (target_list_br)
+
+
+State 202
+
+  215 __21: "," .
+  235 __31: __31 "," . expression
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 215 (__21)
+
+    type_id0       go to state 38
+    expression     go to state 241
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 203
+
+  147 primary_expr: "[" expression __31 __21 . "]"
+
+    "]"  shift, and go to state 242
+
+
+State 204
+
+    8 classdef: "class" ID ":" NEWLINE . INDENT block DEDENT
+
+    INDENT  shift, and go to state 243
+
+
+State 205
+
+   24 semi_block: statement . __26 __19
+
+    $default  reduce using rule 224 (__26)
+
+    __26  go to state 244
+
+
+State 206
+
+   10 classdef: "class" ID ":" semi_block . NEWLINE
+
+    NEWLINE  shift, and go to state 245
+
+
+State 207
+
+    7 classdef: "class" ID "of" "[" . type_formals "]" ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" "[" . type_formals "]" ":" semi_block NEWLINE
+
+    "@type_var"  shift, and go to state 127
+
+    type_formals  go to state 246
+    type_var      go to state 247
+
+
+State 208
+
+   70 typed_id: ID . "::" type
+  189 __8: ID .
+
+    "::"  shift, and go to state 56
+
+    $default  reduce using rule 189 (__8)
+
+
+State 209
+
+   12 definition: "def" ID "(" formals . ")" "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" ID "(" formals . ")" ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals . ")" "::" type ":" semi_block NEWLINE
+   15           | "def" ID "(" formals . ")" ":" semi_block NEWLINE
+   16           | "def" ID "(" formals . ")" ":" native_stmt __34 NEWLINE
+   17           | "def" ID "(" formals . ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" ID "(" formals . ")" "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals . ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ")"  shift, and go to state 248
+
+
+State 210
+
+  188 __8: typed_id .
+
+    $default  reduce using rule 188 (__8)
+
+
+State 211
+
+   20 formals: __8 . __16 __18
+
+    $default  reduce using rule 204 (__16)
+
+    __16  go to state 249
+
+
+State 212
+
+   36 for_loop: "for" target_list "in" tuple_ext_expr . ":" semi_stmt_list NEWLINE
+   37         | "for" target_list "in" tuple_ext_expr . ":" NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" target_list "in" tuple_ext_expr . ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ":"  shift, and go to state 250
+
+
+State 213
+
+   44 if_stmt: "if" expression ":" NEWLINE . INDENT stmt_list0 DEDENT
+   45        | "if" expression ":" NEWLINE . INDENT stmt_list0 DEDENT elif_stmts
+
+    INDENT  shift, and go to state 251
+
+
+State 214
+
+   35 semi_stmt_list: statement . __26 __19
+
+    $default  reduce using rule 224 (__26)
+
+    __26  go to state 252
+
+
+State 215
+
+   42 if_stmt: "if" expression ":" semi_stmt_list . NEWLINE
+   43        | "if" expression ":" semi_stmt_list . NEWLINE elif_stmts
+
+    NEWLINE  shift, and go to state 253
+
+
+State 216
+
+   55 print_stmt: "print" ">>" expression "," . expression_list
+   56           | "print" ">>" expression "," . plist
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0         go to state 38
+    plist            go to state 254
+    expression_list  go to state 255
+    expression       go to state 82
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 62
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 217
+
+   86 plist: expression __25 "," .
+  223 __25: __25 "," . expression
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 86 (plist)
+
+    type_id0       go to state 38
+    expression     go to state 256
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 218
+
+   40 while_loop: "while" expression ":" NEWLINE . INDENT stmt_list0 DEDENT
+   41           | "while" expression ":" NEWLINE . INDENT stmt_list0 DEDENT else_stmt
+
+    INDENT  shift, and go to state 257
+
+
+State 219
+
+   39 while_loop: "while" expression ":" semi_stmt_list . NEWLINE
+
+    NEWLINE  shift, and go to state 258
+
+
+State 220
+
+  154 pair: expression ":" . expression
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 259
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 221
+
+  161 __0: pair "," . __23
+
+    NEWLINE  shift, and go to state 260
+
+    $default  reduce using rule 218 (__23)
+
+    __23  go to state 261
+
+
+State 222
+
+  160 __0: pair NEWLINE . ","
+
+    ","  shift, and go to state 262
+
+
+State 223
+
+  155 dict: "{" __24 __17 "}" .
+
+    $default  reduce using rule 155 (dict)
+
+
+State 224
+
+   91 tuple_ext_expr: expression "," . __30 __20
+
+    $default  reduce using rule 232 (__30)
+
+    __30  go to state 263
+
+
+State 225
+
+   95 function_call: type_id0 "(" expression_list0 ")" .
+
+    $default  reduce using rule 95 (function_call)
+
+
+State 226
+
+   96 function_call: type_id0 "(" expression_list0 "," . ")"
+
+    ")"  shift, and go to state 264
+
+
+State 227
+
+   89 expression_list: expression __25 .
+  223 __25: __25 . "," expression
+
+    ","  shift, and go to state 265
+
+    ","       [reduce using rule 89 (expression_list)]
+    $default  reduce using rule 89 (expression_list)
+
+
+State 228
+
+  191 __9: __9 "," target .
+
+    $default  reduce using rule 191 (__9)
+
+
+State 229
+
+  101 if_expr: boolean_expr "if" root_expr "else" . root_expr
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    function_call  go to state 41
+    root_expr      go to state 266
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 230
+
+   97 function_call: primary_expr "(" expression_list0 ")" .
+
+    $default  reduce using rule 97 (function_call)
+
+
+State 231
+
+   98 function_call: primary_expr "(" expression_list0 "," . ")"
+
+    ")"  shift, and go to state 267
+
+
+State 232
+
+  152 simple_target: primary_expr "[" tuple_ext_expr "]" .
+
+    $default  reduce using rule 152 (simple_target)
+
+
+State 233
+
+  153 simple_target: primary_expr "[" expression0 ":" . expression0 "]"
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 93 (expression0)
+
+    type_id0       go to state 38
+    expression0    go to state 268
+    expression     go to state 84
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 234
+
+   74 type: "(" ")" "->" . type
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type      go to state 269
+    type_id0  go to state 130
+    type_id   go to state 131
+    type_var  go to state 132
+
+
+State 235
+
+   80 type_list0: type __27 .
+  227 __27: __27 . "," type
+
+    ","  shift, and go to state 270
+
+    $default  reduce using rule 80 (type_list0)
+
+
+State 236
+
+   73 type: "(" type_list0 ")" . "->" type
+
+    "->"  shift, and go to state 271
+
+
+State 237
+
+   75 type_id0: ID "of" "[" type_list0 "]" .
+
+    $default  reduce using rule 75 (type_id0)
+
+
+State 238
+
+  217 __22: expression .
+  239 __33: __33 expression . ","
+
+    ","  shift, and go to state 272
+
+    $default  reduce using rule 217 (__22)
+
+
+State 239
+
+  146 primary_expr: "(" expression "," __33 __22 . ")"
+
+    ")"  shift, and go to state 273
+
+
+State 240
+
+  193 __10: __10 "," target .
+
+    $default  reduce using rule 193 (__10)
+
+
+State 241
+
+  235 __31: __31 "," expression .
+
+    $default  reduce using rule 235 (__31)
+
+
+State 242
+
+  147 primary_expr: "[" expression __31 __21 "]" .
+
+    $default  reduce using rule 147 (primary_expr)
+
+
+State 243
+
+    8 classdef: "class" ID ":" NEWLINE INDENT . block DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 274
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 23 (block)
+
+    statement          go to state 275
+    definition         go to state 276
+    block              go to state 277
+    basic_statement    go to state 27
+    control_structure  go to state 278
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __5                go to state 279
+    __14               go to state 280
+
+
+State 244
+
+   24 semi_block: statement __26 . __19
+  225 __26: __26 . ";" statement
+
+    ";"  shift, and go to state 281
+
+    $default  reduce using rule 210 (__19)
+
+    __19  go to state 282
+
+
+State 245
+
+   10 classdef: "class" ID ":" semi_block NEWLINE .
+
+    $default  reduce using rule 10 (classdef)
+
+
+State 246
+
+    7 classdef: "class" ID "of" "[" type_formals . "]" ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" "[" type_formals . "]" ":" semi_block NEWLINE
+
+    "]"  shift, and go to state 283
+
+
+State 247
+
+   11 type_formals: type_var . __28
+
+    $default  reduce using rule 228 (__28)
+
+    __28  go to state 284
+
+
+State 248
+
+   12 definition: "def" ID "(" formals ")" . "::" type ":" NEWLINE INDENT block DEDENT
+   13           | "def" ID "(" formals ")" . ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals ")" . "::" type ":" semi_block NEWLINE
+   15           | "def" ID "(" formals ")" . ":" semi_block NEWLINE
+   16           | "def" ID "(" formals ")" . ":" native_stmt __34 NEWLINE
+   17           | "def" ID "(" formals ")" . ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+   18           | "def" ID "(" formals ")" . "::" type ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals ")" . "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ":"   shift, and go to state 285
+    "::"  shift, and go to state 286
+
+
+State 249
+
+   20 formals: __8 __16 . __18
+  205 __16: __16 . "," __7
+
+    ","  shift, and go to state 287
+
+    $default  reduce using rule 208 (__18)
+
+    __18  go to state 288
+
+
+State 250
+
+   36 for_loop: "for" target_list "in" tuple_ext_expr ":" . semi_stmt_list NEWLINE
+   37         | "for" target_list "in" tuple_ext_expr ":" . NEWLINE INDENT stmt_list0 DEDENT
+   38         | "for" target_list "in" tuple_ext_expr ":" . NEWLINE INDENT stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 289
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 214
+    basic_statement  go to state 27
+    semi_stmt_list   go to state 290
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 251
+
+   44 if_stmt: "if" expression ":" NEWLINE INDENT . stmt_list0 DEDENT
+   45        | "if" expression ":" NEWLINE INDENT . stmt_list0 DEDENT elif_stmts
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 291
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 5 (stmt_list0)
+
+    stmt_list0         go to state 292
+    statement          go to state 293
+    basic_statement    go to state 27
+    control_structure  go to state 294
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __6                go to state 295
+    __15               go to state 296
+
+
+State 252
+
+   35 semi_stmt_list: statement __26 . __19
+  225 __26: __26 . ";" statement
+
+    ";"  shift, and go to state 281
+
+    $default  reduce using rule 210 (__19)
+
+    __19  go to state 297
+
+
+State 253
+
+   42 if_stmt: "if" expression ":" semi_stmt_list NEWLINE .
+   43        | "if" expression ":" semi_stmt_list NEWLINE . elif_stmts
+
+    "elif"  shift, and go to state 298
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 42 (if_stmt)
+
+    elif_stmts  go to state 300
+    else_stmt   go to state 301
+
+
+State 254
+
+   56 print_stmt: "print" ">>" expression "," plist .
+
+    $default  reduce using rule 56 (print_stmt)
+
+
+State 255
+
+   55 print_stmt: "print" ">>" expression "," expression_list .
+
+    $default  reduce using rule 55 (print_stmt)
+
+
+State 256
+
+  223 __25: __25 "," expression .
+
+    $default  reduce using rule 223 (__25)
+
+
+State 257
+
+   40 while_loop: "while" expression ":" NEWLINE INDENT . stmt_list0 DEDENT
+   41           | "while" expression ":" NEWLINE INDENT . stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 291
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 5 (stmt_list0)
+
+    stmt_list0         go to state 302
+    statement          go to state 293
+    basic_statement    go to state 27
+    control_structure  go to state 294
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __6                go to state 295
+    __15               go to state 296
+
+
+State 258
+
+   39 while_loop: "while" expression ":" semi_stmt_list NEWLINE .
+
+    $default  reduce using rule 39 (while_loop)
+
+
+State 259
+
+  154 pair: expression ":" expression .
+
+    $default  reduce using rule 154 (pair)
+
+
+State 260
+
+  219 __23: NEWLINE .
+
+    $default  reduce using rule 219 (__23)
+
+
+State 261
+
+  161 __0: pair "," __23 .
+
+    $default  reduce using rule 161 (__0)
+
+
+State 262
+
+  160 __0: pair NEWLINE "," .
+
+    $default  reduce using rule 160 (__0)
+
+
+State 263
+
+   91 tuple_ext_expr: expression "," __30 . __20
+  233 __30: __30 . expression ","
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 212 (__20)
+
+    type_id0       go to state 38
+    expression     go to state 303
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+    __20           go to state 304
+
+
+State 264
+
+   96 function_call: type_id0 "(" expression_list0 "," ")" .
+
+    $default  reduce using rule 96 (function_call)
+
+
+State 265
+
+  223 __25: __25 "," . expression
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 256
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 266
+
+  101 if_expr: boolean_expr "if" root_expr "else" root_expr .
+
+    $default  reduce using rule 101 (if_expr)
+
+
+State 267
+
+   98 function_call: primary_expr "(" expression_list0 "," ")" .
+
+    $default  reduce using rule 98 (function_call)
+
+
+State 268
+
+  153 simple_target: primary_expr "[" expression0 ":" expression0 . "]"
+
+    "]"  shift, and go to state 305
+
+
+State 269
+
+   74 type: "(" ")" "->" type .
+
+    $default  reduce using rule 74 (type)
+
+
+State 270
+
+  227 __27: __27 "," . type
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type      go to state 306
+    type_id0  go to state 130
+    type_id   go to state 131
+    type_var  go to state 132
+
+
+State 271
+
+   73 type: "(" type_list0 ")" "->" . type
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type      go to state 307
+    type_id0  go to state 130
+    type_id   go to state 131
+    type_var  go to state 132
+
+
+State 272
+
+  239 __33: __33 expression "," .
+
+    $default  reduce using rule 239 (__33)
+
+
+State 273
+
+  146 primary_expr: "(" expression "," __33 __22 ")" .
+
+    $default  reduce using rule 146 (primary_expr)
+
+
+State 274
+
+  182 __5: NEWLINE .
+
+    $default  reduce using rule 182 (__5)
+
+
+State 275
+
+  179 __5: statement . __12
+
+    ";"      shift, and go to state 88
+    NEWLINE  shift, and go to state 89
+
+    __12  go to state 308
+
+
+State 276
+
+  181 __5: definition .
+
+    $default  reduce using rule 181 (__5)
+
+
+State 277
+
+    8 classdef: "class" ID ":" NEWLINE INDENT block . DEDENT
+
+    DEDENT  shift, and go to state 309
+
+
+State 278
+
+  180 __5: control_structure .
+
+    $default  reduce using rule 180 (__5)
+
+
+State 279
+
+  200 __14: __5 .
+
+    $default  reduce using rule 200 (__14)
+
+
+State 280
+
+   22 block: __14 .
+  201 __14: __14 . __2
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 310
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 22 (block)
+
+    statement          go to state 311
+    definition         go to state 312
+    basic_statement    go to state 27
+    control_structure  go to state 313
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __2                go to state 314
+
+
+State 281
+
+  211 __19: ";" .
+  225 __26: __26 ";" . statement
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 211 (__19)
+
+    statement        go to state 315
+    basic_statement  go to state 27
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 282
+
+   24 semi_block: statement __26 __19 .
+
+    $default  reduce using rule 24 (semi_block)
+
+
+State 283
+
+    7 classdef: "class" ID "of" "[" type_formals "]" . ":" NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" "[" type_formals "]" . ":" semi_block NEWLINE
+
+    ":"  shift, and go to state 316
+
+
+State 284
+
+   11 type_formals: type_var __28 .
+  229 __28: __28 . "," type_var
+
+    ","  shift, and go to state 317
+
+    $default  reduce using rule 11 (type_formals)
+
+
+State 285
+
+   13 definition: "def" ID "(" formals ")" ":" . NEWLINE INDENT block DEDENT
+   15           | "def" ID "(" formals ")" ":" . semi_block NEWLINE
+   16           | "def" ID "(" formals ")" ":" . native_stmt __34 NEWLINE
+   17           | "def" ID "(" formals ")" ":" . NEWLINE INDENT native_stmt __35 NEWLINE DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "native"     shift, and go to state 318
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 319
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 205
+    semi_block       go to state 320
+    basic_statement  go to state 27
+    native_stmt      go to state 321
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 286
+
+   12 definition: "def" ID "(" formals ")" "::" . type ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals ")" "::" . type ":" semi_block NEWLINE
+   18           | "def" ID "(" formals ")" "::" . type ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals ")" "::" . type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ID           shift, and go to state 126
+    "@type_var"  shift, and go to state 127
+    "("          shift, and go to state 128
+
+    type      go to state 322
+    type_id0  go to state 130
+    type_id   go to state 131
+    type_var  go to state 132
+
+
+State 287
+
+  205 __16: __16 "," . __7
+  209 __18: "," .
+
+    ID  shift, and go to state 323
+
+    $default  reduce using rule 209 (__18)
+
+    typed_id  go to state 324
+    __7       go to state 325
+
+
+State 288
+
+   20 formals: __8 __16 __18 .
+
+    $default  reduce using rule 20 (formals)
+
+
+State 289
+
+   37 for_loop: "for" target_list "in" tuple_ext_expr ":" NEWLINE . INDENT stmt_list0 DEDENT
+   38         | "for" target_list "in" tuple_ext_expr ":" NEWLINE . INDENT stmt_list0 DEDENT else_stmt
+
+    INDENT  shift, and go to state 326
+
+
+State 290
+
+   36 for_loop: "for" target_list "in" tuple_ext_expr ":" semi_stmt_list . NEWLINE
+
+    NEWLINE  shift, and go to state 327
+
+
+State 291
+
+  185 __6: NEWLINE .
+
+    $default  reduce using rule 185 (__6)
+
+
+State 292
+
+   44 if_stmt: "if" expression ":" NEWLINE INDENT stmt_list0 . DEDENT
+   45        | "if" expression ":" NEWLINE INDENT stmt_list0 . DEDENT elif_stmts
+
+    DEDENT  shift, and go to state 328
+
+
+State 293
+
+  183 __6: statement . __12
+
+    ";"      shift, and go to state 88
+    NEWLINE  shift, and go to state 89
+
+    __12  go to state 329
+
+
+State 294
+
+  184 __6: control_structure .
+
+    $default  reduce using rule 184 (__6)
+
+
+State 295
+
+  202 __15: __6 .
+
+    $default  reduce using rule 202 (__15)
+
+
+State 296
+
+    4 stmt_list0: __15 .
+  203 __15: __15 . __3
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 330
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 4 (stmt_list0)
+
+    statement          go to state 331
+    basic_statement    go to state 27
+    control_structure  go to state 332
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __3                go to state 333
+
+
+State 297
+
+   35 semi_stmt_list: statement __26 __19 .
+
+    $default  reduce using rule 35 (semi_stmt_list)
+
+
+State 298
+
+   47 elif_stmts: "elif" . expression ":" semi_stmt_list NEWLINE
+   48           | "elif" . expression ":" semi_stmt_list NEWLINE elif_stmts
+   49           | "elif" . expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+   50           | "elif" . expression ":" NEWLINE INDENT stmt_list0 DEDENT
+
+    ID           shift, and go to state 58
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 59
+    "["          shift, and go to state 60
+    "not"        shift, and go to state 12
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    type_id0       go to state 38
+    expression     go to state 334
+    function_call  go to state 41
+    root_expr      go to state 42
+    if_expr        go to state 43
+    boolean_expr   go to state 44
+    compare_expr   go to state 45
+    lcompare_expr  go to state 46
+    arith_expr     go to state 47
+    unary_expr     go to state 48
+    expo_expr      go to state 49
+    primary_expr   go to state 50
+    simple_target  go to state 62
+    dict           go to state 52
+    str_expr       go to state 53
+
+
+State 299
+
+   51 else_stmt: "else" . ":" semi_stmt_list NEWLINE
+   52          | "else" . ":" NEWLINE INDENT stmt_list0 DEDENT
+
+    ":"  shift, and go to state 335
+
+
+State 300
+
+   43 if_stmt: "if" expression ":" semi_stmt_list NEWLINE elif_stmts .
+
+    $default  reduce using rule 43 (if_stmt)
+
+
+State 301
+
+   46 elif_stmts: else_stmt .
+
+    $default  reduce using rule 46 (elif_stmts)
+
+
+State 302
+
+   40 while_loop: "while" expression ":" NEWLINE INDENT stmt_list0 . DEDENT
+   41           | "while" expression ":" NEWLINE INDENT stmt_list0 . DEDENT else_stmt
+
+    DEDENT  shift, and go to state 336
+
+
+State 303
+
+  213 __20: expression .
+  233 __30: __30 expression . ","
+
+    ","  shift, and go to state 337
+
+    $default  reduce using rule 213 (__20)
+
+
+State 304
+
+   91 tuple_ext_expr: expression "," __30 __20 .
+
+    $default  reduce using rule 91 (tuple_ext_expr)
+
+
+State 305
+
+  153 simple_target: primary_expr "[" expression0 ":" expression0 "]" .
+
+    $default  reduce using rule 153 (simple_target)
+
+
+State 306
+
+  227 __27: __27 "," type .
+
+    $default  reduce using rule 227 (__27)
+
+
+State 307
+
+   73 type: "(" type_list0 ")" "->" type .
+
+    $default  reduce using rule 73 (type)
+
+
+State 308
+
+  179 __5: statement __12 .
+
+    $default  reduce using rule 179 (__5)
+
+
+State 309
+
+    8 classdef: "class" ID ":" NEWLINE INDENT block DEDENT .
+
+    $default  reduce using rule 8 (classdef)
+
+
+State 310
+
+  170 __2: NEWLINE .
+
+    $default  reduce using rule 170 (__2)
+
+
+State 311
+
+  167 __2: statement . __11
+
+    ";"      shift, and go to state 190
+    NEWLINE  shift, and go to state 191
+
+    __11  go to state 338
+
+
+State 312
+
+  169 __2: definition .
+
+    $default  reduce using rule 169 (__2)
+
+
+State 313
+
+  168 __2: control_structure .
+
+    $default  reduce using rule 168 (__2)
+
+
+State 314
+
+  201 __14: __14 __2 .
+
+    $default  reduce using rule 201 (__14)
+
+
+State 315
+
+  225 __26: __26 ";" statement .
+
+    $default  reduce using rule 225 (__26)
+
+
+State 316
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" . NEWLINE INDENT block DEDENT
+    9         | "class" ID "of" "[" type_formals "]" ":" . semi_block NEWLINE
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 339
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 205
+    semi_block       go to state 340
+    basic_statement  go to state 27
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 317
+
+  229 __28: __28 "," . type_var
+
+    "@type_var"  shift, and go to state 127
+
+    type_var  go to state 341
+
+
+State 318
+
+   53 native_stmt: "native" . STRING
+
+    STRING  shift, and go to state 342
+
+
+State 319
+
+   13 definition: "def" ID "(" formals ")" ":" NEWLINE . INDENT block DEDENT
+   17           | "def" ID "(" formals ")" ":" NEWLINE . INDENT native_stmt __35 NEWLINE DEDENT
+
+    INDENT  shift, and go to state 343
+
+
+State 320
+
+   15 definition: "def" ID "(" formals ")" ":" semi_block . NEWLINE
+
+    NEWLINE  shift, and go to state 344
+
+
+State 321
+
+   16 definition: "def" ID "(" formals ")" ":" native_stmt . __34 NEWLINE
+
+    ";"  shift, and go to state 345
+
+    $default  reduce using rule 240 (__34)
+
+    __34  go to state 346
+
+
+State 322
+
+   12 definition: "def" ID "(" formals ")" "::" type . ":" NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals ")" "::" type . ":" semi_block NEWLINE
+   18           | "def" ID "(" formals ")" "::" type . ":" native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals ")" "::" type . ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ":"  shift, and go to state 347
+
+
+State 323
+
+   70 typed_id: ID . "::" type
+  187 __7: ID .
+
+    "::"  shift, and go to state 56
+
+    $default  reduce using rule 187 (__7)
+
+
+State 324
+
+  186 __7: typed_id .
+
+    $default  reduce using rule 186 (__7)
+
+
+State 325
+
+  205 __16: __16 "," __7 .
+
+    $default  reduce using rule 205 (__16)
+
+
+State 326
+
+   37 for_loop: "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT . stmt_list0 DEDENT
+   38         | "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT . stmt_list0 DEDENT else_stmt
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 291
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 5 (stmt_list0)
+
+    stmt_list0         go to state 348
+    statement          go to state 293
+    basic_statement    go to state 27
+    control_structure  go to state 294
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __6                go to state 295
+    __15               go to state 296
+
+
+State 327
+
+   36 for_loop: "for" target_list "in" tuple_ext_expr ":" semi_stmt_list NEWLINE .
+
+    $default  reduce using rule 36 (for_loop)
+
+
+State 328
+
+   44 if_stmt: "if" expression ":" NEWLINE INDENT stmt_list0 DEDENT .
+   45        | "if" expression ":" NEWLINE INDENT stmt_list0 DEDENT . elif_stmts
+
+    "elif"  shift, and go to state 298
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 44 (if_stmt)
+
+    elif_stmts  go to state 349
+    else_stmt   go to state 301
+
+
+State 329
+
+  183 __6: statement __12 .
+
+    $default  reduce using rule 183 (__6)
+
+
+State 330
+
+  173 __3: NEWLINE .
+
+    $default  reduce using rule 173 (__3)
+
+
+State 331
+
+  171 __3: statement . __11
+
+    ";"      shift, and go to state 190
+    NEWLINE  shift, and go to state 191
+
+    __11  go to state 350
+
+
+State 332
+
+  172 __3: control_structure .
+
+    $default  reduce using rule 172 (__3)
+
+
+State 333
+
+  203 __15: __15 __3 .
+
+    $default  reduce using rule 203 (__15)
+
+
+State 334
+
+   47 elif_stmts: "elif" expression . ":" semi_stmt_list NEWLINE
+   48           | "elif" expression . ":" semi_stmt_list NEWLINE elif_stmts
+   49           | "elif" expression . ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+   50           | "elif" expression . ":" NEWLINE INDENT stmt_list0 DEDENT
+
+    ":"  shift, and go to state 351
+
+
+State 335
+
+   51 else_stmt: "else" ":" . semi_stmt_list NEWLINE
+   52          | "else" ":" . NEWLINE INDENT stmt_list0 DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 352
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 214
+    basic_statement  go to state 27
+    semi_stmt_list   go to state 353
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 336
+
+   40 while_loop: "while" expression ":" NEWLINE INDENT stmt_list0 DEDENT .
+   41           | "while" expression ":" NEWLINE INDENT stmt_list0 DEDENT . else_stmt
+
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 40 (while_loop)
+
+    else_stmt  go to state 354
+
+
+State 337
+
+  233 __30: __30 expression "," .
+
+    $default  reduce using rule 233 (__30)
+
+
+State 338
+
+  167 __2: statement __11 .
+
+    $default  reduce using rule 167 (__2)
+
+
+State 339
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" NEWLINE . INDENT block DEDENT
+
+    INDENT  shift, and go to state 355
+
+
+State 340
+
+    9 classdef: "class" ID "of" "[" type_formals "]" ":" semi_block . NEWLINE
+
+    NEWLINE  shift, and go to state 356
+
+
+State 341
+
+  229 __28: __28 "," type_var .
+
+    $default  reduce using rule 229 (__28)
+
+
+State 342
+
+   53 native_stmt: "native" STRING .
+
+    $default  reduce using rule 53 (native_stmt)
+
+
+State 343
+
+   13 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT . block DEDENT
+   17           | "def" ID "(" formals ")" ":" NEWLINE INDENT . native_stmt __35 NEWLINE DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "native"     shift, and go to state 318
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 274
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 23 (block)
+
+    statement          go to state 275
+    definition         go to state 276
+    block              go to state 357
+    basic_statement    go to state 27
+    control_structure  go to state 278
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    native_stmt        go to state 358
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __5                go to state 279
+    __14               go to state 280
+
+
+State 344
+
+   15 definition: "def" ID "(" formals ")" ":" semi_block NEWLINE .
+
+    $default  reduce using rule 15 (definition)
+
+
+State 345
+
+  241 __34: ";" .
+
+    $default  reduce using rule 241 (__34)
+
+
+State 346
+
+   16 definition: "def" ID "(" formals ")" ":" native_stmt __34 . NEWLINE
+
+    NEWLINE  shift, and go to state 359
+
+
+State 347
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" . NEWLINE INDENT block DEDENT
+   14           | "def" ID "(" formals ")" "::" type ":" . semi_block NEWLINE
+   18           | "def" ID "(" formals ")" "::" type ":" . native_stmt __36 NEWLINE
+   19           | "def" ID "(" formals ")" "::" type ":" . NEWLINE INDENT native_stmt __29 NEWLINE DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "native"     shift, and go to state 318
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 360
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 205
+    semi_block       go to state 361
+    basic_statement  go to state 27
+    native_stmt      go to state 362
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 348
+
+   37 for_loop: "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 . DEDENT
+   38         | "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 . DEDENT else_stmt
+
+    DEDENT  shift, and go to state 363
+
+
+State 349
+
+   45 if_stmt: "if" expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts .
+
+    $default  reduce using rule 45 (if_stmt)
+
+
+State 350
+
+  171 __3: statement __11 .
+
+    $default  reduce using rule 171 (__3)
+
+
+State 351
+
+   47 elif_stmts: "elif" expression ":" . semi_stmt_list NEWLINE
+   48           | "elif" expression ":" . semi_stmt_list NEWLINE elif_stmts
+   49           | "elif" expression ":" . NEWLINE INDENT stmt_list0 DEDENT elif_stmts
+   50           | "elif" expression ":" . NEWLINE INDENT stmt_list0 DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 364
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    statement        go to state 214
+    basic_statement  go to state 27
+    semi_stmt_list   go to state 365
+    print_stmt       go to state 32
+    assign           go to state 33
+    target_list      go to state 34
+    target_list_br   go to state 35
+    tlist            go to state 36
+    typed_id         go to state 37
+    type_id0         go to state 38
+    target           go to state 39
+    expression       go to state 40
+    function_call    go to state 41
+    root_expr        go to state 42
+    if_expr          go to state 43
+    boolean_expr     go to state 44
+    compare_expr     go to state 45
+    lcompare_expr    go to state 46
+    arith_expr       go to state 47
+    unary_expr       go to state 48
+    expo_expr        go to state 49
+    primary_expr     go to state 50
+    simple_target    go to state 51
+    dict             go to state 52
+    str_expr         go to state 53
+
+
+State 352
+
+   52 else_stmt: "else" ":" NEWLINE . INDENT stmt_list0 DEDENT
+
+    INDENT  shift, and go to state 366
+
+
+State 353
+
+   51 else_stmt: "else" ":" semi_stmt_list . NEWLINE
+
+    NEWLINE  shift, and go to state 367
+
+
+State 354
+
+   41 while_loop: "while" expression ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt .
+
+    $default  reduce using rule 41 (while_loop)
+
+
+State 355
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" NEWLINE INDENT . block DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 274
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 23 (block)
+
+    statement          go to state 275
+    definition         go to state 276
+    block              go to state 368
+    basic_statement    go to state 27
+    control_structure  go to state 278
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __5                go to state 279
+    __14               go to state 280
+
+
+State 356
+
+    9 classdef: "class" ID "of" "[" type_formals "]" ":" semi_block NEWLINE .
+
+    $default  reduce using rule 9 (classdef)
+
+
+State 357
+
+   13 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT block . DEDENT
+
+    DEDENT  shift, and go to state 369
+
+
+State 358
+
+   17 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT native_stmt . __35 NEWLINE DEDENT
+
+    ";"  shift, and go to state 370
+
+    $default  reduce using rule 242 (__35)
+
+    __35  go to state 371
+
+
+State 359
+
+   16 definition: "def" ID "(" formals ")" ":" native_stmt __34 NEWLINE .
+
+    $default  reduce using rule 16 (definition)
+
+
+State 360
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE . INDENT block DEDENT
+   19           | "def" ID "(" formals ")" "::" type ":" NEWLINE . INDENT native_stmt __29 NEWLINE DEDENT
+
+    INDENT  shift, and go to state 372
+
+
+State 361
+
+   14 definition: "def" ID "(" formals ")" "::" type ":" semi_block . NEWLINE
+
+    NEWLINE  shift, and go to state 373
+
+
+State 362
+
+   18 definition: "def" ID "(" formals ")" "::" type ":" native_stmt . __36 NEWLINE
+
+    ";"  shift, and go to state 374
+
+    $default  reduce using rule 244 (__36)
+
+    __36  go to state 375
+
+
+State 363
+
+   37 for_loop: "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT .
+   38         | "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT . else_stmt
+
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 37 (for_loop)
+
+    else_stmt  go to state 376
+
+
+State 364
+
+   49 elif_stmts: "elif" expression ":" NEWLINE . INDENT stmt_list0 DEDENT elif_stmts
+   50           | "elif" expression ":" NEWLINE . INDENT stmt_list0 DEDENT
+
+    INDENT  shift, and go to state 377
+
+
+State 365
+
+   47 elif_stmts: "elif" expression ":" semi_stmt_list . NEWLINE
+   48           | "elif" expression ":" semi_stmt_list . NEWLINE elif_stmts
+
+    NEWLINE  shift, and go to state 378
+
+
+State 366
+
+   52 else_stmt: "else" ":" NEWLINE INDENT . stmt_list0 DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 291
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 5 (stmt_list0)
+
+    stmt_list0         go to state 379
+    statement          go to state 293
+    basic_statement    go to state 27
+    control_structure  go to state 294
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __6                go to state 295
+    __15               go to state 296
+
+
+State 367
+
+   51 else_stmt: "else" ":" semi_stmt_list NEWLINE .
+
+    $default  reduce using rule 51 (else_stmt)
+
+
+State 368
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" NEWLINE INDENT block . DEDENT
+
+    DEDENT  shift, and go to state 380
+
+
+State 369
+
+   13 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT block DEDENT .
+
+    $default  reduce using rule 13 (definition)
+
+
+State 370
+
+  243 __35: ";" .
+
+    $default  reduce using rule 243 (__35)
+
+
+State 371
+
+   17 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT native_stmt __35 . NEWLINE DEDENT
+
+    NEWLINE  shift, and go to state 381
+
+
+State 372
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT . block DEDENT
+   19           | "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT . native_stmt __29 NEWLINE DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "def"        shift, and go to state 9
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "native"     shift, and go to state 318
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 274
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 23 (block)
+
+    statement          go to state 275
+    definition         go to state 276
+    block              go to state 382
+    basic_statement    go to state 27
+    control_structure  go to state 278
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    native_stmt        go to state 383
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __5                go to state 279
+    __14               go to state 280
+
+
+State 373
+
+   14 definition: "def" ID "(" formals ")" "::" type ":" semi_block NEWLINE .
+
+    $default  reduce using rule 14 (definition)
+
+
+State 374
+
+  245 __36: ";" .
+
+    $default  reduce using rule 245 (__36)
+
+
+State 375
+
+   18 definition: "def" ID "(" formals ")" "::" type ":" native_stmt __36 . NEWLINE
+
+    NEWLINE  shift, and go to state 384
+
+
+State 376
+
+   38 for_loop: "for" target_list "in" tuple_ext_expr ":" NEWLINE INDENT stmt_list0 DEDENT else_stmt .
+
+    $default  reduce using rule 38 (for_loop)
+
+
+State 377
+
+   49 elif_stmts: "elif" expression ":" NEWLINE INDENT . stmt_list0 DEDENT elif_stmts
+   50           | "elif" expression ":" NEWLINE INDENT . stmt_list0 DEDENT
+
+    ID           shift, and go to state 1
+    "+"          shift, and go to state 2
+    "-"          shift, and go to state 3
+    "("          shift, and go to state 4
+    "["          shift, and go to state 5
+    "break"      shift, and go to state 6
+    "continue"   shift, and go to state 8
+    "for"        shift, and go to state 10
+    "if"         shift, and go to state 11
+    "not"        shift, and go to state 12
+    "pass"       shift, and go to state 13
+    "print"      shift, and go to state 14
+    "return"     shift, and go to state 15
+    "while"      shift, and go to state 16
+    "{"          shift, and go to state 17
+    INT_LITERAL  shift, and go to state 18
+    NEWLINE      shift, and go to state 291
+    RAWSTRING    shift, and go to state 20
+    STRING       shift, and go to state 21
+
+    $default  reduce using rule 5 (stmt_list0)
+
+    stmt_list0         go to state 385
+    statement          go to state 293
+    basic_statement    go to state 27
+    control_structure  go to state 294
+    for_loop           go to state 29
+    while_loop         go to state 30
+    if_stmt            go to state 31
+    print_stmt         go to state 32
+    assign             go to state 33
+    target_list        go to state 34
+    target_list_br     go to state 35
+    tlist              go to state 36
+    typed_id           go to state 37
+    type_id0           go to state 38
+    target             go to state 39
+    expression         go to state 40
+    function_call      go to state 41
+    root_expr          go to state 42
+    if_expr            go to state 43
+    boolean_expr       go to state 44
+    compare_expr       go to state 45
+    lcompare_expr      go to state 46
+    arith_expr         go to state 47
+    unary_expr         go to state 48
+    expo_expr          go to state 49
+    primary_expr       go to state 50
+    simple_target      go to state 51
+    dict               go to state 52
+    str_expr           go to state 53
+    __6                go to state 295
+    __15               go to state 296
+
+
+State 378
+
+   47 elif_stmts: "elif" expression ":" semi_stmt_list NEWLINE .
+   48           | "elif" expression ":" semi_stmt_list NEWLINE . elif_stmts
+
+    "elif"  shift, and go to state 298
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 47 (elif_stmts)
+
+    elif_stmts  go to state 386
+    else_stmt   go to state 301
+
+
+State 379
+
+   52 else_stmt: "else" ":" NEWLINE INDENT stmt_list0 . DEDENT
+
+    DEDENT  shift, and go to state 387
+
+
+State 380
+
+    7 classdef: "class" ID "of" "[" type_formals "]" ":" NEWLINE INDENT block DEDENT .
+
+    $default  reduce using rule 7 (classdef)
+
+
+State 381
+
+   17 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE . DEDENT
+
+    DEDENT  shift, and go to state 388
+
+
+State 382
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT block . DEDENT
+
+    DEDENT  shift, and go to state 389
+
+
+State 383
+
+   19 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt . __29 NEWLINE DEDENT
+
+    ";"  shift, and go to state 390
+
+    $default  reduce using rule 230 (__29)
+
+    __29  go to state 391
+
+
+State 384
+
+   18 definition: "def" ID "(" formals ")" "::" type ":" native_stmt __36 NEWLINE .
+
+    $default  reduce using rule 18 (definition)
+
+
+State 385
+
+   49 elif_stmts: "elif" expression ":" NEWLINE INDENT stmt_list0 . DEDENT elif_stmts
+   50           | "elif" expression ":" NEWLINE INDENT stmt_list0 . DEDENT
+
+    DEDENT  shift, and go to state 392
+
+
+State 386
+
+   48 elif_stmts: "elif" expression ":" semi_stmt_list NEWLINE elif_stmts .
+
+    $default  reduce using rule 48 (elif_stmts)
+
+
+State 387
+
+   52 else_stmt: "else" ":" NEWLINE INDENT stmt_list0 DEDENT .
+
+    $default  reduce using rule 52 (else_stmt)
+
+
+State 388
+
+   17 definition: "def" ID "(" formals ")" ":" NEWLINE INDENT native_stmt __35 NEWLINE DEDENT .
+
+    $default  reduce using rule 17 (definition)
+
+
+State 389
+
+   12 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT block DEDENT .
+
+    $default  reduce using rule 12 (definition)
+
+
+State 390
+
+  231 __29: ";" .
+
+    $default  reduce using rule 231 (__29)
+
+
+State 391
+
+   19 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 . NEWLINE DEDENT
+
+    NEWLINE  shift, and go to state 393
+
+
+State 392
+
+   49 elif_stmts: "elif" expression ":" NEWLINE INDENT stmt_list0 DEDENT . elif_stmts
+   50           | "elif" expression ":" NEWLINE INDENT stmt_list0 DEDENT .
+
+    "elif"  shift, and go to state 298
+    "else"  shift, and go to state 299
+
+    $default  reduce using rule 50 (elif_stmts)
+
+    elif_stmts  go to state 394
+    else_stmt   go to state 301
+
+
+State 393
+
+   19 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE . DEDENT
+
+    DEDENT  shift, and go to state 395
+
+
+State 394
+
+   49 elif_stmts: "elif" expression ":" NEWLINE INDENT stmt_list0 DEDENT elif_stmts .
+
+    $default  reduce using rule 49 (elif_stmts)
+
+
+State 395
+
+   19 definition: "def" ID "(" formals ")" "::" type ":" NEWLINE INDENT native_stmt __29 NEWLINE DEDENT .
+
+    $default  reduce using rule 19 (definition)
