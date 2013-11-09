@@ -13,6 +13,8 @@ using namespace std;
 
 /***** AST *****/
 
+static GCINIT _gcdummy;
+
 AST_Ptr
 AST::resolveTypesOuter (Decl* context) 
 {
@@ -207,6 +209,16 @@ Type::freshen ()
 {
     current_mark += 1;
     return _freshen ();
+}
+
+void
+Type::freshen (gcvector<Type_Ptr>& types)
+{
+    current_mark += 1;
+
+    for (size_t i = 0; i < types.size (); i += 1) {
+        types[i] = types[i]->_freshen ();
+    }
 }
 
 Type_Ptr

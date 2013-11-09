@@ -11,6 +11,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 /*****   PRINTLN   *****/
 
 /** A print statement without trailing comma. */

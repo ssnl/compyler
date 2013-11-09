@@ -13,6 +13,9 @@
 
 using namespace std;
 
+bool GCINIT::initialized = false;
+static GCINIT _gcdummy;
+
 const char* PRELUDE_NAME = "prelude.py";
 
 int errCount;

@@ -11,6 +11,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 /* Definitions of methods in base class AST. */
 
 int AST::current_mark = 0;

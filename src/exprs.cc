@@ -11,6 +11,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 /*****   EXPR_LIST    *****/
 
 /** A list of expressions. */

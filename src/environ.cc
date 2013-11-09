@@ -9,6 +9,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 Environ::Environ (const Environ* enclosing)
     : enclosure (enclosing) 
 {

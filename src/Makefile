@@ -13,6 +13,7 @@
 #
 
 ARCH := $(shell uname -m)
+OS := $(shell uname)
 
 ifndef LIBHOME
 ifdef MASTERDIR
@@ -30,7 +31,13 @@ CXXFLAGS = -g -Wall
 
 INCLUDES = -I$(LIBHOME)/include
 
-LOADLIBS = -L$(LIBHOME)/lib -lgc -lpthread -lrt
+ifeq "$(OS)" "Darwin"
+    OTHER_LIBS = -lpthread
+else
+    OTHER_LIBS = -lpthread -lrt
+endif
+
+LOADLIBS = -L$(LIBHOME)/lib -lgc $(OTHER_LIBS)
 
 CXXFLAGS = -g -Wall $(INCLUDES)
 

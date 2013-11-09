@@ -9,6 +9,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 /** These must be filled in with declarations from the standard
  *  prelude.  They are used to supply the types of built-in
  *  constructs.  All are initially NULL. */
@@ -27,7 +29,7 @@ Decl* rangeDecl;
 /** List of declarations corresponding to the module and actual
  *  declarations in the program (as opposed to type variables
  *  introduced by freshen). */
-static vector<Decl*> allDecls;
+static gcvector<Decl*> allDecls;
 
 Decl::Decl (const gcstring& name, Decl* container, Environ* members)
     : _frozen (true), _name (name), _container (container),
@@ -74,7 +76,7 @@ void
 Decl::printMembersList () const {
     if (_members != NULL) {
 	printf (" (index_list");
-	const vector<Decl*>& members = getEnviron ()->get_members ();
+	const gcvector<Decl*>& members = getEnviron ()->get_members ();
 	for (size_t i = 0; i < members.size (); i += 1)
 	    printf (" %d", members[i]->getIndex ());
 	printf (")");
@@ -268,7 +270,7 @@ makeVarDecl (const gcstring& name, Decl* func, AST_Ptr type)
 class ParamDecl : public TypedDecl {
 public:
 
-    ParamDecl (const string& name, Decl* func, int k,
+    ParamDecl (const gcstring& name, Decl* func, int k,
               AST_Ptr type)
         :  TypedDecl (name, func, type), _posn (k) {
     }
@@ -298,7 +300,7 @@ private:
 };
 
 Decl*
-makeParamDecl (const string& name, Decl* func, int k, AST_Ptr type)
+makeParamDecl (const gcstring& name, Decl* func, int k, AST_Ptr type)
 {
     return new ParamDecl (name, func, k, type);
 }
@@ -425,7 +427,7 @@ makeMethodDecl (const gcstring& name, Decl* cls, AST_Ptr type)
 class ClassDecl : public Decl {
 public:
 
-    ClassDecl (const string& name, AST_Ptr params)
+    ClassDecl (const gcstring& name, AST_Ptr params)
         : Decl (name, NULL, new Environ (outer_environ)), _params (params) {
     }
 
@@ -496,7 +498,7 @@ protected:
 };
 
 Decl*
-makeClassDecl (const string& name, AST_Ptr params)
+makeClassDecl (const gcstring& name, AST_Ptr params)
 {
     return new ClassDecl (name, params);
 }
@@ -504,7 +506,7 @@ makeClassDecl (const string& name, AST_Ptr params)
 class ModuleDecl : public Decl {
 public:
 
-    ModuleDecl (const string& name)
+    ModuleDecl (const gcstring& name)
         :  Decl (name, NULL, new Environ (NULL)) {
     }
 
@@ -532,13 +534,13 @@ protected:
 };
 
 Decl*
-makeModuleDecl (const string& name)
+makeModuleDecl (const gcstring& name)
 {
     return new ModuleDecl (name);
 }
 
 bool
-undefinable (const string& name)
+undefinable (const gcstring& name)
 {
     return name == "None";
 }

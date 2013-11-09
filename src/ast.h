@@ -314,6 +314,10 @@ public:
      *  by fresh unbound variables. */
     Type_Ptr freshen ();
 
+    /** Simultaneously freshen all unbound type variables in the trees in
+     *  TYPES, replacing each TYPES[i] with a freshened version. */
+    static void freshen (gcvector<Type_Ptr>& types);
+
     /** A new, unbound type variable. */
     static Type_Ptr makeVar ();
 

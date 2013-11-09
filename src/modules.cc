@@ -11,6 +11,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 const Environ* outer_environ;
 
 /*****   MODULE    *****/

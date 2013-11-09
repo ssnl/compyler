@@ -17,6 +17,8 @@
 
     using namespace std;
 
+    static GCINIT _gcdummy;
+
     static AST_Ptr theTree;
    
     static const char* last_source_loc;
@@ -760,7 +762,7 @@ empty:
 
 static stack<int> indentation_stack;
 bool debugParser;
-static vector<FILE*> files;
+static gcvector<FILE*> files;
 
 /** A mapping from binary operators to corresponding method
  *  names (as tokens).  Initialized from BINOP_MAP_INIT. */

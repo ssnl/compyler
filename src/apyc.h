@@ -13,6 +13,21 @@
 class Decl;
 class Environ;
 
+/** A dummy class whose sole purpose is to provide a constructor that
+ *  initializes the garbage collector (required for Darwin).  Put a
+ *  definition of a dummy GCINIT at the beginning of each source
+ *  file. */
+class GCINIT {
+public:
+    GCINIT() {
+        if (!initialized) 
+            GC_init();
+        initialized = true;
+    }
+private:
+    static bool initialized;
+};
+
 class semantic_error : public std::runtime_error {
 public:
     explicit semantic_error (const std::string& s) : std::runtime_error (s)
@@ -55,7 +70,7 @@ extern int maxPhase;
  *  program entity.  Subtypes of Decl refer to local variables,
  *  parameters, global variables, defined functions, methods, constants,
  *  modules, and classes. */
-class Decl {
+class Decl : public gc {
 public:
 
     Decl (const gcstring& name, Decl* container, Environ* members = NULL);
@@ -222,9 +237,9 @@ extern Decl* boolDecl;
 extern Decl* fileDecl;
 extern Decl* rangeDecl;
 
-typedef std::vector<Decl*> Decl_Vector;
+typedef gcvector<Decl*> Decl_Vector;
 
-class Environ {
+class Environ : public gc {
 public:
 
     /** An initialiy empty environment enclosed in ENCLOSING. */

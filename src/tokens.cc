@@ -12,6 +12,8 @@
 
 using namespace std;
 
+static GCINIT _gcdummy;
+
 /** Default print for tokens. */
 void
 AST_Token::_print (ostream& out, int indent)
