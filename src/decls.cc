@@ -39,9 +39,9 @@ Decl::Decl (const gcstring& name, Decl* container, Environ* members)
     /* Allow name.c_str() to be used in the future without reallocation. */
     name.c_str ();
 }
-        
+
 /* Print THIS on the standard output. */
-void 
+void
 Decl::print () const
 {
     printf ("(%s %d %s ", declTypeName (),
@@ -58,8 +58,8 @@ Decl::print () const
 void
 Decl::printContainer () const
 {
-    if (getContainer () != NULL) 
-        printf ("%d ", getContainer ()->getIndex ());    
+    if (getContainer () != NULL)
+        printf ("%d ", getContainer ()->getIndex ());
     else
         printf ("-1 ");
 }
@@ -87,7 +87,7 @@ void
 Decl::printTypeParams () const {
 }
 
-Type_Ptr 
+Type_Ptr
 Decl::getType () const
 {
     return NULL;
@@ -209,7 +209,7 @@ Decl::declTypeName () const
 class TypedDecl : public Decl {
 protected:
     TypedDecl (const gcstring& name, Decl* container, AST_Ptr type,
-	       Environ* members = NULL) 
+	       Environ* members = NULL)
         :  Decl (name, container, members),
            _type (type == NULL ? NULL : type->asType ()) {
     }
@@ -255,7 +255,7 @@ protected:
     }
 
     bool assignable () const {
-	return true;
+        return true;
     }
 
 };
@@ -549,9 +549,9 @@ void
 outputDecls ()
 {
     for (size_t i = 0; i < allDecls.size (); i += 1) {
-	if (!allDecls[i]->isInternal ()) {
-	    allDecls[i]->print ();
-	    printf ("\n");
-	}
+    	if (!allDecls[i]->isInternal ()) {
+    	    allDecls[i]->print ();
+    	    printf ("\n");
+    	}
     }
 }

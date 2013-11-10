@@ -20,10 +20,10 @@
     static GCINIT _gcdummy;
 
     static AST_Ptr theTree;
-   
+
     static const char* last_source_loc;
 
-    /** Report an error (same arguments as error) at LOC, or the end of the 
+    /** Report an error (same arguments as error) at LOC, or the end of the
      *  last file if LOC is unknown. */
     static void parse_error (const char* loc, const char* format, ...);
 
@@ -73,7 +73,7 @@
     /** Create an id out of the text and location of TOKEN, which must be a
      *  token. */
     static AST_Ptr make_id (AST_Ptr& token);
-    /** Create an id out of the text and location of (*OPERAND)[0]. OPERAND 
+    /** Create an id out of the text and location of (*OPERAND)[0]. OPERAND
      *  must be a singleton list containing a token. */
     static AST_Ptr make_id (const List_Ptr& operand);
 
@@ -87,7 +87,7 @@
     /** Decrement COUNT, but no further than 0. */
     static inline void
     decr (int& count)
-    { 
+    {
         count -= 1;
         if (count < 0)
             count = 0;
@@ -110,14 +110,14 @@
 %token POW "**"
 
 /* The following tokens represent keywords and node types, sometimes both.
- * In order to keep information about node types together, I've used a little 
+ * In order to keep information about node types together, I've used a little
  * trick.  In a rule such as
  *     if_stmt: "if"^ expression ":"! ...
  * where the relevant keyword also happens to coincide with the external
  * name of the AST operator corresponding to this statement, we define
  *     %token IF "if"
  * In a rule such as
- *     dict_display: "{"! key_datum_list? "}"! 
+ *     dict_display: "{"! key_datum_list? "}"!
  *              { $$ = $^(DICT_DISPLAY, $*); }
  * where the there is no such correspondence, we define instead
  *     %token DICT_DISPLAY "@dict_display"
@@ -125,11 +125,11 @@
  * to appear in any Python program) and does not appear in the grammar, this
  * declaration has no effect on the lexical language recognized.  However, it
  * still provides an easy way to find the external name of an operator.
- * Suppose that yyexternal_token_name(SYNTAX) is NAME for an operator 
+ * Suppose that yyexternal_token_name(SYNTAX) is NAME for an operator
  * whose syntactic category is SYNTAX.  If NAME starts with k "@" characters,
  * then by default the external AST operator name for SYNTAX is NAME+k;
  * otherwise, it is simply NAME.  Hence, the lexical token strings can do double
- * duty.   This convention allows us to have several different operators with 
+ * duty.   This convention allows us to have several different operators with
  * the same printed name, and also prevents operators whose names are not
  * keywords from interfering with the use of those names as legitimate
  * identifiers. */
@@ -155,7 +155,7 @@
 %token FUNCTION_TYPE "@function_type"
 %token IF "if"
 %token IF_EXPR "@if_expr"
-%token INDENT 
+%token INDENT
 %token INT_LITERAL "@int_literal"
 %token LIST_DISPLAY "@list_display"
 %token METHOD "@def"
@@ -195,15 +195,15 @@ _OCTAL: '0' .. '7'
     ;
 
 /* Exclusions from our subset */
-*:  ("as" | "try" | "yield" | "exec" | "del" | "future" | "with" | "assert" 
-     | "except" | "finally" | "global" | "raise" 
+*:  ("as" | "try" | "yield" | "exec" | "del" | "future" | "with" | "assert"
+     | "except" | "finally" | "global" | "raise"
      | "import" | "from" | "lambda")
-                { error (yysource_location (), 
+                { error (yysource_location (),
                          "The '%s' symbol is not part of our subset",
                          $TEXT); }
     ;
 
-ID: (_LETTER | "_")  (_LETTER | _DIGIT | "_")* 
+ID: (_LETTER | "_")  (_LETTER | _DIGIT | "_")*
     ;
 
 TYPE_VAR: '$' (_LETTER | _DIGIT | "_")*;
@@ -221,7 +221,7 @@ _NOT_NL_QUOTE: _OTHERCHAR | '\'' | _ESCAPE
 _SHORTSTRING: "'" _NOT_NL_APOSTR* "'" | '"' _NOT_NL_QUOTE* '"'
     ;
 
-*:    ("'" _NOT_NL_APOSTR* | '"' _NOT_NL_QUOTE*) 
+*:    ("'" _NOT_NL_APOSTR* | '"' _NOT_NL_QUOTE*)
                 { error (yysource_location (), "unterminated string"); }
     ;
 
@@ -230,19 +230,19 @@ _NOT_APOSTR: _OTHERCHAR | _ESCAPE | '"' | "\n" | "\r"
 _NOT_QUOTE: _OTHERCHAR | _ESCAPE | '\'' | "\n" | "\r"
     ;
 
-_LONGSTRING: 
+_LONGSTRING:
       "'''" (_NOT_APOSTR* (( "'" | "''") _NOT_APOSTR)?)* "'''"
-    | "\"\"\"" (_NOT_QUOTE* (( "\"" | "\"\"" ) _NOT_QUOTE)?)* "\"\"\"" 
+    | "\"\"\"" (_NOT_QUOTE* (( "\"" | "\"\"" ) _NOT_QUOTE)?)* "\"\"\""
     ;
 
-*:   
+*:
       ("'''" (_NOT_APOSTR* (( "'" | "''") _NOT_APOSTR)?)*
     | "\"\"\"" (_NOT_QUOTE* (( "\"" | "\"\"" ) _NOT_QUOTE)?)*)
                 { error (yysource_location (), "unterminated long string"); }
     ;
 
 
-STRING: _SHORTSTRING   
+STRING: _SHORTSTRING
                 { $$ = AST::make_token (STRING, $TEXT_SIZE-2, $TEXT+1); }
     ;
 STRING: _LONGSTRING
@@ -257,73 +257,73 @@ RAWSTRING: ("r" | "R") _LONGSTRING
                 { $$ = AST::make_token (RAWSTRING, $TEXT_SIZE-7, $TEXT+4); }
     ;
 
-_POSDIGIT: '1' .. '9' 
+_POSDIGIT: '1' .. '9'
     ;
-  
+
 _DECIMALINTEGER: _POSDIGIT _DIGIT* | "0"
     ;
-  
-_OCTINTEGER: "0" _OCTAL+ 
-    ;
-  
-_HEXDIGIT: _DIGIT | 'a' .. 'f' | 'A' .. 'F' 
-    ;
-_HEXINTEGER: "0" ("x" | "X") _HEXDIGIT+ 
-    ;
-  
-_INTEGER: _DECIMALINTEGER | _OCTINTEGER | _HEXINTEGER 
+
+_OCTINTEGER: "0" _OCTAL+
     ;
 
-INT_LITERAL: _INTEGER { check_numeral ($TEXT); } 
+_HEXDIGIT: _DIGIT | 'a' .. 'f' | 'A' .. 'F'
+    ;
+_HEXINTEGER: "0" ("x" | "X") _HEXDIGIT+
     ;
 
-*: "0x" | "0X" | "0" _DIGIT+ 
+_INTEGER: _DECIMALINTEGER | _OCTINTEGER | _HEXINTEGER
+    ;
+
+INT_LITERAL: _INTEGER { check_numeral ($TEXT); }
+    ;
+
+*: "0x" | "0X" | "0" _DIGIT+
                 { error (yysource_location (), "invalid numeral"); }
     ;
 
-_WS: ' ' | '\t' 
+_WS: ' ' | '\t'
     ;
 
 _NL: "\r"? "\n" | "\r"
     ;
 
-_COMMENT: "#" (_ANY - '\n' - '\r')* ; 
+_COMMENT: "#" (_ANY - '\n' - '\r')* ;
 
- 
-"(":            { incr (bracket_depth); } 
+
+"(":            { incr (bracket_depth); }
     ;
-"[":            { incr (bracket_depth); } 
+"[":            { incr (bracket_depth); }
     ;
-"{":            { incr (bracket_depth); } 
+"{":            { incr (bracket_depth); }
     ;
-")":            { decr (bracket_depth); } 
+")":            { decr (bracket_depth); }
     ;
-"]":            { decr (bracket_depth); } 
+"]":            { decr (bracket_depth); }
     ;
-"}":            { decr (bracket_depth); } 
+"}":            { decr (bracket_depth); }
     ;
 
 *:    _BOL _WS* _COMMENT? _NL %prefer
     ;
 
-*:    _BOL _WS* %prefer 
-                { YYSET_TOKEN (do_indent($TEXT));  } 
-    ;  
+*:    _BOL _WS* %prefer
+                { YYSET_TOKEN (do_indent($TEXT));  }
+    ;
 
-*:    _EOF 
-                { int tok = do_indent (""); 
+*:    _EOF
+                { int tok = do_indent ("");
                   yyleng=1;  /* KLUDGE to fix bug. */
-                  if (pop_source_file () || tok > 0) 
+                  if (pop_source_file () || tok > 0)
                       YYSET_TOKEN (tok);
                   else
                       YYSET_TOKEN (0);
-                } 
+                }
     ;
 
 *:    _WS* _COMMENT?
     ;
 
-NEWLINE: _NL 
+NEWLINE: _NL
                 { if (bracket_depth > 0) {
                       yy_set_bol (0);
                       YYIGNORE;
@@ -335,31 +335,31 @@ NEWLINE: _NL
                 { yy_set_bol (0); }
     ;
 
-*:    '\000' .. '\176' 
+*:    '\000' .. '\176'
                 { error (yysource_location (), "invalid character"); }
-    ;         
+    ;
 
                         /* Main Grammar */
 
-program: 
-      (NEWLINE! | statement)* 
+program:
+      (NEWLINE! | statement)*
                 { $$ = $^ (MODULE, $*);
                   $$.set_loc (NULL);
                   theTree = $$.value ();
-                } 
+                }
     ;
 
 identifier: ID
     ;
 
-atom: identifier | literal | enclosure 
-    ;
-  
-enclosure: parenth_form | list_display | dict_display 
+atom: identifier | literal | enclosure
     ;
 
-literal: 
-      stringliteral 
+enclosure: parenth_form | list_display | dict_display
+    ;
+
+literal:
+      stringliteral
     | INT_LITERAL
     ;
 
@@ -376,88 +376,88 @@ stringliteral:
     | stringliteral string_piece
                 { $stringliteral.value()->as_token()
                      ->append_text($string_piece.value()->as_token()
-                                   ->string_text()); 
+                                   ->string_text());
                   $$ = $stringliteral; }
     ;
 
-parenth_form: "("! expression ")"! 
-    | "("! (expression ( ","! | (","! expression)+ ","!? ))? ")"! 
+parenth_form: "("! expression ")"!
+    | "("! (expression ( ","! | (","! expression)+ ","!? ))? ")"!
                 { $$ = $^(TUPLE, $*); }
     ;
 
-list_display: "["! ( expression (","! expression)* ","!? )? "]"! 
+list_display: "["! ( expression (","! expression)* ","!? )? "]"!
                 { $$ = $^(LIST_DISPLAY, $*); }
     ;
-  
+
 dict_display: "{"! key_datum_list? "}"!
                 { $$ = $^(DICT_DISPLAY, $*); }
     ;
-  
-key_datum_list: key_datum (","! key_datum)* ","!? 
+
+key_datum_list: key_datum (","! key_datum)* ","!?
     ;
-  
-key_datum: expression ":"! expression 
+
+key_datum: expression ":"! expression
                 { $$ = $^(PAIR, $*); }
     ;
 
-primary: atom 
-    | attributeref 
+primary: atom
+    | attributeref
     | subscription
-    | slicing 
+    | slicing
     | call
     ;
 
 attributeref:
-      primary "."! identifier 
+      primary "."! identifier
                 { $$ = $^(ATTRIBUTEREF, $*); }
     | parameterized_type "."! identifier
                 { $$ = $^(ATTRIBUTEREF, $*); }
     ;
 
-subscription: primary "["! expression_or_list "]"! 
+subscription: primary "["! expression_or_list "]"!
                 { $$ = $^ (SUBSCRIPTION, $primary.value (),
-                           $expression_or_list.value (), 
+                           $expression_or_list.value (),
                            make_id ("__getitem__", $expression_or_list.loc ()));
                 }
     ;
 
-slicing: primary "["! left=bound ":"! right=bound "]"! 
-      	        { $$ = $^ (SLICING, $primary.value (), 
-                           $left.value (), $right.value (), 
+slicing: primary "["! left=bound ":"! right=bound "]"!
+      	        { $$ = $^ (SLICING, $primary.value (),
+                           $left.value (), $right.value (),
                            make_id ("__getslice__", $left.loc ())); }
     ;
 
-bound: 
+bound:
       expression
     | empty
     ;
 
-call: primary "("! argument_list ")"! 
+call: primary "("! argument_list ")"!
                 { $$ = $^(CALL, $*); }
-    | parameterized_type "("! argument_list ")"! 
+    | parameterized_type "("! argument_list ")"!
                 { $$ = $^(CALL, $*); }
     ;
-  
+
 argument_list: (expression (","! expression)* ","!?)?
                 /* Trailing comma requires GLR*/
                 { $$ = $^(EXPR_LIST, $*); }
     ;
-  
-expression: 
+
+expression:
       conditional_expression
     ;
 
-  
-conditional_expression: 
-      thenpart=expr1 "if"! cond=expr1 "else"! elsepart=expression 
-                { $$ = $^(IF_EXPR, $cond.value(), $thenpart.value (), 
+
+conditional_expression:
+      thenpart=expr1 "if"! cond=expr1 "else"! elsepart=expression
+                { $$ = $^(IF_EXPR, $cond.value(), $thenpart.value (),
                           $elsepart.value ()); }
     | expr1
     ;
 
-  
-expr1: 
-      expr2 
+
+expr1:
+      expr2
     | expr1 ("or"^ | "and"^) expr1 %expand
     | "not" expr1
                 { $$ = make_unop ($*); }
@@ -484,19 +484,19 @@ expression_or_list0:
     | empty
     ;
 
-comp_operator: 
+comp_operator:
       ("<" | ">" | "==" | "<=" | ">=" | "!=" | "is" | "in")
                 { $$ = make_id($*); }
-       | op="is" "not" 
+       | op="is" "not"
                 { $$ = make_id("isnot", $op.loc()); }
        | op="not" "in"
-                { $$ = make_id("notin", $op.loc()); }  
+                { $$ = make_id("notin", $op.loc()); }
     ;
 
-expr2: 
+expr2:
       left_compare comp_operator expr3
                 { $$ = make_binop ($*, COMPARE); }
-    | expr3 comp_operator expr3  
+    | expr3 comp_operator expr3
                 { $$ = make_binop ($*, COMPARE); }
     | expr3
     ;
@@ -508,18 +508,18 @@ left_compare:
                 { $$ = make_binop ($*, LEFT_COMPARE); }
     ;
 
-expr3: 
+expr3:
       primary
     | "-" expr3 %prec UNOP
                 { $$ = make_unop ($*); }
     | "+" expr3 %prec UNOP
                 { $$ = make_unop ($*); }
-    | expr3 
+    | expr3
      ("+" | "-" | "*" | "/" | "//" | "%" | "**")
      expr3 %expand
                 { $$ = make_binop ($*, BINOP); }
     ;
-             
+
 simple_stmt:
       expression_stmt
     | assignment_stmt
@@ -530,18 +530,18 @@ simple_stmt:
     | continue_stmt
     ;
 
-expression_stmt: expression_or_list    
+expression_stmt: expression_or_list
     ;
 
-assignment_stmt: 
+assignment_stmt:
       target_list "="! expression_or_list
                 { $$ = $^ (ASSIGN, $*); }
     | target_list "="! assignment_stmt
                 { $$ = $^ (ASSIGN, $*); }
     ;
 
-target_list: 
-      target 
+target_list:
+      target
     | "("! target ")"!
     | target_list1
     | "("! target_list1 ")"!
@@ -556,8 +556,8 @@ target_list1:
     | target ","!
                 { $$ = $^(TARGET_LIST, $target.value ()); }
     ;
-  
-target:  
+
+target:
       identifier            /* Requires GLR for resolution vs atom */
     | identifier type_annotation
                 { $$ = $^(TYPED_ID, $*); }
@@ -566,14 +566,14 @@ target:
     | slicing               /* Requires GLR for resolution vs. primary */
     ;
 
-pass_stmt: "pass"!   
+pass_stmt: "pass"!
                 { $$ = $^(STMT_LIST); }
     ;
 
-print_stmt: 
+print_stmt:
       "print"! empty expression_list0_no_comma
                 { $$ = $^(PRINTLN, $*); }
-    | "print"! ">>"! expression 
+    | "print"! ">>"! expression
                 { $$ = $^(PRINTLN, $expression.value (), $^(EXPR_LIST)); }
     | "print"! ">>"! expression ","! expression_list_no_comma
                 { $$ = $^(PRINTLN, $*); }
@@ -593,7 +593,7 @@ break_stmt: "break"^ { check_in_loop (); }
 continue_stmt: "continue"^ { check_in_loop (); }
     ;
 
-compound_stmt: 
+compound_stmt:
       if_stmt
     | while_stmt
     | for_stmt
@@ -601,34 +601,34 @@ compound_stmt:
     | classdef
     ;
 
-stmts: 
+stmts:
       stmt_list NEWLINE!
     | NEWLINE! INDENT! statement+ DEDENT!
     | error! NEWLINE!
     | NEWLINE! INDENT! error! DEDENT!
     ;
-  
+
 suite:
       stmts     { $$ = $^(STMT_LIST, $*); }
     ;
 
 statement: stmt_list NEWLINE! | compound_stmt
     ;
-  
-stmt_list: 
-      simple_stmt (";"! simple_stmt)* ";"!? 
+
+stmt_list:
+      simple_stmt (";"! simple_stmt)* ";"!?
     ;
 
-if_stmt: 
+if_stmt:
       "if"^ expression ":"!
-                { incr (control_depth); } 
+                { incr (control_depth); }
          suite
       elifs
                 { decr (control_depth); }
     ;
 
 elifs:
-      "elif"! expression ":"! suite elifs 
+      "elif"! expression ":"! suite elifs
                 { $$ = $^ (IF, $*); }
     | else_clause
     ;
@@ -639,32 +639,32 @@ else_clause:
     | "else"! ":"! suite
     ;
 
-while_stmt: 
-      "while"^ expression ":"! 
-                { incr (control_depth); incr (loop_depth); } 
+while_stmt:
+      "while"^ expression ":"!
+                { incr (control_depth); incr (loop_depth); }
            suite
                 { decr (loop_depth); }
       else_clause
                 { decr (control_depth); }
     ;
 
-for_stmt: 
-      "for"^ target_list "in"! expression_or_list ":"! 
-                { incr (control_depth); incr (loop_depth); } 
+for_stmt:
+      "for"^ target_list "in"! expression_or_list ":"!
+                { incr (control_depth); incr (loop_depth); }
            suite
                 { decr (loop_depth); }
       else_clause
                 { decr (control_depth); }
     ;
 
-funcdef: 
-      "def"! funcname "("! parameter_list ")"! opt_type_annotation ":"! 
-                { check_def_placement (); 
+funcdef:
+      "def"! funcname "("! parameter_list ")"! opt_type_annotation ":"!
+                { check_def_placement ();
                   incr (defn_depth); incr (func_depth); }
            funcbody
-                { decr (defn_depth); decr (func_depth); 
+                { decr (defn_depth); decr (func_depth);
 		  if (func_depth != 0 || defn_depth != 1)
-		      $$ = $^ (DEF, $*); 
+		      $$ = $^ (DEF, $*);
 		  else
 		      $$ = $^ (METHOD, $*); }
 
@@ -679,30 +679,30 @@ funcbody:
     ;
 
 native:
-      "native"^ stringliteral NEWLINE! 
+      "native"^ stringliteral NEWLINE!
     ;
 
-parameter_list: 
+parameter_list:
       /* empty */
                 { $$ = $^(FORMALS_LIST); }
-    | (parameter ","!)* parameter ","!? 
+    | (parameter ","!)* parameter ","!?
                 { $$ = $^(FORMALS_LIST, $*); }
     ;
-  
 
-parameter: identifier 
+
+parameter: identifier
     | identifier type_annotation  { $$ = $^(TYPED_ID, $*); }
     ;
-  
+
 funcname:  identifier ;
 
-classdef: "class"^ name=identifier type_formals ":"! 
-                { check_class_placement (); incr (defn_depth); } 
+classdef: "class"^ name=identifier type_formals ":"!
+                { check_class_placement (); incr (defn_depth); }
                classbody
                 { decr (defn_depth); }
     ;
-  
-type_formals: 
+
+type_formals:
       ("of"! "["! type_var (","! type_var)* "]"!)?
                 { $$ = $^(TYPE_FORMALS_LIST, $*); }
     ;
@@ -714,18 +714,18 @@ classbody:
 type_annotation: "::"! type
     ;
 
-opt_type_annotation: 
+opt_type_annotation:
       type_annotation
     | empty
-    ;      
+    ;
 
-type: 
+type:
       parameterized_type
-    | identifier 
+    | identifier
                 { $$ = $^(TYPE, $identifier, $^(TYPE_LIST)); }
     | type_var
     | "("! type_list ")"! "->"! type
-                { $$ = $^(FUNCTION_TYPE, 
+                { $$ = $^(FUNCTION_TYPE,
                           $type.value (), $type_list.value ()); }
     ;
 
@@ -740,13 +740,13 @@ parameterized_type:
 type_params:
       ( "of"! "["! types "]"! | "of"! type)
                 { $$ = $^(TYPE_LIST, $*); }
-    ; 
+    ;
 
 type_list:
       types?    { $$ = $^(TYPE_LIST, $*); }
     ;
 
-types: 
+types:
       type
     | types ','! type
     ;
@@ -773,8 +773,8 @@ static gcmap<gcstring, const char*> unop_method_map;
 
 static const char* BINOP_MAP_INIT[] = {
     "+", "__add__",  "-", "__sub__",  "*", "__mul__",  "//", "__floordiv__",
-    "/", "__floordiv__",  "%", "__mod__",  "**", "__pow__", 
-    "in", "__contains__", "notin", "__notcontains__", 
+    "/", "__floordiv__",  "%", "__mod__",  "**", "__pow__",
+    "in", "__contains__", "notin", "__notcontains__",
     "is", "__is__", "isnot", "__isnot__",
     "<", "__lt__", ">", "__gt__", "<=", "__le__", ">=", "__ge__",
     "==", "__eq__", "!=", "__ne__",
@@ -837,21 +837,21 @@ check_numeral (const char* text)
         text += 2;
         while (*text == '0')
             text += 1;
-        if (strlen (text) > 8 || 
+        if (strlen (text) > 8 ||
             (strlen (text) == 8 && strcmp (text, "80000000") > 0))
             error (yysource_location (), "hex numeral too large");
     } else if (text[0] == '0') {
         while (*text == '0')
             text += 1;
-        if (strlen (text) > 11 || 
+        if (strlen (text) > 11 ||
             (strlen (text) == 11 && strcmp (text, "20000000000") > 0))
             error (yysource_location (), "octal numeral too large");
-    } else if (strlen (text) > 10 || 
+    } else if (strlen (text) > 10 ||
             (strlen (text) == 10 && strcmp (text, "2147483648") > 0))
             error (yysource_location (), "decimal numeral too large");
 }
 
-/** The equivalent number of spaces to TEXT, a sequence of whitespace 
+/** The equivalent number of spaces to TEXT, a sequence of whitespace
  *  characters. */
 static int
 indent_length (const char* text)
@@ -874,7 +874,7 @@ do_indent (const char* text)
 
     if (indentation_stack.empty())
         indentation_stack.push (0);
-    
+
     if (amount > indentation_stack.top ()) {
         indentation_stack.push (amount);
         return INDENT;
@@ -910,7 +910,7 @@ make_binop (const List_Ptr& operands, int op = BINOP)
 {
     AST_Ptr oper = operands->at (1);
 
-    return YYMAKE_TREE (op, operands->at (0), make_id (oper), operands->at (2), 
+    return YYMAKE_TREE (op, operands->at (0), make_id (oper), operands->at (2),
                         make_id (get_binop_method(oper->as_string ()),
                                  oper->loc ()));
 }
@@ -976,7 +976,7 @@ parse_init ()
     for (size_t i = 0; UNOP_MAP_INIT[i] != NULL; i += 2)
 	unop_method_map[UNOP_MAP_INIT[i]] =
 	    UNOP_MAP_INIT[i+1];
-}        
+}
 
 AST_Ptr
 parse ()
@@ -987,6 +987,6 @@ parse ()
 
     theTree = NULL;
     yyparse ();
-            
+
     return theTree;
 }

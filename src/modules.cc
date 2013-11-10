@@ -22,7 +22,7 @@ class Module_AST : public AST_Tree {
 protected:
 
     int lineNumber () {
-	return 0;
+        return 0;
     }
 
     /** Top-level semantic processing for the program. */
