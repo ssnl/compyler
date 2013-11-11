@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PATH=$DIR/root/bin/:$PATH
 
 # Path to servers
-SERVER=cs164-do@torus.cs.berkeley.edu
+SERVER=cs164-$1@torus.cs.berkeley.edu
 SRC_PATH="~/work/proj/proj2/src"
 
 function send {
