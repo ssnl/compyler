@@ -10,7 +10,12 @@ SERVER=cs164-$1@torus.cs.berkeley.edu
 SRC_PATH="~/work/proj/proj2/src"
 
 function send {
-  scp -r DIR/src/* $SERVER:$SRC_PATH
+  if [ -z $1 ]
+  then
+    scp -r $DIR/src/* $SERVER:$1
+  else
+    scp -r $DIR/src/* $SERVER:$SRC_PATH
+  fi
 }
 
 function connect {
