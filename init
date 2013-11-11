@@ -11,7 +11,7 @@ PROJ_PATH="~/work/proj/proj2"
 SRC_PATH="src"
 
 function send {
-  scp -r $1 $SERVER:$PROJ_PATH/$2
+  scp -r $1 "$SERVER":"$PROJ_PATH"/"$2"
 }
 
 function connect {

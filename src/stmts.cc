@@ -13,6 +13,26 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/*****   ASSIGN   *****/
+
+class Assign_AST : public AST_Tree {
+protected:
+    NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
+
+    AST_Ptr doOuterSemantics () {
+        // First recursively scope children
+        for_each_child_var (c, this) {
+            c = c->doOuterSemantics ();
+        } end_for;
+
+        // Extra Typing
+
+        return this;
+    }
+};
+
+NODE_FACTORY (Assign_AST, ASSIGN);
+
 /*****   PRINTLN   *****/
 
 /** A print statement without trailing comma. */
@@ -22,7 +42,7 @@ protected:
     NODE_CONSTRUCTORS (Println_AST, AST_Tree);
 
     const char* externalName () {
-	return "println";
+        return "println";
     }
 
 };
