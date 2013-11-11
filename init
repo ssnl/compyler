@@ -7,15 +7,11 @@ export PATH=$DIR/root/bin/:$PATH
 
 # Path to servers
 SERVER=cs164-$1@torus.cs.berkeley.edu
-SRC_PATH="~/work/proj/proj2/src"
+PROJ_PATH="~/work/proj/proj2"
+SRC_PATH="src"
 
 function send {
-  if [ -z $1 ]
-  then
-    scp -r $DIR/src/* $SERVER:$1
-  else
-    scp -r $DIR/src/* $SERVER:$SRC_PATH
-  fi
+  scp -r $1 $SERVER:$PROJ_PATH/$2
 }
 
 function connect {
