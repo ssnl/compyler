@@ -1,0 +1,16 @@
+initsecondarythread
+threadkey_test
+config.status
+hugetest
+bdw-gc.pc
+config.log
+staticrootstest
+realloc_test
+middletest
+gctest
+.deps
+Makefile
+libtool
+leaktest
+threadleaktest
+smashtest

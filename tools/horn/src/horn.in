@@ -1,4 +1,5 @@
 #!@PYTHON@
+# -*-Python-*-
 
 import sys, re, os
 from subprocess import Popen, PIPE
@@ -46,7 +47,7 @@ verbose = False
 try:
     opts, args = getopt(sys.argv[1:], 'o:hv',
                         [ 'output=', 'post-process', 'no-post-process',
-                          'help', 'verbose', 'version' ])
+                          'datadir=', 'help', 'verbose', 'version' ])
 
     if len(args) > 1:
         Usage()
@@ -63,6 +64,8 @@ try:
                 Usage()
             except:
                 sys.exit(0)
+        elif opt == '--datadir':
+            datadir = val
         elif opt == '--version':
             print >>sys.stderr, VERSION
             sys.exit(0)

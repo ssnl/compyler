@@ -16,13 +16,7 @@
 #include <sstream>
 #include <cstdarg>
 #include "xalloc.h"
-
-#define DATA_DIR_TAIL "lib/"
-
-#define PARSER_TEMPLATE_FILE_TAIL "parser-template.y"
-#define LEXER_TEMPLATE_FILE_TAIL "lexer-template.l"
-#define INTERACTIVE_LEXER_TEMPLATE_FILE_TAIL "interactive-lexer-template.l"
-#define PARSER_INCLUDE_FILE_TAIL "common-include.h"
+#include "params.h"
 
 extern std::string grammar_outfile;
 extern std::string lexical_outfile;
@@ -30,9 +24,6 @@ extern std::string lex_generated_file;
 extern std::string infile;
 extern std::string file_root;
 extern std::string data_dir;
-extern std::string directory_separator;
-
-extern std::string parser_template_file;
 
 extern std::string api_namespace;
 
@@ -131,7 +122,6 @@ typedef const char* location;
 #define YYLTYPE_IS_DECLARED 1
 typedef const char* YYLTYPE;
 
-
 struct lstring {
     lstring (const char *s) 
 	: len (strlen (s)), start (s) {} 
@@ -165,6 +155,15 @@ struct lstring {
     int compare (const lstring& x) const {
 	int len2 = len < x.len ? len : x.len;
 	int c = strncmp (start, x.start, len2);
+	if (c == 0)
+	    return len - x.len;
+	else
+	    return c;
+    }
+
+    int compare_folded (const lstring& x) const {
+	int len2 = len < x.len ? len : x.len;
+	int c = strncasecmp (start, x.start, len2);
 	if (c == 0)
 	    return len - x.len;
 	else
@@ -320,6 +319,22 @@ private:
     
 };
 
+/** Conventions for distinguishing terminal from nonterminal
+ *  symbols.  The default is CAP_LOW: terminals start with capital
+ *  letters, nonterminals with lower-case letters.  LOW_CAP reverses
+ *  the convention (terminals start with lower-case, nonterminals
+ *  with upper case).  ALLCAP_ANY means that terminal symbols consist
+ *  entirely of capital letters and underscores and nonterminals are
+ *  anything else (that doesn't start with an underscore).  ANY_ALLCAP
+ *  is again the reverse. */
+
+enum symbol_convention { ANYSYM = 0, LOWSYM = 1, CAPSYM = 2, ALLCAPSYM = 3, 
+			 CAP_LOW = CAPSYM*4+LOWSYM, LOW_CAP=LOWSYM*4+CAPSYM,
+			 ALLCAP_ANY = ALLCAPSYM*4 + ANYSYM, 
+			 ANY_ALLCAP = ANYSYM*4 + ALLCAPSYM };
+
+extern void set_lexical_convention(symbol_convention convention);
+
 extern std::string current_file;
 extern std::string program_name;
 extern text_buffer input_buffer;
@@ -454,6 +469,9 @@ public:
     virtual void replace (int i, Node* val, size_t n = 1);
     /** Swap my children with the contents of KIDS. */
     void swap (Node_Vector& kids);
+
+    virtual bool is_list () const;
+    virtual bool is_rhs () const;
 
     virtual const Node_Vector& children () const;
 
@@ -618,7 +636,7 @@ public:
 
 protected:
 
-    Node () : loc (NULL) { }
+    Node () : loc (NULL), _sanity (0xdeadbeef) { }
     
 public:
     static Node_Vector lexical_rules;
@@ -627,9 +645,14 @@ public:
     static String_Set explicit_tokens;
     static Implicit_Token_Map implicit_lexical_rules;
 
+    bool sane () const {
+        return _sanity == 0xdeadbeef;
+    }
+
 private:
 
     location loc;
+    unsigned int _sanity;
 };
 
 extern std::ostream& operator<< (std::ostream& os, Node* node);
@@ -704,9 +727,7 @@ extern const char* tokenName (int syntax);
 class Tree : public Node {
 public:
 
-    explicit Tree (Node* op, Unit, bool reg = true);
     explicit Tree (Node* op);
-    explicit Tree (int op, ...);
     Tree (va_list args, Node* op);
 
     static Node* make (Node* op, ...);
@@ -735,6 +756,8 @@ public:
     Node* merge (Node* tree, int k = -1);
     Node* dadd (Node* child, int k = -1);
 
+    Node* copy ();
+
     void to_string (std::stringstream& out, int indent = 0) const;
 
     void write_grammar (std::ostream& out) const;
@@ -750,12 +773,10 @@ public:
     bool static_match_nonempty () const;
 
 protected:
-    Tree* internal_copy ();
-
-    virtual Node* make (Node* op, va_list args);
-    virtual Tree* make (Node* op, Unit);
+    explicit Tree (int syntax, Unit);
+    virtual Tree* make0 (Node* op);
     bool register_me ();
-    void add (va_list ap);
+    virtual Node* add (va_list ap);
 
 private:
 
@@ -766,19 +787,48 @@ private:
 
 };
 
-extern Token* const _LIST;
+#define BASE_CONSTRUCTORS(Class, Parent)                                     \
+                                                                             \
+protected:                                                                   \
+    Class (int syntax, Unit) : Parent (syntax, UNIT) { }                     \
+                                                                             \
+    Class (Node* op) : Parent (op) { }
+
+
+#define CONSTRUCTORS(Class, Syntax)                                          \
+    SUBTYPE_CONSTRUCTORS(Class, Syntax, Tree)
+
+#define SUBTYPE_CONSTRUCTORS(Class, Syntax, Parent)                          \
+    static const Class exemplar;                                             \
+                                                                             \
+    Class (Unit) : Parent (Syntax, UNIT) { }                                 \
+                                                                             \
+    Tree* make0 (Node* op) {                                                 \
+        return new Class (op);                                               \
+    }                                                                        \
+                                                                             \
+    BASE_CONSTRUCTORS (Class, Parent)
+
+#define EXEMPLAR(Class)                                                      \
+    const Class Class::exemplar (UNIT)
 
 class List : public Tree {
+
+    List (Unit);
+
+    static const List exemplar;
+
+    Tree* make0 (Node* op);
+
 public:
-
-    List () : Tree ((Node*) _LIST) { }
+    
+    List () : Tree (exemplar.oper ()) { }
     List (Node* first, ...);
-    List (va_list ap) : Tree (ap, _LIST) {}
+    List (va_list ap) : Tree (ap, exemplar.oper ()) {}
 
+    bool is_list () const;
     bool is_empty_list ();
     List* as_list () { return this; }
-
-    Node* copy ();
 
     void to_string (std::stringstream& out, int indent = 0) const;
 };

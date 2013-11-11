@@ -43,6 +43,7 @@ static void unexpected_newline (const char *, char const *);
 
 static int percent_percent_count;
 
+static symbol_convention convention = CAP_LOW;
 
 %}
  /* Strings and characters in directives/rules. */
@@ -64,14 +65,15 @@ static int percent_percent_count;
 upper_letter [A-Z]
 lower_letter [a-z]
 
-letter	  "_"|{upper_letter}|{lower_letter}
-id_tail   ({letter}|[0-9])*
-upper_id  {upper_letter}{id_tail}
-lower_id  {lower_letter}{id_tail}
-underscore_id "_"{id_tail}
-id	  {letter}({letter}|[0-9])*
-directive %{id}
-int	  [0-9]+
+letter	        "_"|{upper_letter}|{lower_letter}
+id_tail         ({letter}|[0-9])*
+allcaps_id      {upper_letter}("_"|{upper_letter}|[0-9])*
+capitalized_id  {upper_letter}{id_tail}
+lower_id        {lower_letter}{id_tail}
+underscore_id   "_"{id_tail}
+id	        {letter}({letter}|[0-9])*
+directive       %{id}
+int	        [0-9]+
 
 /* POSIX says that a tag must be both an id and a C union member, but
    historically almost any character is allowed in a tag.  We disallow
@@ -128,6 +130,7 @@ ws       ({splice}|[ \f\n\t\v]|"//".*|{ccomment})*
 <INITIAL>
 {
   "%code"                           return PERCENT_CODE;
+  "%convention"                     return PERCENT_CONVENTION;
   "%debug"                          return PERCENT_FLAG;
   "%default"[-_]"prec"              return PERCENT_DEFAULT_PREC;
   "%define"                         return PERCENT_DEFINE;
@@ -176,6 +179,20 @@ ws       ({splice}|[ \f\n\t\v]|"//".*|{ccomment})*
   "%prefer"                         return PERCENT_PREFER;
 
   "_ANY"                            return ANY;
+  "_UPPER"                          return UPPER;
+  "_LOWER"                          return LOWER;
+  "_LETTER"                         return LETTER;
+  "_DIGIT"                          return DIGIT;
+  "_HEX"                            return HEX;
+  "_ALNUM"                          return ALNUM;
+  "_SPACE"                          return SPACE;
+  "_BLANK"                          return BLANK;
+  "_CONTROL"                        return CONTROL;
+  "_GRAPHIC"                        return GRAPHIC;
+  "_PRINTABLE"                      return PRINTABLE;
+  "_PUNCTUATION"                    return PUNCTUATION;
+
+
   "_BOL"                            return BOL;
   "_EOL"                            return EOL;
   "_EOF"                            return ENDFILE;
@@ -190,8 +207,30 @@ ws       ({splice}|[ \f\n\t\v]|"//".*|{ccomment})*
   ".."                              return DOTDOT;
 
   {underscore_id}                   return UNDERSCORE_ID;
-  {upper_id}                        return UPPER_ID;
-  {lower_id}                        return LOWER_ID;
+  {allcaps_id}                      {
+                                      switch (convention) {
+                                      case LOW_CAP: case ANY_ALLCAP:
+                                          return NONTERM_ID;
+                                      default:
+                                          return TERM_ID;
+                                      }
+                                    }
+  {capitalized_id}                  {
+                                      switch (convention) {
+                                      case LOW_CAP: case ALLCAP_ANY:
+                                          return NONTERM_ID;
+                                      default:
+                                          return TERM_ID;
+                                      }
+                                    }
+  {lower_id}                        {
+                                      switch (convention) {
+                                      case CAP_LOW: case ALLCAP_ANY:
+                                          return NONTERM_ID;
+                                      default:
+                                          return TERM_ID;
+                                      }
+                                    }
   ({letter}|".")+                   return OTHER_ID;
 
   {int}				     |
@@ -525,6 +564,20 @@ static const char *last_token_end;
 
 lstring last_skipped_text;
 
+/** Set convention for distinguishing terminals from nonterminals to 
+ *  CONVENTION. */
+void
+set_lexical_convention(symbol_convention new_convention)
+{
+  switch (new_convention) {
+  case CAP_LOW: case LOW_CAP: case ALLCAP_ANY: case ANY_ALLCAP:
+    convention = new_convention;
+    return;
+  default:
+    complain ("Invalid combination of case conventions");
+    return;
+  }
+}
 
 /* Read bytes from FP into buffer BUF of size SIZE.  Return the
    number of bytes read.  Remove '\r' from input, treating \r\n

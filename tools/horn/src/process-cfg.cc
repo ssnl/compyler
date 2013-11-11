@@ -1,6 +1,7 @@
 #include <cstdarg>
 #include <set>
 #include <climits>
+#include <cassert>
 #include "horn.h"
 #include "parse-horn.h"
 
@@ -173,8 +174,8 @@ set_unique_id (Token* new_sym)
 
 #define member Tree::
 
-Tree* member
-internal_copy ()
+Node* member
+copy ()
 {
     Node_Vector new_kids;
     new_kids.resize (_kids.size ());
@@ -249,21 +250,11 @@ write_var_assigns (ostream& out, int my_index)
 
 				/* GRAMMAR nodes */
 
-static Token* GRAMMAR_TOK = new Token (GRAMMAR);
-
 class Grammar_Tree : public Tree {
+
+    CONSTRUCTORS (Grammar_Tree, GRAMMAR);
+
 protected:
-
-    Grammar_Tree (Unit) : Tree (GRAMMAR_TOK, UNIT) { }
-
-    Grammar_Tree (va_list args) : Tree (args, GRAMMAR_TOK) {
-	if (arity () != 3)
-	    throw invalid_argument ("GRAMMAR takes 3 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Grammar_Tree (args);
-    }
 
     void write_grammar (ostream& out) const {
 	map<string, string> dict;
@@ -332,36 +323,21 @@ protected:
 
 	dict["generated_lexer_file"] = lex_generated_file;
 
-	copy_subst_file (out, parser_template_file.c_str (), dict,
-			 grammar_outfile.c_str ());
+	copy_subst_file (out, (data_dir + PARSER_TEMPLATE_FILE).c_str (),
+                         dict, grammar_outfile.c_str ());
     }
-
-private:
-
-    static const Grammar_Tree exemplar;
-
 };
 
-const Grammar_Tree Grammar_Tree::exemplar (UNIT);
+EXEMPLAR(Grammar_Tree);
 
 
 				/* Grouping nodes: (...) */
 
-static Token* PAREN_TOK = new Token ('(');
-
 class Group_Tree : public Tree {
+
+    CONSTRUCTORS (Group_Tree, '(');
+
 protected:
-
-    Group_Tree (Unit) : Tree (PAREN_TOK, UNIT) { }
-
-    Group_Tree (va_list args) : Tree (args, PAREN_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("PAREN takes 1 argument");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Group_Tree (args);
-    }
 
     void write_grammar (ostream& out) const {
 	out << "(" << child (0) << ") ";
@@ -377,39 +353,17 @@ protected:
 	return result;
     }
 
-
-private:
-
-    static const Group_Tree exemplar;
-    
 };
 
 
-const Group_Tree Group_Tree::exemplar (UNIT);
+EXEMPLAR(Group_Tree);
     
 				/* RHS_CHOICES nodes */
 
-static Token* RHS_CHOICES_TOK = new Token (RHS_CHOICES);
-
 class Rhs_Choices_Tree : public Tree {
+    CONSTRUCTORS (Rhs_Choices_Tree, RHS_CHOICES);
+
 protected:
-
-    Rhs_Choices_Tree (Node* op, Unit, bool reg = true) 
-	: Tree (op, UNIT, reg) { }
-
-    Rhs_Choices_Tree (Node* op, va_list args) : Tree (args, op) {  }
-
-    Node* make (Node* op, va_list args) {
-	return new Rhs_Choices_Tree (RHS_CHOICES_TOK, args);
-    }
-
-    Node* copy () {
-	return internal_copy ();
-    }
-
-    Tree* make (Node* op, Unit) {
-	return new Rhs_Choices_Tree (RHS_CHOICES_TOK, UNIT, false);
-    }
 
     void write_grammar (ostream& out) const {
 	out << child(0);
@@ -467,42 +421,31 @@ protected:
 	kids_preorder (generated_rules_to_syms, ());
 	return this;
     }
-
-private:
-
-    static const Rhs_Choices_Tree exemplar;
     
 };
 
-const Rhs_Choices_Tree Rhs_Choices_Tree::exemplar (RHS_CHOICES_TOK, UNIT);
+EXEMPLAR(Rhs_Choices_Tree);
 
 				/* RHS node */
 
-static Token* RHS_TOK = new Token (RHS);
-
 class Rhs_Tree : public Tree {
-protected:
 
-    Rhs_Tree (Unit, bool reg = true) : Tree (RHS_TOK, UNIT, reg) { }
+    CONSTRUCTORS (Rhs_Tree, RHS);
 
-    Rhs_Tree (va_list args) : Tree (args, RHS_TOK) {  
+    Node* add (va_list args) {
+        Tree::add (args);
 	for (int i = arity () - 1; i >= 0; i -= 1)
-	    if (child (i)->oper () == RHS_TOK)
+	    if (child (i)->is_rhs ())
 		replace (i, child (i)->extract_to_list ());
 	set_loc (get_loc ());  // ???
+        return this;
     }
 
-    Node* make (Node* op, va_list args) {
-	return new Rhs_Tree (args);
+    bool is_rhs () const {
+        return true;
     }
 
-    Node* copy () {
-	return internal_copy ();
-    }
-
-    Tree* make (Node* op, Unit) {
-	return new Rhs_Tree (UNIT, false);
-    }
+protected:
 
     void write_grammar (ostream& out) const {
 	write_resync (out, get_loc ());
@@ -541,7 +484,7 @@ protected:
                 if (child (place)->is_rhs_item ())
                     break;
             place += 1;
-	    add (TREE (ACTION), place);
+            Tree::add (TREE (ACTION), place);
 	}
         place -= 1;
         while (place >= 0) {
@@ -576,7 +519,7 @@ protected:
     Node* rewrite_extended () {
 	for (int i = arity () - 1; i >= 0; i -= 1) {
 	    Node* new_child = child (i)->rewrite_extended ();
-	    if (new_child->oper () == RHS_TOK)
+	    if (new_child->is_rhs ())
 		replace (i, new_child->extract_to_list ());
 	    else
 		replace (i, new_child);
@@ -585,30 +528,18 @@ protected:
 	return this;
     }
 
-private:
-
-    static const Rhs_Tree exemplar;
-
 };
 
-const Rhs_Tree Rhs_Tree::exemplar (UNIT);
+EXEMPLAR(Rhs_Tree);
 
 
 				/* RULES node */
 
-static Token* RULES_TOK = new Token (RULES);
-
 class Rules_Tree : public Tree {
+    
+    CONSTRUCTORS (Rules_Tree, RULES);
+
 protected:
-
-    Rules_Tree (Unit) : Tree (RULES_TOK, UNIT) { }
-
-    Rules_Tree (va_list args) : Tree (args, RULES_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Rules_Tree (args);
-    }
 
     Node* rewrite_extended () {
 	Tree::rewrite_extended ();
@@ -627,57 +558,29 @@ protected:
 	return this;
     }
 
-private:
-
-    static const Rules_Tree exemplar;
-    
 };
 
 const Rules_Tree Rules_Tree::exemplar (UNIT);
 
 				/* PERCENTS node */
 
-static Token* PERCENTS_TOK = new Token (PERCENTS);
-
 class Percents_Tree : public Tree {
 
-protected:
+    CONSTRUCTORS (Percents_Tree, PERCENTS);
 
-    Percents_Tree (Node* op, Unit, bool reg = true) : Tree (op, UNIT, reg) { }
-
-    Percents_Tree (Node* op, va_list args) : Tree (args, op) {  }
-
-    Node* make (Node* op, va_list args) {
-	return new Percents_Tree (PERCENTS_TOK, args);
-    }
-
-private:
-
-    static const Percents_Tree exemplar;
 };
 
-const Percents_Tree Percents_Tree::exemplar (PERCENTS_TOK, UNIT);
+EXEMPLAR (Percents_Tree);
 
 
 
 				/* RULE node */
 
-static Token* RULE_TOK = new Token (RULE);
-
 class Rule_Tree : public Tree {
 
+    CONSTRUCTORS (Rule_Tree, RULE);
+
 protected:
-
-    Rule_Tree (Node* op, Unit, bool reg = true) : Tree (op, UNIT, reg) { }
-
-    Rule_Tree (Node* op, va_list args) : Tree (args, op) {  }
-
-    Node* make (Node* op, va_list args) {
-	Rule_Tree* result = new Rule_Tree (RULE_TOK, args);
-	if (result->arity () != 2)
-	    throw invalid_argument ("RULE takes 2 arguments");
-	return result;
-    }
 
     void write_grammar (ostream& out) const {
 	out << child (0) << " : " << child (1) << "\n;\n" << endl;
@@ -700,40 +603,17 @@ protected:
 	return this;
     }
 
-private:
-
-    static const Rule_Tree exemplar;
 };
 
-const Rule_Tree Rule_Tree::exemplar (RULE_TOK, UNIT);
+EXEMPLAR (Rule_Tree);
 
 				/* GENERATED_RULE node */
 
-static Token* GENERATED_RULE_TOK = new Token (GENERATED_RULE);
-
 class Generated_Rule_Tree : public Rule_Tree {
+    
+    SUBTYPE_CONSTRUCTORS (Generated_Rule_Tree, GENERATED_RULE, Rule_Tree);
+
 protected:
-
-    Generated_Rule_Tree (Unit, bool reg = true) 
-	: Rule_Tree (GENERATED_RULE_TOK, UNIT, reg) { }
-
-    Generated_Rule_Tree (va_list args) : 
-	Rule_Tree (GENERATED_RULE_TOK, args) {  }
-
-    Node* make (Node* op, va_list args) {
-	Generated_Rule_Tree* result = new Generated_Rule_Tree (args);
-	if (result->arity () != 2)
-	    throw invalid_argument ("GENERATED_RULE takes 2 arguments");
-	return result;
-    }
-
-    Node* copy () {
-	return (Generated_Rule_Tree*) internal_copy ();
-    }
-
-    Tree* make (Node* op, Unit) {
-	return new Generated_Rule_Tree (UNIT, false);
-    }
 
     bool does_admin () const {
         return true;
@@ -777,26 +657,17 @@ protected:
 	return child (0)->id_of ();
     }
 
-private:
-
-    static const Generated_Rule_Tree exemplar;
-    
-    
 };
 
-const Generated_Rule_Tree Generated_Rule_Tree::exemplar (UNIT);
+EXEMPLAR (Generated_Rule_Tree);
 
 				/* Closures and optional markings. */
 
 class Suffix_Annotation_Tree : public Tree {
+
+    BASE_CONSTRUCTORS (Suffix_Annotation_Tree, Tree);
+
 public:
-
-    Suffix_Annotation_Tree (Node* op) : Tree (op, UNIT) { }
-
-    Suffix_Annotation_Tree (Node* op, va_list args) : Tree (args, op) {
-	if (arity () != 1)
-	    throw invalid_argument ("suffix annotation takes one argument");
-    }
 
     void write_grammar (ostream& out) const {
 	out << child (0) << oper ()->text ().as_string () << " ";
@@ -808,18 +679,11 @@ public:
 
 };
 
-static Token* STAR_TOK = new Token ("*");
-
 class Star_Tree : public Suffix_Annotation_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Star_Tree, '*', Suffix_Annotation_Tree);
+
 public:
-
-    Star_Tree (Unit) : Suffix_Annotation_Tree (STAR_TOK) { }
-
-    Star_Tree (va_list args) : Suffix_Annotation_Tree (STAR_TOK, args) {  }
-
-    Node* make (Node* op, va_list args) {
-	return new Star_Tree (args);
-    }
 
     Node* rewrite_extended () {
 	Tree::rewrite_extended ();
@@ -831,27 +695,16 @@ public:
 	return new_rule;
     }
 
-private:
-
-    static const Star_Tree exemplar;
-    
 };
 
-const Star_Tree Star_Tree::exemplar (UNIT);
+EXEMPLAR (Star_Tree);
 
-
-static Token* PLUS_TOK = new Token ("+");
 
 class Plus_Tree : public Suffix_Annotation_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Plus_Tree, '+', Suffix_Annotation_Tree);
+
 public:
-
-    Plus_Tree (Unit) : Suffix_Annotation_Tree (PLUS_TOK) { }
-
-    Plus_Tree (va_list args) : Suffix_Annotation_Tree (PLUS_TOK, args) {  }
-
-    Node* make (Node* op, va_list args) {
-	return new Plus_Tree (args);
-    }
 
     Node* rewrite_extended () {
 	Tree::rewrite_extended ();
@@ -866,27 +719,16 @@ public:
     }
 
 
-private:
-
-    static const Plus_Tree exemplar;
-    
 };
 
-const Plus_Tree Plus_Tree::exemplar (UNIT);
+EXEMPLAR (Plus_Tree);
 
-
-static Token* OPTIONAL_TOK = new Token ("?");
 
 class Optional_Tree : public Suffix_Annotation_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Optional_Tree, '?', Suffix_Annotation_Tree);
+
 public:
-
-    Optional_Tree (Unit) : Suffix_Annotation_Tree (OPTIONAL_TOK) { }
-
-    Optional_Tree (va_list args) : Suffix_Annotation_Tree (OPTIONAL_TOK, args) {  }
-
-    Node* make (Node* op, va_list args) {
-	return new Optional_Tree (args);
-    }
 
     Node* rewrite_extended () {
 	Tree::rewrite_extended ();
@@ -898,33 +740,19 @@ public:
     }
 
 
-private:
-
-    static const Optional_Tree exemplar;
-    
 };
 
-const Optional_Tree Optional_Tree::exemplar (UNIT);
+EXEMPLAR (Optional_Tree);
 
 				/* Actions ({...}) */
 
 Token* ACTION_TOK = new Token (ACTION);
 
 class Action_Tree : public Tree {
+
+    CONSTRUCTORS (Action_Tree, ACTION);
+
 protected:
-
-    Action_Tree (Node* op, Unit, bool reg = true)
-	: Tree (op, UNIT, reg) { }
-
-    Action_Tree (Node* op, va_list args)
-	: Tree (args, op) { }
-
-    Node* make (Node* op, va_list args) {
-	Action_Tree* result = new Action_Tree (ACTION_TOK, args);
-	if (result->arity () > 1)
-	    throw invalid_argument ("Action takes at most 1 argument");
-	return result;
-    }
 
     lstring text () const {
 	if (arity () == 0)
@@ -951,7 +779,7 @@ protected:
     }
 
     Tree* make (Node* op, Unit) {
-	return new Action_Tree (op, UNIT, false);
+	return new Action_Tree (op);
     }
 
     Node* copy () {
@@ -1102,31 +930,17 @@ private:
 	    return c;
     }	
 
-    static const Action_Tree exemplar;
-    
 };
 
-const Action_Tree Action_Tree::exemplar (ACTION_TOK, UNIT);
+EXEMPLAR (Action_Tree);
 
 			       /* Assignment (=). */
 
-static Token* ASSIGN_TOK = new Token ("=");
-
 class Assign_Tree : public Tree {
+
+    CONSTRUCTORS (Assign_Tree, '=');
+
 protected: 
-
-    Assign_Tree (Unit) : Tree (ASSIGN_TOK, UNIT) { }
-
-    Assign_Tree (Node* op, Unit) : Tree (op, UNIT) { }
-
-    Assign_Tree (va_list args, Node* op) : Tree (args, op) {
-	if (arity () != 2)
-	    throw invalid_argument ("assignment takes two arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Assign_Tree (args, ASSIGN_TOK);
-    }
 
     void write_grammar (ostream& out) const {
 	out << child(1) << " ";
@@ -1167,31 +981,17 @@ protected:
 	    out << lang_assign (my_index, id_of ()->as_string ());
     }
 
-private:
-
-    static const Assign_Tree exemplar;
-    
 };
 
-const Assign_Tree Assign_Tree::exemplar (UNIT);
+EXEMPLAR (Assign_Tree);
 
 				/* Appending assignment (+=) */
 
-static Token* PLUS_ASSIGN_TOK = new Token (PLUS_EQ);
-
 class Plus_Assign_Tree : public Assign_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Plus_Assign_Tree, PLUS_EQ, Assign_Tree);
+
 protected: 
-
-    Plus_Assign_Tree (Unit) : Assign_Tree (PLUS_ASSIGN_TOK, UNIT) { }
-
-    Plus_Assign_Tree (Node* op, Unit) : Assign_Tree (op, UNIT) { }
-
-    Plus_Assign_Tree (va_list args) : Assign_Tree (args, PLUS_ASSIGN_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Plus_Assign_Tree (args);
-    }
 
     void write_var_assigns (ostream& out, int my_index) {
         out << lang_append (my_index, ref_name_of ()->as_string ());
@@ -1199,27 +999,17 @@ protected:
 	    out << lang_assign (my_index, id_of ()->as_string ());
     }
 
-private:
-
-    static const Plus_Assign_Tree exemplar;
-    
 };
 
-const Plus_Assign_Tree Plus_Assign_Tree::exemplar (UNIT);
-
-
+EXEMPLAR (Plus_Assign_Tree);
 
 				/* Base tree-related operation */
 
 class Tree_Forming_Tree : public Tree {
+
+    BASE_CONSTRUCTORS (Tree_Forming_Tree, Tree);
+
 public:
-
-    Tree_Forming_Tree (Node* op, Unit) : Tree (op, UNIT) { }
-
-    Tree_Forming_Tree (va_list args, Node* op) : Tree (args, op) {
-	if (arity () != 1)
-	    throw invalid_argument ("suffix annotation takes one argument");
-    }
 
     void write_grammar (ostream& out) const {
 	out << child (0);
@@ -1255,19 +1045,11 @@ public:
 
 				/* ^ (cons-tree) expression  */
 
-static Token* CONS_TOK = new Token ("^");
-
 class Cons_Tree : public Tree_Forming_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Cons_Tree, '^', Tree_Forming_Tree);
+
 protected: 
-
-    Cons_Tree (Unit) : Tree_Forming_Tree (CONS_TOK, UNIT) { }
-
-    Cons_Tree (va_list args) : Tree_Forming_Tree (args, CONS_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Cons_Tree (args);
-    }
 
     void write_grammar (ostream& out) const {
 	out << child(0);
@@ -1281,29 +1063,17 @@ protected:
         child (0)->write_var_assigns (out, my_index);
     }
 
-private:
-
-    static const Cons_Tree exemplar;
-    
 };
 
-const Cons_Tree Cons_Tree::exemplar (UNIT);
+EXEMPLAR (Cons_Tree);
 
 				/* ! (ignore value) expression  */
 
-static Token* IGNORE_TOK = new Token ("!");
-
 class Ignore_Tree : public Tree_Forming_Tree {
+
+    SUBTYPE_CONSTRUCTORS (Ignore_Tree, '!', Tree_Forming_Tree);
+
 protected: 
-
-    Ignore_Tree (Unit) : Tree_Forming_Tree (IGNORE_TOK, UNIT) { }
-
-    Ignore_Tree (va_list args) : Tree_Forming_Tree (args, IGNORE_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Ignore_Tree (args);
-    }
 
     void mark_actions (ostream& out, int my_index) {
         out << lang_mark_ignore (my_index);
@@ -1313,42 +1083,26 @@ protected:
         child (0)->write_var_assigns (out, my_index);
     }
 
-private:
-
-    static const Ignore_Tree exemplar;
-    
 };
 
-const Ignore_Tree Ignore_Tree::exemplar (UNIT);
+EXEMPLAR (Ignore_Tree);
 
 
     /* Line synchronization action */
 
-static Token* SYNC_TOK = new Token (SYNC);
-
 class Sync_Tree : public Tree {
+
+    CONSTRUCTORS (Sync_Tree, SYNC);
+
 protected: 
-
-    Sync_Tree (Unit) : Tree (SYNC_TOK, UNIT) { }
-
-    Sync_Tree (va_list args) : Tree (args, SYNC_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Sync_Tree (args);
-    }
 
     void write_grammar (ostream& out) const {
 	resync_flag = true;
     }
 
-private:
-
-    static const Sync_Tree exemplar;
-    
 };
 
-const Sync_Tree Sync_Tree::exemplar (UNIT);
+EXEMPLAR (Sync_Tree);
 
 bool resync_flag;
 

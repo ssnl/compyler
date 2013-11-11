@@ -1,0 +1,2248 @@
+\documentclass[11pt]{handout}
+
+\author{P. N. Hilfinger}
+\title{The Horn Compiler Framework (version 2.0)}
+\course{CS164}
+\semester{Fall 2012}
+\usepackage{programs1}
+\usepackage{latexsym}
+\usepackage[dvips]{changebar}
+
+\newcommand {\caret} {{\tt \^{ }}}
+\newcommand {\bs} {$\backslash$}
+\newcommand {\RA} {$\Longrightarrow$}
+\newcommand {\LA} {$\Longleftarrow$}
+\newcommand {\JN} {$\Join$}
+\newcommand {\sv}[1] {$_{#1}$}
+
+\newcommand {\Horn} {{\sc Horn}}
+\newcommand {\CPP} {{\tt C++}}
+
+\begin{document}
+\maketitle
+\Horn\footnote{The name is not an acronym, but rather a take-off on
+ANTLR, a popular compiler framework from across the Bay that is the
+source of much of Horn's notation.} is a tool
+for producing \CPP{} parsers, lexical analyzers, and abstract-tree
+generators.  It accepts as input a dialect of the {\sc Bison}
+parser-generator language, and produces \CPP{} as indicated here:
+
+\begin{figure}[h]
+.PS
+right
+
+Bison: box "Bison" "Input"; arrow; circle "{\sc bison}"; arrow; 
+       CPP_Parser: box "Parser/Tree Generator" "(\CPP{})" wid 2.1*boxwid
+       "\tt foo-parser.y" at Bison.n above
+       "\tt foo-parser.cc" at CPP_Parser.n above
+       
+
+Flex:  box "Flex" "Input" with .nw at Bison.sw - (0, 3*boxht); arrow; 
+       circle "{\sc flex}"; arrow; 
+       CPP_Lexer: box "Lexical Analyzer" "(\CPP{})" wid 2.1*boxwid
+       "\tt foo-lexer.l" at Flex.s below
+       "\tt foo-lexer.cc" at CPP_Lexer.s below
+
+Input: box "Horn" "Input" with .e at 1/2 between Bison.w-(2,0) and Flex.w-(2,0);
+       arrow; Horn: circle rad 1.2*circlerad "{\sc hornpp}" 
+       arrow from Horn.ne to Bison.w 
+       arrow from Horn.se to Flex.w 
+       "\tt foo.hn" at Input.n above
+
+
+arrow dashed from CPP_Parser.s to CPP_Lexer.n "~~~\#includes" ljust
+
+.PE
+\box\graph
+\caption{Diagram of how the \Horn{} script processes source files.  
+First, {\sc hornpp}, the \Horn{} pre-processor, converts an input file,
+{\tt foo.hn}, into
+two input files for the programs {\sc bison} and {\sc flex}.  The
+script next invokes these two programs to produce \CPP{} output files.
+Compiling the file {\tt foo-parser.cc} produces the parser object or
+executable file (there is no need to compile {\tt foo-lexer.cc},
+because {\tt foo-parser.cc} includes that file in its compilation).}
+\label{fig:flow-diagram}
+\end{figure}
+
+The `{\tt-parser.cc}' file is a ``bottom-up'' parser (either LR(1),
+IELR(1), LALR(1), or GLR)---that is, given a grammar rule such as
+\begin{program}
+x : a b c ;
+\end{program}
+the program waits until it has processed an {\tt a}, {\tt b}, and {\tt
+c} before considering whether to apply this rule to produce an {\tt x}.
+Roughly speaking, top-down parsers (such as ANTLR) {\it predict\/} 
+that they will
+produce an {\tt x} based only on seeing the beginning symbols of an
+{\tt a}. In theory, bottom-up parsers, since they act on more
+information, are the more powerful.  For example, they are not
+bothered by left-recursive rules.  However, in practice
+both techniques work well with modern programming languages. 
+
+\section{Horn input files}\label{sec:input-files}
+
+An input file to horn has three parts: a prologue, a set of grammar
+rules, and an epilogue.  The prologue declares grammar symbols, types
+of output values, \CPP{} entities used in the grammar's actions,
+and characteristics of the generated parser. The epilogue contains
+arbitrary \CPP{} code, such as a main program or functions that use the 
+generated parser and are exported to other modules.  The general
+format is as shown in Figure~\ref{fig:grammar-file-layout}.
+
+\begin{figure}
+\newsavebox{\grambox}
+\newsavebox{\gramboxlabel}
+\newenvironment{labeledtext}[1]{%
+   \sbox{\gramboxlabel}{\it #1}\begin{lrbox}{\grambox}\begin{minipage}{0.6\textwidth}}%
+{  \end{minipage}\end{lrbox}$\left.\mbox{\usebox{\grambox}}\right\}\mbox{\usebox{\gramboxlabel}}$}
+
+\begin{labeledtext}{Prologue}
+\begin{program}
+%define semantic_type "\{\it type name\}"
+
+%{
+\{\it \#include statements\}
+
+\{\it Supporting type declarations\}
+
+\{\it Forward declarations of functions\}
+
+%}
+
+\{\it Token and other Bison declarations\}
+
+\end{program}
+\end{labeledtext}
+\begin{labeledtext}{Grammar}
+\begin{program}
+%%
+
+\{\it Grammar and lexical rules\}
+
+\end{program}
+\end{labeledtext}
+\begin{labeledtext}{Epilogue}
+\begin{program}
+%%
+
+\{\it Definitions of functions, global variables, etc.\}
+\end{program}
+\end{labeledtext}
+\caption{General layout of a Horn input file.}
+\label{fig:grammar-file-layout}
+\end{figure}
+
+\section{Basic  Grammar and Lexical Rules}\label{sec:basic-rules}
+
+The rule sets that \Horn{} and its underlying engine, {\sc Bison}, handle are
+called {\it context-free grammars (CFG).\/}  The notation used is a variety of 
+{\it Backus-Naur Form (BNF).}
+Each rule has the form
+$$ s_0 : s_1 \dots s_n ; $$
+($n\ge0$), where the $s_i$ are {\it grammar symbols,} each of which ultimately
+stands for some set of possible strings of characters, which we'll
+denote $L(s_i)$, the {\it language\/} denoted by $s_i$.  The generic rule
+pictured here means ``The set of strings $L(s_0)$ includes (is a
+superset of) all
+those that can be formed by concatenating a string from each of $L(s_1)$,
+$L(s_2)$, \dots, and $L(s_n)$.''  We refer to $s_0$ as the {\it
+left-hand side\/} in this particular rule, and $s_1\dots s_n$ as the
+{\it right-hand side.}
+
+\subsection{Context-free grammar}\label{sec:basic-cfg}
+A subset of grammar symbols, called 
+{\it terminal symbols\/} (or {\it terminals\/} for short) form the base cases in this recursive
+definition.  They are defined by a set of {\it lexical rules}
+(described in \S\ref{sec:lexical-rules}), and in \Horn{} are denoted
+by identifiers that start
+with upper-case letters (such as {\tt ID}), by literal strings in
+double quotes (e.g, {\tt"while"}), or by single-character strings in
+single quotes (e.g., {\tt ';'}).  The other grammar symbols, all
+beginning with lower-case letters in \Horn, 
+are called {\it nonterminal symbols}\footnote{You can change this case
+convention in a given file using the {\tt\%convention} directive.  See
+\S\protect\ref{sec:decls}.}. One particular nonterminal
+symbol is called the {\it start symbol,} conventionally taken to be the
+symbol defined by the first grammar rule.  The language denoted by the
+start symbol is the language defined by the grammar as a whole.
+This language is taken to be the {\it minimal\/} language that
+satisfies all the grammar rules\footnote{This is a typical sort of
+definition in mathematics.  Each individual rule with a given nonterminal $s$ as
+its left-hand side defines a subset of $L(s)$, but doesn't say what
+else might be in $L(s)$.  So we make this additional provision of
+minimality, which in effect says 
+that the only strings in $L(s)$ are those that are {\it required\/} 
+to be there by some rule.}.  
+
+For example, the following grammar describes simple arithmetic
+expressions (see \S\ref{sec:lexical-rules} for how we define the
+terminal symbol {\tt NUM}):
+\begin{program}
+expr : term;
+
+expr : expr "+" term;
+
+expr : expr "-" term;
+
+term : factor;
+
+term : term "*" factor;
+
+term : term "/" factor;
+
+factor : NUM;
+
+factor : "(" expr ")";
+\end{program}
+
+\noindent 
+Usually, we abbreviate rules by grouping those for the same left-hand
+side, like this
+\begin{program}
+expr : term  |  expr "+" term  | expr "-" term;
+
+term : factor  |  term "*" factor  |  term "/" factor;
+
+factor : NUM |  "(" expr ")";
+\end{program}
+
+\noindent 
+Assuming that we define {\tt NUM} to describe ordinary integer numerals in Java,
+this grammar describes a language containing such strings as 
+``{\tt 2*(3+9)-42},'' as you can see from the following {\it
+derivation:}
+\begin{program}
+expr \{\RA\} expr - term \{\RA\} expr - factor \{\RA\} expr - NUM \{\RA\} term - NUM
+\{\RA\} term * factor - NUM \{\RA\} term * ( expr ) - NUM 
+\{\RA\} term * ( expr + term ) - NUM \{\RA\} term * ( expr + factor ) - NUM
+\{\RA\} term * ( expr + NUM ) - NUM \{\RA\} term * ( term + NUM ) - NUM
+\{\RA\} term * ( factor + NUM ) - NUM \{\RA\} term * ( NUM + NUM ) - NUM
+\{\RA\} factor * ( NUM + NUM ) - NUM \{\RA\} NUM * ( NUM + NUM ) - NUM 
+\end{program}
+This derivation consists of a sequence of {\it sentential forms\/}
+(separated by arrows),
+starting with the start symbol and ending with a character string
+(once the {\tt NUM}s are replaced by numerals, anyway). 
+At each step we apply one rule, replacing one nonterminal symbol with
+the right-hand side of one rule for that nonterminal.
+The parsers generated by \Horn{}
+and {\sc Bison} actually perform such derivations in reverse, {\it
+reducing\/} the input to the start symbol.
+
+Here, the language $L({\tt expr})$ is the set of all sentential forms
+that contain only terminal symbols and that appear at the end of
+some derivation that starts from {\tt expr}.  
+At each point in a derivation, there is typically more than one
+possible rule by which to replace any given nonterminal symbol.  Any
+of these rules might be chosen, regardless of what symbols surround
+the nonterminal---hence the adjective {\it context-free.}  \Horn{}
+always chooses to apply a rule to the rightmost nonterminal symbol at
+each stage---a {\it rightmost derivation.}  Since it does so in
+reverse, we say that it produces {\it reverse rightmost\/} (also
+called {\it canonical\/}) derivations.
+
+\subsection{The end of file}\label{sec:eof1}
+
+The \Horn{} system actually inserts its own start symbol into the
+grammar, effectively defining it like this:
+\begin{program}
+\{\it horn\_start\_symbol\} : your_start_symbol \{\it EOF\} ;
+\end{program}
+where {\tt EOF} indicates the end of the input (End Of File).  The
+symbols written here in italics are internally generated; you don't
+have access to them.
+A lexical rule (\S\ref{sec:lexical-rules}) can return an end of file
+token by using~0 as the syntactic category (see
+\S\ref{sec:setting-token}),
+but this is not generally necessary unless you include specific actions in your
+lexer for end-of-file (see {\tt\_EOF} in \S\ref{sec:special-lexical-symbols}).
+
+\subsection{Extended BNF}\label{sec:extended-bnf}
+
+Certain grammatical constructs crop up repeatedly.  For example, as
+part of 
+describing an S-expression in Lisp, we need to describe a sequence of 
+S-expressions\footnote{\Horn{} uses C-style comments, so ``{\tt/* empty */}'' is ignored.  I
+use it for human readers as a convention for indicating a
+right-hand side with no
+symbols---an empty string.}:
+\begin{program}
+sexpr : atom | "(" sexpr_list ")";
+
+sexpr_list : /* empty */ | sexpr_list sexpr;
+\end{program}
+As a shorthand, we can write this instead as
+\begin{program}
+sexpr : atom | "(" sexpr* ")";
+\end{program}
+The trailing `{\tt *}' (the {\it Kleene star}) 
+means ``zero or more repetitions of.''  Similarly, a trailing
+`{\tt+}', as in 
+\begin{program}
+stmt_list : stmt+
+\end{program}
+means ``one or more repetitions of,'' and a trailing `{\tt?}', as in
+\begin{program}
+relation : expr "not"? "in" expr;
+\end{program}
+means ``optional,'' or ``zero or one occurrences of.''
+
+\Horn{} also permits grouping using parentheses, as in ordinary
+algebraic expressions.  Thus, instead of
+\begin{program}
+expr : expr "+" term | expr "-" term;
+\end{program}
+you may write
+\begin{program}
+expr : expr ("+" | "-") term;
+\end{program}
+In combination with the other notations, you can describe even more
+complex constructs succinctly, such as:
+\begin{program}
+argument_list : "(" ( expr ( "," expr )* )? ")";
+\end{program}
+to describe the parenthesized part of a function call.
+
+These extensions to the plain BNF presented in \S\ref{sec:basic-cfg}
+give what is called {\it extended
+BNF}.  All of them can be translated into plain BNF (which, in fact, is how
+the \Horn{} processor deals with them).
+
+\subsection{Lexical rules}\label{sec:lexical-rules}
+
+Lexical rules define terminal symbols, also known as {\it (lexical) tokens\/} or
+{\it lexemes.\/}  The \Horn{} script 
+uses an open-source tool called {\sc Flex} to produce a program
+(called a {\it lexical analyzer\/}) that
+processes them, splitting the input text into its constituent tokens
+and giving these to the parser.  Each different kind of token has a
+unique {\it syntactic category,\/} encoded as a non-negative integer.
+In the \CPP{} programs it produces, \Horn{} defines the upper-cased 
+terminal symbols used in your grammar as constants that other parts of
+your program can use.
+
+Lexical rules look very much like
+ordinary context-free grammar rules that define nonterminal symbols
+(``CFG rules'' from here on),
+but with a few restrictions and extensions.  Lexical rules may not contain
+nonterminal symbols or other named terminal symbols---just
+double-quoted strings, single-quoted 
+characters, and {\it auxiliary lexical symbols,} defined below.  Like
+CFG rules, lexical rules may use parentheses and the operators
+`{\tt*}', `{\tt+}', `{\tt?}', and `{\tt|}'. 
+
+Lexical rules may also
+use sets of characters.  First, the notation 
+\begin{program}
+'\{$C_1$\}' .. '\{$C_n$\}'
+\end{program}
+is a synonym for
+\begin{program}
+'\{$C_1$\}' | '\{$C_2$\}' | \{$\cdots$\} | '\{$C_n$\}'
+\end{program}
+where $C_2,\dots,C_{n-1}$ are all characters between $C_1$ and $C_n$
+in the ASCII collating sequence.  Thus,
+\begin{program}
+'A' .. 'Z'
+\end{program}
+denotes ``any upper-case letter.''  
+Ranges and single-quoted characters are the simplest sets of
+characters.  The `{\tt|}' operator, when applied to two sets of
+characters, yields a set of character.  Finally, the operator
+`{\tt-}', when applied to two sets of characters, yields the set
+difference between those sets: the set containing all characters in
+the first operand that are not in the second.  For example, the set of 
+lower-case consonants might be denoted
+\begin{program}
+'b' .. 'z' - ('e' | 'i' | 'o' | 'u')
+\end{program}
+
+An {\it auxiliary lexical symbol\/} starts with an underscore, and is
+defined by an {\it auxiliary lexical rule\/} having the same form as other
+lexical rules.  These rules have two additional restrictions: an
+auxiliary lexical symbol must be defined in a single rule, and the
+right-hand side of an auxiliary lexical rule may only contain 
+auxiliary lexical symbols that are defined {\it before\/} that rule.  
+For example, we can define
+\begin{program}
+_UpperCase : 'A' .. 'Z';
+_LowerCase : 'a' .. 'z';
+_Digit : '0' .. '9';
+_Letter : _UpperCase | _LowerCase
+_Alphanum : _Letter | _Digit
+ID : _Letter _Alphanum*
+NUM : _Digit+
+\end{program}
+but it would be illegal to put the definition of {\tt\_Alphanum} first,
+since it would then reference auxiliary symbols defined later, and it
+would be illegal to write a rule such as
+\begin{program}
+_Chars : _Char | _Char _Chars
+\end{program}
+since it mentions {\tt\_Chars} on the right-hand side, but that is not
+defined in a {\it previous} rule.  
+
+The collection of all lexical rules (and auxiliary rules) together
+define a {\it regular language,}  the set of all terminals.  This
+collection is interpreted differently from the CFG rules.  There is
+no one start symbol.  Instead, each time a terminal symbol is needed,
+the lexical analyzer produced by \Horn{} in effect tries each of the 
+lexical grammar rules to see if it matches the beginning of the
+remaining input text.  The analyzer delivers the terminal symbol
+of whichever rule matches the {\it longest\/}
+prefix of the remaining text, with ties going to the first of the
+rules matching the most text.  For example, consider
+\begin{program}
+WITH : "with";
+ID : _Letter _Alphanum*;
+\end{program}
+If the remaining input starts with the characters ``{\tt withdraw \$10},''
+then both of these rules will match a prefix of the input, but the
+rule for {\tt ID} matches the longer prefix, so the lexer produces
+{\tt ID} as the next terminal symbol. It never matters what terminal
+symbols are allowed by the CFG grammar; the lexical analyzer will 
+try all lexical rules against the remaining input.
+
+With a few  exceptions (see \S\ref{sec:eof1} and \S\ref{sec:prefer}),
+lexical rules that match the
+empty string are ignored, in order to guarantee that the lexical
+analyzer always makes progress.  For example, consider
+\begin{program}
+NUM: ('0' .. '9')*;
+\end{program}
+If the next input character is something other than a digit, then the
+definition of `{\tt*}' indicates that this rule can match an empty
+string, which would be the longest possible match for {\tt NUM} in
+that case.  However, even if no other lexical rule matches, the match
+for {\tt NUM} will be ignored.  Instead, the lexical analyzer will
+fall back to a last-resort default in which it delivers the next
+character in the input as a token (the same token denoted by a
+single-quoted one-character string in rules).
+
+\Horn{} automatically  turns terminal symbols represented by strings
+or character constants in the CFG grammar into lexical rules that
+precede any lexical rules supplied by the user.  Thus,
+\begin{program}
+expr : expr "in" expr;
+\end{program}
+becomes something like
+\begin{program}
+TOK_3 : "in";
+expr : expr TOK3 expr;
+\end{program}
+where {\tt TOK\_3} is some automatically generated symbol.
+You never need to know about these generated symbols.
+And because the implicit definition of {\tt TOK\_3} would come before
+any (user-written) rule for {\it ID} (such as that above), 
+the {\tt TOK\_3} rule will have precedence (as desired), even though
+{\tt ID} also matches the same string.
+
+
+\subsection{Predefined character sets}\label{sec:predefined-char-sets}
+
+A few predefined auxiliary rules denote specific characters sets that
+are often encountered.  Unlike user-defined auxiliary rules, these are
+recognized as character sets and may therefore be subtracted from
+other character sets, as in
+\begin{program}
+_NONBLANK : _ANY - ('\n' | '\t' | ' ' | '\r')
+    ;
+\end{program}
+The names of these rules are reserved.
+
+\begin{description}
+\item[\_ANY] Any of the
+allowable characters (everything other than ASCII NUL (`\verb|\000|')
+and `\verb|\377|' (an 8-bit character used internally to indicate end-of-input).
+\item[\_UPPER] Upper-case latin letters (\verb|'A'..'Z'|).
+\item[\_LOWER] Lower-case latin letters (\verb|'a'..'z'|).
+\item[\_LETTER] Same as \verb/_UPPER | _LOWER/.
+\item[\_DIGIT] Decimal digits (\verb|'0'..'9'|).
+\item[\_HEX] Hexadecimal digits (\verb/'0'..'9' | 'a' .. 'f' | 'A' .. 'F'/).
+\item[\_ALNUM] Same as \verb/_ALPH | _DIGIT/.
+\item[\_SPACE] One of the standard whitespace characters: blank, tab,
+newline, carriage return, vertical tab, or form feed.
+\item[\_BLANK] Same as \verb/' ' | '\t'/.
+\item[\_CONTROL] A control character (\verb/'\001' .. '\037' | '177'/)
+\item[\_GRAPHIC] A printable character that makes a visible mark.
+\item[\_PRINTABLE] A blank or graphic character.
+\item[\_PUNCTUATION] A non-alphanumeric graphic character.
+\end{description}
+
+
+\subsection{Special lexical symbols}\label{sec:special-lexical-symbols}
+
+Several auxiliary symbols are pre-defined. Each matches the empty
+string, but only under certain circumstances.  At the moment, none may
+be mentioned in an auxiliary rule.
+\begin{description}
+\item[\_BOL] Matches the empty string at the beginning of a line: that
+is, at the beginning of the file or just after a line terminator
+sequence).   It may only occur as the first symbol in a lexical rule.
+\item[\_EOL] Matches the empty string at the end of a line: 
+that is, immediately before a line
+terminator sequence (defined as an optional carriage return followed
+by a newline character).  It does {\it not\/} match at the end of
+file, so if the last line of your input is not properly terminated,
+you may not get the results you expect.  It may only occur as the last
+symbol in a lexical rule.
+
+{\bf Warning:} There is a slight glitch here.  For the purposes of
+determining a longest match, {\_EOL} counts as if it matched the
+newline sequence (i.e., as if it matched a 1- or 2-character string rather
+than a 0-character string).  Usually, this doesn't matter, but it is
+easy to contrive cases where it does.
+
+\item[\_EOF] Matches the empty string at the end of file.
+It must appear at the end of its
+rule. You will not often need to use this; the \Horn{} lexical analyzer will
+by default return an end-of-file indication at the appropriate point,
+and as described in \S\ref{sec:eof1}, the CFG grammar is automatically
+set up to handle it.  {\tt\_EOF} is a special case in that any rule it
+appears in {\it can} match the empty string.
+Once {\tt\_EOF} matches, it continues to do so until the lexer
+switches to another input file, so be careful to avoid an infinite
+loop when using such rules.
+A common way to do so is to have your rule explicitly return the
+end-of-file category (0) when you reach real end of file (Horn usually
+does this for you automatically if you don't provide an explicit rule
+that matches {\tt\_EOF}.)
+\end{description}
+
+\subsection{Preferred lexical rules and empty matches}\label{sec:prefer}
+
+Normally, the lexical analyzer returns the longest non-empty match
+possible from among its rules, preferring the first-appearing rule
+when there are ties.  By including the special declarative symbol
+{\tt\%prefer} at the end of a lexical rule (just before the lexical
+action, if any), you can specify that a rule should be chosen in
+preference to rules not so marked, regardless of the length of text
+matched, and that it may match an empty
+string.  Among preferred rules, the usual precedence rules apply.
+
+As you might guess, this feature is rather specialized.
+In general, you should rely on \Horn's usual rules for precedence.
+Indeed, the only use I've found so far for {\tt\%prefer} is to handle Python's
+indentation rules:
+\begin{program}
+*: _BOL (' ' | '\t')* %prefer { ... }
+\end{program}
+
+When a preferred rule matches the empty string, no further 
+preferred rules are applied until at least one more token is read
+using non-preferred rules (to avoid infinite loops in which the
+lexical analyzer keeps returning empty strings).
+
+\section{Grammar Conflicts}\label{sec:conflicts}
+
+\Horn{} parsers belong to a category known as {\it shift-reduce\/}
+parsers.  These attempt to reconstruct, in reverse, the sequence of
+grammar rules needed to derive the input from the start symbol, as
+described in \S\ref{sec:basic-cfg}.  The parser consumes the input and
+maintains a sequence of grammar symbols (terminals and nonterminals)
+called the 
+{\it parsing stack\/}\footnote{Abstractly, it is a 
+sequence, but because of the way shift-reduce
+parsing works, we almost invariably refer to it as a stack, since it
+is always the most recently added symbols (those at the ``top'') that
+are manipulated at each step.} such that the concatenation of 
+the parsing stack and
+the remaining input (as a sequence of tokens) forms one of the 
+sentential forms in a derivation (again, see \S\ref{sec:basic-cfg}).
+
+At each step, the parser either {\it shifts\/} a token from the
+remaining input onto the end (top) of the parsing stack, or it 
+{\it reduces\/} zero or more symbols on top of the parsing stack into
+a nonterminal, using one of the grammar rules.  Since multiple grammar
+rules might seem applicable to the top of the parsing stack, the
+parser examines the next (unshifted) input token and a summary of the
+contents of the parsing stack (the {\it parser state\/}) to decide
+what rule (if any) to apply.  Sometimes, the choice is unclear,
+causing \Horn{} (or more precisely, {\sc Bison}, which does the real
+work) to report a {\it grammar conflict,\/} of which there are two
+varieties: {\it shift-reduce\/} conflicts and {\it reduce-reduce\/} conflicts. 
+
+\subsection{Shift-reduce conflicts}\label{sec:shift-reduce}
+
+A shift-reduce conflict results when the top of
+the stack contains the right-hand symbols of some grammar rule
+(suggesting a reduction), but it might also be valid to shift the next
+token so as to later get a different reduction.  For example, if you
+were to write
+\begin{program}
+expr : expr '-' expr
+     | ID 
+     ;
+\end{program}
+and try to parse an input such as `{\tt a-b-c},' the parser would
+eventually find itself in this situation:
+\begin{program}
+expr '-' expr \{\JN\} '-' ID 
+\end{program}
+where `\JN' marks the start of the remaining input.  At this
+point, the parser could take either of two routes: either
+\begin{program}
+expr \{\JN\} '-' ID             \{\it (Reduce) \}
+expr '-' ID \{\JN\}             \{\it (Shift twice) \}
+expr '-' expr \{\JN\}           \{\it (Reduce) \}
+expr \{\JN\}                    \{\it (Reduce) \}
+\end{program}
+or else
+\begin{program}
+expr '-' expr '-' ID \{\JN\}    \{\it (Shift twice) \}
+expr '-' expr '-' expr \{\JN\}  \{\it (Reduce) \}
+expr '-' expr \{\JN\}           \{\it (Reduce) \}
+expr \{\JN\}                    \{\it (Reduce) \}
+\end{program}
+corresponding to interpreting this expression as either `{\tt(a-b)-c}' or 
+`{\tt a-(b-c)}'.  In this example, the conflict results (as it often
+does) from an essential ambiguity in the grammar.  The programmer
+simply hasn't said which interpretation to choose. 
+
+\subsection{Reduce-reduce conflicts}\label{sec:reduce-reduce}
+
+A reduce-reduce conflict results when the top symbols of the
+stack might reasonably be reduced according to either of two different
+rules. For example, given a  grammar containing
+\begin{program}
+expr : '(' type ')' expr        \{\it (C-style cast)\}
+     | '(' expr ')'             \{\it (parenthesized expression)\}
+     | ID
+     | ....
+     ;
+type : ID
+     ;
+\end{program}
+and the input `{\tt (a) b}', the parser will eventually see this
+situation:
+\begin{program}
+'(' ID \{\JN\} ')' ID
+\end{program}
+It might convert {\tt ID} either into a type or an expr.  In this
+case, if it were to look beyond the `{\tt)}', it would see that
+choosing to reduce to {\tt expr} would not work, but since the parser
+looks only at the next unshifted token of the input, it does not see
+this and therefore reports a conflict.  
+
+This example notwithstanding, most reduce-reduce conflicts are due to
+errors in your grammar.  You should treat warnings about reduce-reduce
+conflicts as error messages and resolve them.  The parser-generator
+will arbitrarily resolve these conflicts in favor of the earlier rule,
+but it is extremely risky to rely on this resolution, since it usually
+just papers over a real problem.  (This is in contrast to lexical analysis,
+which also resolves conflicts in favor of the earlier rule, but where doing
+so is usually the right thing.)
+
+\subsection{Dealing with shift-reduce conflicts}\label{sec:precedence}
+
+Sometimes, conflicts result from accidental introduction of
+ambiguity.  For example, there's a good chance you'll eventually make
+this mistake:
+\begin{program}
+expr : expr '+' term
+       term                  \{\it (Left off the {\tt|})\}
+     ;
+\end{program}
+or this one:
+\begin{program}
+expr :
+     | expr '+' term         \{\it (Extra {\tt|})\}
+     | term
+     ;
+\end{program}
+Either of these can result in a flood of conflicts in the rest of
+the grammar.  All I can say about accidental conflicts is ``Try not to
+introduce them.''
+
+Sometimes, however, a conflicted grammar is actually clearer than an 
+unconflicted one, the principal example being expression grammars.
+You'd like to be able to say
+\begin{program}
+expr : expr '+' expr
+     | expr '-' expr
+     | expr '*' expr
+     ...
+\end{program}
+together with some way of indicating, as in informal English
+descriptions, that the operators group to the left, with `{\tt*}'
+having precedence over `{\tt+}' and `{\tt-}'.  The usual alternative
+uses a cascade of definitions, like this:
+\begin{program}
+expr : term | expr '+' term | expr '-' term ;
+term : factor | term '*' factor ;
+  ...
+\end{program}
+(see if you can figure out why this approach avoids ambiguity).  This
+works, but is a bit verbose.
+
+\Horn{} uses a  mechanism provided by {\sc Bison} to allow you to
+declare precedences for operators, so that an expression grammar can
+look like this:
+\begin{program}
+%left '='
+%left '+' '-'
+%left '*' '/'
+%right "**"
+... 
+
+%%
+
+...
+
+expr: ID
+    | expr '+' expr
+    | expr '-' expr
+    | expr '=' expr
+    | expr "**" expr
+    ...
+\end{program}
+Here, `{\tt\%left}' and `{\tt\%right}' are declarations that go in the 
+prologue of your grammar file.  They list operators from lowest to
+highest precedence, and indicate whether they group to the left or
+right.  Operators in the same declaration have the same precedence.  
+
+The idea is pretty simple: \Horn{} assigns each rule the precedence of 
+the operator token it contains (assuming there is only one token given
+a precedence), tweaking the precedence slightly up if the operator is
+left associative, and slightly down if it is right associative.  Now,
+consider a conflict like that illustrated in
+\S\ref{sec:shift-reduce}:
+\begin{program}
+expr '-' expr \{\JN\} '*' ID 
+\end{program}
+Either we can reduce the `{\tt expr '-' expr}' or shift the `{\tt*}'.
+Because the rule has the precedence of `{\tt-}', which is declared to
+be lower than that of `{\tt*}', shifting wins out here, and the parser
+will eventually end up reducing the multiplication before reducing the
+subtraction.  With 
+\begin{program}
+expr '-' expr \{\JN\} '-' ID 
+\end{program}
+since `{\tt-}' has been declared to be left associative, the
+subtraction rule has (slightly) higher precedence than the `{\tt-}'
+symbol, and the parser will reduce the first `{\tt-}' first, grouping
+the first two terms together as desired.  
+
+This is all very convenient, but I strongly recommend using this
+feature {\it only\/} for simple operator precedence such as in these
+examples.  The consequences of forcibly ``resolving'' conflicts that
+actually indicate problems are surprising and usually undesirable.
+
+\subsection{Precedence and extended BNF}
+
+Given the facilities in \S\ref{sec:precedence}, it is natural to want
+to write something like this:
+\begin{program}
+expr : expr ('+' | '-' | '*' | '/' | "**" | ...) expr ;
+\end{program}
+but you will quickly find this doesn't work.  \Horn{} converts this to
+some weird-looking rule like\footnote{Symbols such as {\tt\_\_0} are 
+internally generated, and are not lexical symbols.}:
+\begin{program}
+expr : expr __0 expr ;
+__0 : '+' | '-' | '*' | '/' | "**" | ... ;
+\end{program}
+Whereas before, the parser would face situations like this:
+\begin{program}
+expr '-' expr \{\JN\} '-' ID 
+\end{program}
+where the two operators in question are both available for inspection,
+with the new grammar, it sees only
+\begin{program}
+expr __0 expr \{\JN\} '-' ID 
+\end{program}
+and the identity of the left operator is lost.
+
+Fortunately, there is a convenient, if moderately obscure feature that
+addresses
+just this problem. We can write our rule as follows:
+\begin{program}
+expr : expr ('+' | '-' | '*' | '/' | "**" | ...) expr %expand
+\end{program}
+The effect of the {\tt\%expand} directive is to convert this rule
+differently, so that it reads
+\begin{program}
+expr : expr '+' expr | expr '-' expr | expr '*' expr | ... ;
+\end{program}
+In this form, precedence rules work properly.  You get to write the
+more concise rule and have it expanded for you into the long-winded
+form.
+
+The \verb|%expand| directive also applies to the `\verb|?|' (optional)
+operator, expanding a rule such as
+\begin{program}
+expr : unop? primary %expand ;
+\end{program}
+into the two rules
+\begin{program}
+expr : primary;
+expr : unop primary
+\end{program}
+This is less often useful than the first example, but is sometimes
+necessary to allow the parser to avoid having to decide whether to
+reduce a rule before it has enough information.  Normally, the
+`\verb|?|' operator would create a new nonterminal with a rule such as
+\begin{program}
+__1 : unop | /* empty */ ;
+\end{program}
+and substitute the new nonterminal for ``\verb|unop?|''.  That
+wouldn't work in a situation like this:
+\begin{program}
+expr : unop? primary
+     | primary postfixop
+     ;
+\end{program}
+because in the absence of a {\tt unop} in the input stream,
+the parser cannot tell whether to reduce the empty sequence to
+{\tt\_\_1} until after it sees whether there is a  {\tt postfixop} after
+the {\tt primary}.  With an \verb|%expand| on the first rule, no such
+early decision is necessary.  
+
+
+
+\subsection{GLR parsing}\label{sec:glr}
+
+Sometimes, as in the example from \S\ref{sec:reduce-reduce}, a
+conflict results from the fact that the parser is required to make a
+decision before it has all the necessary information.  You can
+generally resolve this with judicious rewriting, but it is sometimes
+clearer to use ``brute force.'' \Horn{} provides an alternative
+parsing algorithm called {\it Generalized LR (GLR)\/}\footnote{``LR'' 
+is the
+name of \Horn's standard parsing algorithm.  The initials stand for 
+``Left-to-right (reverse) Rightmost derivation.''}.  When confronted
+with a conflict at parsing time, the GLR parser will (in effect) split
+into multiple parsers, each pursuing a different choice of shifts and
+reductions.  As some of these choices turn out to be unfeasible, their
+parsers die off.  Assuming that only one parser makes it to the end,
+all is well.  While the parser is split, it does not execute any
+actions, but instead saves them up until the surviving parse is
+determined.  
+
+For example, going back to the example from \S\ref{sec:reduce-reduce}:
+\begin{program}
+expr : '(' type ')' expr        \{\it (C-style cast)\}
+     | '(' expr ')'             \{\it (parenthesized expression)\}
+     | ID
+     ;
+type : ID
+     ;
+\end{program}
+\Horn{} will report that there
+is a reduce-reduce conflict when the parser has just shifted `{\tt(}'
+and `{\tt ID}' and is looking at `{\tt)}'. If the parser were to look
+one symbol beyond the `{\tt)}', it would know which reduction would
+work.  For this grammar, including the declaration 
+\begin{program}
+%glr-parser
+\end{program}
+in the prologue will cause the parser to pursue both possibilities,
+one of which will get pruned.
+
+This is a very powerful mechanism (and not fully described here).
+However, there is one problem: \Horn{} will still report conflicts in
+the grammar, since it cannot in general analyze whether the parser is
+guaranteed to accept only one parse.  You will have to analyze your
+grammar carefully (and test it extensively) in order to make sure you
+are getting the proper results.  Once you have done so, I suggest that
+you declare the expected numbers of conflicts that will get resolved by
+GLR so that \Horn{} will alert you when you make a change to the
+grammar that might change the resolutions you've checked.  To indicate
+that you expect exactly $N_{\mbox{sr}}$ shift-reduce and $N_{\mbox{rr}}$
+reduce-reduce conflicts,
+put the following declarations in your prologue:
+\begin{program}
+%expect \{$N_{\mbox{sr}}$\}
+%expect-rr \{$N_{\mbox{rr}}$\}
+\end{program}
+
+\section{Semantic Actions}\label{sec:semantics}
+
+So far, we've been concerned entirely with syntax.  The \Horn{}
+parsers illustrated so far will read an input text and either
+determine that it obeys the grammar rules and do nothing, or
+determine that it does not obey the grammar rules and produce an error
+message. The main point of defining a grammar and breaking it down
+into rules is to implement {\it syntax-directed translation\/} of the
+input, in which the particular derivation (sequence of rules) used to 
+parse an input triggers a corresponding sequence of actions that
+translates or otherwise processes the text. In \Horn, these actions
+take the form of arbitrary \CPP{} code enclosed in curly braces and
+placed at the end of a rule.  Being arbitrary \CPP{} code, it can do anything.
+For example, given the \Horn{} program:
+\begin{program}
+expr : term              { printf ("term <- expr\n"); };
+expr : expr "+" term     { printf ("expr + term <- expr\n"); };
+expr : expr "-" term     { printf ("expr - term <- expr\n"); };
+term : factor 		 { printf ("factor <- term\n"); };
+term : term "*" factor   { printf ("term * factor <- term\n"); };
+term : term "/" factor   { printf ("term / factor <- term\n"); };
+factor : NUM              { printf ("NUM <- factor\n"); };
+factor : "(" expr ")"    { printf ("( expr ) <- factor\n"); };
+\end{program}
+and the input string ``{\tt 2*(3+9)-42},'' we get the following output
+from the compiled and executed program:
+\begin{program}
+NUM <- factor
+factor <- term
+NUM <- factor
+factor <- term
+term <- expr
+NUM <- factor
+factor <- term
+expr + term <- expr
+( expr ) <- factor
+term * factor <- term
+term <- expr
+NUM <- factor
+factor <- term
+expr - term <- expr
+\end{program}
+Follow this output from bottom to top and compare it to the sample
+derivation of the same string in \S\ref{sec:basic-cfg}. You should see
+that each output line shows what changed between one derivation step
+and the next.
+
+\subsection{Semantic Values}\label{sec:semantic-values}
+
+Such pure side-effect-producing programs are not the usual case.
+More commonly, semantic actions are mostly concerned with computing
+{\it semantic values\/} for nonterminal symbols.  Consider two steps 
+from the derivation of {\tt 2*(3+9)-42} in our running example (see
+\S\ref{sec:basic-cfg}):
+\begin{program}
+\{$\cdots$~\RA\} term - NUM \{\RA\} term * factor - NUM \{\RA~$\cdots$\}
+\end{program}
+First, let's reverse their order to match the order in which they
+actually get processed:
+\begin{program}
+\{$\cdots$~\LA\} term * factor - NUM \{\LA\} term - NUM \{\LA~$\cdots$\}
+\end{program}
+The {\tt term*factor} part corresponds to `2*(3+9)' in the input.
+Suppose we attach to each of these symbols the numeric value of the
+numeric expression it represents:
+\begin{program}
+\{$\cdots$~\LA\} term\{\sv{2}\} * factor\{\sv{12}\} - NUM\{\sv{42}\} \{\LA\} term\{\sv{24}\} - NUM\{\sv{42}\} \{\LA~$\cdots$\}
+\end{program}
+The subscripts are the semantic values attached to the instances of
+the grammar symbols in this example.  We can write the action for the rule that
+specifies this derivation step so that it computes the value for the
+newly reduced {\tt term}, like this:
+\begin{program}
+term : term "*" factor   { $$ = $term.value() * $factor.value(); }
+\end{program}
+In this action, we refer to the 
+grammar symbols in the rule using the `{\tt\$}' notation, which the
+\Horn{} preprocessor will convert to the (rather arcane) expressions
+that actually access those symbols.  We can refer to a symbol's value
+by its name (as in {\tt\$factor}) if it is unique.
+Alternatively, we can attach labels to the symbols and refer to those:
+\begin{program}
+term : L=term "*" R=factor { $$ = $L.value() * $R.value(); }
+\end{program}
+This latter notation is necessary when the given grammar symbol is
+used multiple times in a right-hand side.
+
+These `{\tt\$$\cdot$}'
+symbols have various operations defined on them, one of which is
+{\tt.value()}, a method that extracts a semantic value of some
+user-defined type.  Assigning a semantic value to the left-hand side
+symbol (as in ``{\tt\$\$ =}'') effectively defines the semantic value
+of that symbol.  Filling out the example:
+\begin{program}
+expr : term;
+expr : expr "+" term     { $$ = $expr.value() + $term.value(); };
+expr : expr "-" term     { $$ = $expr.value() - $term.value(); };
+term : factor;
+term : term "*" factor   { $$ = $term.value() * $factor.value(); };
+term : term "/" factor   { $$ = $term.value() / $factor.value(); };
+factor : NUM;
+factor : "(" expr ")"    { $$ = $expr; };
+\end{program}
+When we don't provide an action, as in three of the rules above,
+the default action copies the value of the first right-hand symbol, as
+if we had written:
+\begin{program}
+expr : term                  { $$ = $term; };
+\end{program}
+
+\subsection{Inner actions}\label{sec:inner}
+
+Occasionally, it is useful to take an action part way through
+collecting the symbols on the right-hand side of a rule.  This is not often
+necessary, but is sometimes useful in cases where global variables
+affect subsequent processing.  Roughly, a rule such as
+\begin{program}
+init : "{" { initializing=true; } init_list "}" ;
+\end{program}
+is shorthand for 
+\begin{program}
+init : "{" gensym_1 init_list "}" ;
+gensym_1 : /* empty */ { initializing = true; } ;
+\end{program}
+where {\tt gensym\_1} represents a new, unique, automatically generated symbol.
+I said ``roughly'' because these inner rules {\it are\/} allowed to
+reference the semantic values of preceding grammar symbols (but not
+{\tt\$\$}), as in 
+\begin{program}
+values : expr { collect ($expr); } "=" expr;
+\end{program}
+even though ``{\tt\$expr}'' would not be defined in the
+compiler-generated rule.  
+
+Because inner actions introduce a new rule that the parser has to
+reduce before seeing the subsequent parts of the right-hand side, they
+can introduce conflicts, where the parser does not
+have enough information immediately available
+to decide what alternative path to follow (see
+\S\ref{sec:conflicts}).
+
+\subsection{Collecting actions}\label{sec:collecting}
+
+Especially when you are using extended BNF, you will need to collect
+lists of semantic values.  Let's go back to a previous example:
+\begin{program}
+sexpr : atom | "(" sexpr* ")";
+\end{program}
+If you add actions to this rule, you can reference {\tt\$sexpr} easily
+enough, but the question becomes ``which of the sequence of zero or
+more {\tt sexprs} did you mean?''  Fortunately, we have a solution,
+illustrated here:
+\begin{program}
+sexpr : atom                 { $$ = process($atom.value()); }
+      | "(" (L+=sexpr)* ")"  { $$ = process($L.list_value()); }
+\end{program}
+(the parentheses around `{\tt L+=\dots}' aren't actually necessary, but
+they make the meaning clearer).  The `{\tt+=}' notation tells \Horn{}
+to add each {\tt sexpr}'s value into a list 
+whose type is {\tt gcvector}, a garbage-collected extension of {\tt vector<$T$>*}, 
+where $T$ is the type of semantic values and {\tt vector} is the 
+extensible vector type
+in the \CPP{} Standard Template Library (STL).  The {\tt list\_value}
+selector returns a pointer to such a list.
+
+When forming trees (see
+\S\ref{sec:tree-building}), many of your rules will take the form of passing
+{\it all\/} the right-hand-side semantic values in order to some
+function. To make this easier, the symbol \verb|$*| in a grammar rule
+means ``the flattened list (type pointer to {\tt gcvector})
+of all semantic values returned from the
+right-hand-side symbols, in order of those symbols.'' The term
+``flattened'' here means that when a semantic value is a list of tree
+values, the list is appended to the value of \verb|$*|, so that
+\verb|$*| is always a list of individual semantic values, rather than
+a list of lists.  When no semantic value is specified for a grammar
+rule in a tree-forming parser, its value is \verb|$*|. 
+
+\subsection{Methods on grammar symbols}\label{sec:yysem-methods}
+
+As you've seen in previous sections, the objects represented by
+quantities such as \verb|$atom| can contain semantic values or lists
+of values.  They also carry other information, which you can access by
+means of additional methods.  Here is the list:
+\begin{description}
+\item[.value()] The semantic value of this symbol, if it is a simple
+		value as opposed to a list.  Yields the default value
+		if the value is missing.		
+\item[.list\_value()] The value of this symbol as a list of semantic
+		values.  Yields an empty list if the value is missing.
+\item[.missing()] True if the semantic value of this symbol is missing
+                (which happens in cases such as these:
+\begin{program}
+primary : atom suffix?                  { ... }
+secondary : (atom suffix | prefix atom) { ... }
+\end{program}
+In the first case, \verb|$suffix.missing()| will be true if the
+optional suffix is not present.  In the second, either
+\verb|$suffix.missing()| or \verb|$prefix.missing()| will be true
+depending on which alternative applies.)
+\item[.text()] The source text associated with this symbol as a C++
+string.  Generally, this is empty for symbols other than tokens
+(lexical symbols), although the programmer can arrange to associate a
+text value with all semantic values.
+\item[.c\_text()] The source text associated with this symbol as a C 
+\verb|const char*| pointer.  Unlike most C strings, however, this
+pointer is not NUL terminated (use \verb|.text_size()| to get its
+length).  Generally, this is NULL for symbols other than tokens
+(lexical symbols), although the programmer can arrange to associate a
+text value with all semantic values.
+\item[.text\_size()] The length of text in \verb|.c_text()|.
+\item[.loc()] The location of this symbol (its type is \verb|const char*|, 
+but that should be immaterial; it is intended for use with 
+\verb|yyprinted\_location|, \verb|yylocation_line|, and
+\verb|yylocation_source|.)
+See also \S\ref{sec:locations}.
+\item[.set\_loc($L$)]
+Set the location (the value of {\tt.loc()})
+associated with this symbol to $L$.  If semantic values of symbols 
+carry locations, this will also set the location of the semantic value
+of this symbol.  See also \S\ref{sec:locations}.%
+\end{description}
+
+\section{Lexical Actions}\label{sec:lex-actions}
+
+Lexical rules can also have actions, but they differ considerably from
+actions on CFG rules.  For one thing, they are much more limited:
+inner actions are not allowed; and a lexical action may not reference
+the values of the individual right-hand side items---only the complete
+text matched by the rule.  Within a lexical action, the symbol {\tt
+\$TEXT} is a {\tt char*} pointer to the text matched by the rule and 
+{\tt \$TEXT\_SIZE} is the length of this text.  When you compute a semantic
+value to attach to the token produced by a lexical rule, you can
+return it as you do for CFG rules:
+\begin{program}
+$$ = \{\it semantic value for token\};
+\end{program}
+For example, if your semantic values are integers, you might need a
+rule like this for decimal literals\footnote{Actually, most such rules
+won't allow a sign in order to avoid conflicts with unary negation,
+for example, but I thought I'd take the opportunity to illustrate the 
+`{\tt?}' operator.}:
+\begin{program}
+NUM : ("-" | "+")? ('0' .. '9')+    { $$ = atoi($TEXT); }
+\end{program}
+
+By default, the \Horn{} framework will set {\tt\$\$} if you do not.
+When producing trees, the value is a standard token (leaf node)
+containing the text of the token.
+For values other
+than
+trees, this will be some function, $F$,
+with the header:
+\begin{program}
+\{\it semantic\_value\_type $F\/$\} (int syntax, size_t len, const char* text);
+\end{program}
+where {\tt syntax} is the syntactic category of the token (e.g., {\tt
+NUM} in the last example), {\tt text} is the text of the token, and
+{\tt len} is the length of {\tt text} (so that {\tt text}, unlike the
+usual C/C++ character string, need not be NUL-terminated).  By
+default, $F$ is a function that simply returns the default value of
+{\it semantic\_value\_type}.  You can specify your own such function
+with the declaration
+\begin{program}
+%define token_factory \{\it yourfunction\}
+\end{program}
+
+The values that {\tt \$TEXT}
+takes on are persistent: you may safely store them and expect that the
+characters they point at will not change.  However, although within
+the text of a lexical action, the string is NUL-terminated (as per the
+standard C convention), it need not be so terminated later, so if you
+need to keep the text around, you
+will need to either copy the characters into a NUL-terminated string
+or \CPP{} {\tt string}, or keep its length around as well.
+
+\subsection{Specifying actions for implicit tokens}\label{sec:implicit-token-action}
+In context-free rules, one normally indicates a literal token (such as
+a keyword or punctuation mark) with a quoted string.  \Horn{} generates
+lexical rules for these without your having to write anything,
+and normally generates an appropriate lexical action.  You can specify 
+explicit lexical actions for these symbols by using them on the left
+side of a lexical rule whose right side consists of a single lexical
+action.
+For example, 
+\begin{program}
+"(" : { bracket_count += 1; } 
+    ;
+\end{program}
+increments a variable once for each left parenthesis.  The actual
+pattern matched by this rule is always the same as the left-hand side;
+you never actually write it.
+
+\subsection{Ignoring tokens}\label{sec:ignored-tokens}
+
+In many cases, the parser would just as soon not see some of the
+text.  For example, in most programming languages, whitespace (blanks, tabs, and
+sometimes line terminators) take no part in the grammar of a language
+and would be a nuisance to deal with there.  Similarly for
+comments. The \Horn{} system provides a way to specify tokens that
+should be ignored, and never seen by the parser.  To do this, simply
+include a  {\tt YYIGNORE} statement (it's actually a macro) in the
+lexical action. A typical example:
+\begin{program}
+WS : (' ' | '\t' | '\n' | '\r' | '\f')+   { YYIGNORE; }
+\end{program}
+The generated lexical analyzer will skip all {\tt WS} tokens and will
+suppress the default creation of a semantic value for them.  These
+tokens will still serve to delimit other tokens (such as identifiers
+and keywords), as usually required in most applications.
+
+\subsection{Explicit syntactic categories}\label{sec:setting-token}
+
+As indicated in \S\ref{sec:lexical-rules}, the parser (outside of
+actions) depends only on the syntactic categories of the tokens that
+the lexical analyzer feeds to it.  In \Horn, these categories are
+represented as integers. 
+By default, the syntactic category returned by a rule is that named on
+its left side, but there are cases where it is more convenient to
+decide on a category in lexical actions.  The statement
+\begin{program}
+YYSET_TOKEN(\{\it category\});
+\end{program}
+does just this.  For example, we could write a rule like:
+\begin{program}
+UPPER_ID : ('A' .. 'Z') _Alphanum* ;
+LOWER_ID : ('a' .. 'z') _Alphanum* ;
+\end{program}
+or like this:
+\begin{program}
+UPPER_ID : _Letter _Alphanum* { 
+    if (islower ($TEXT[0])) YYSET_TOKEN(LOWER_ID); }
+\end{program}
+Of course, it is a little confusing for the reader to have the
+syntactic category returned by a rule differ from that on the
+left-hand side like this, so we also allow rules with no specified 
+syntactic category:
+\begin{program}
+* : _Letter _Alphanum* { 
+    YYSET_TOKEN(islower ($TEXT[0]) ? LOWER_ID : UPPER_ID); }
+\end{program}
+In the absence of {\tt YYSET\_TOKEN}, these rules are ignored, so we
+could also rewrite the whitespace rule as
+\begin{program}
+* : (' ' | '\t' | '\n' | '\r' | '\f')+
+\end{program}
+
+\subsection{Declaring syntactic categories}\label{sec:declare-tokens}
+
+When using {\tt YYSET\_TOKEN}, you must be careful that the names you
+use as syntactic categories are defined.  \Horn{} does this
+automatically for names that appear on the left sides of lexical
+rules, but not for other names you might want to use.  However, you
+can introduce new names by means of a {\it token declaration,\/} which
+appears in the prologue mentioned in \S\ref{sec:input-files}.  For
+example:
+\begin{program}
+%token UPPER_ID LOWER_ID
+\end{program}
+introduces the syntactic categories in the example above without requiring that
+you use them on the left-hand side of a lexical rule.
+New syntactic categories are particularly useful
+when used with the \Horn{} tree-building framework (see
+\S\ref{sec:explicit-tree} and \S\ref{sec:tree-factory}), 
+which uses them to identify types of tree
+nodes.
+
+You can also attach symbolic names to tokens denoted by string
+literals.  For example,
+\begin{program}
+%token EXPO "**"
+\end{program}
+Allows you to use the name EXPO in program text to name the syntactic
+category associated with the `{\tt**}' token (which would otherwise be
+anonymous).  
+
+\section{Defining Semantic Types}\label{sec:semantic-types}
+
+In order to use the {\tt.value()} and {\tt.list\_value()} methods (see
+\S\ref{sec:semantic-values}), you must inform \Horn{} what types of
+value they return and provide some information about these types.
+The simplest declaration is just
+\begin{program}
+%define semantic_type "\{\it Type\}"
+\end{program}
+which indicates the type of semantic values and creates a list type 
+for use with `{\tt+=}' operators.
+One may supply any POD
+type\footnote{POD stands for ``Plain Old Data'' and refers to
+standard C types, in particular excluding types with constructors or
+destructors.  The standard collection types in the \CPP{} library, in
+particular are {\it not\/} POD types.  However, since pointers 
+are POD types, you can generally get anything you want for a
+semantic type by using a level of indirection.} for {\it Type},
+with the result that the expression {\tt \${\it X}.value()} will yield
+values of that type and lists returned by {\tt \${\it
+X}.list\_value()} will yield a type derived from the standard \CPP{}
+library type {\tt list<{\it Type\/}>}.
+Figure~\ref{fig:calc} shows
+a fleshed-out example.  
+
+To get the operations required by  the tree-building
+features described in \S\ref{sec:tree-building},
+use the declaration
+\begin{program}
+%define semantic_tree_type \{\it YOUR\_TREE\_TYPE\}
+\end{program}
+in place of \verb|%define semantic_type|.
+
+\begin{figure}[p]
+\begin{program}
+%{
+#  include <cstdlib>
+#  include <cstdio>
+#  include <math.h>
+
+   extern double make_token (int syntax, size_t len, const char* text);
+
+   using namespace std;
+
+%}
+
+%define token_factory make_token
+%define semantic_type double
+%interactive
+
+%left "+" "-"
+%left "*" "/"
+%right "**"
+
+%%
+
+prog : (expr ";" { printf ("=%g\n", $expr.value()); })* ;
+
+expr : L=expr "+" R=expr     { $$ = $L.value() + $R.value(); };
+expr : L=expr "-" R=expr     { $$ = $L.value() - $R.value(); };
+expr : L=expr "*" R=expr     { $$ = $L.value() * $R.value(); };
+expr : L=expr "/" R=expr     { $$ = $L.value() / $R.value(); };
+expr : L=expr "**" R=expr    { $$ = pow($L.value(), $R.value()); };
+expr : NUM;
+expr : "(" expr ")"          { $$ = $expr; };
+
+_DIG : '0' .. '9' ;
+NUM : _DIG+ ("." _DIG*)? (("e"|"E") ("+"|"-")? _DIG+)? ;
+* : ' ' | '\t' | '\n' | '\r';
+%%
+
+double
+make_token (int syntax, size_t len, const char* text) {
+   return strtod (text, NULL);
+}
+
+int
+main () {
+  yypush_lexer (stdin, "<stdin>");
+  yyparse ();
+}
+\end{program}
+\caption{Full calculator example, showing specification of a simple
+domain of semantic value (in this case, {\tt double}).}
+\label{fig:calc}
+\end{figure}
+
+\subsection{Automatic storage deallocation}\label{sec:storage}
+\paragraph{Background.}
+\CPP{} does not provide garbage collection of dynamically allocated
+storage (i.e., storage allocated using the {\bf new}
+operator)---indeed, several features of the language make automatic 
+garbage collection quite difficult.  Therefore, compilers produced by 
+the \Horn{} framework use
+a heuristic garbage collector known as the 
+{\it Boehm-Demers-Weiser collector%
+\footnote{For more information, see URL
+{\tt http://www.hpl.hp.com/personal/Hans\_Boehm/gc} or Richard Jones
+and Rafael Lins, {\it Garbage Collection: Algorithms for Automatic
+Dynamic Memory Management,} John Wiley \& Sons, 1996.}%
+,}
+which collects a subset of heap storage
+that could safely be deallocated.  
+While it isn't perfect, it does succeed in automatically
+freeing available objects to a remarkable extent, and requires very
+little cooperation from the programmer.
+
+The underlying technique is known as {\it conservative mark-and-sweep
+garbage collection.}
+Standard mark-and-sweep garbage collection finds and deallocates {\it
+unreachable\/} memory when
+needed to allocate new objects on the heap.  An object in memory is said to be
+unreachable at some point during execution of a program if
+no legal continuation of the execution could ever access it---that is,
+if no chain of pointers from an object pointed to by a nameable
+variable or from the result of a call to a builtin library procedure ``reaches'' 
+(points to or into) that object.  Since the contents of such objects
+can have no effect on the subsequent execution of the program, the
+memory containing those objects can be freely recycled
+for use in new allocations\footnote{Certain 
+practices---among others, I/O of pointers or conversion of pointers to and
+from integers---can also cause trouble, but their effects are
+technically undefined anyway.}
+To use standard mark-and-sweep collection, the relevant portions of
+the run-time system must ``know'' which locations in memory contain
+pointers and be able to access these locations---information that C or
+C++ compilers typically do not maintain at execution time.  
+
+Conservative garbage collection finds unreachable storage by treating
+values in memory that {\it might\/} be pointers as if they definitely
+are pointers.  As a result, it will in general treat certain objects
+whose addresses happen to equal (as raw bit sequences) the contents of
+some superset of the memory locations that are accessible to the
+program as if they were reachable, even when they actually are not.
+That is, it conservatively refrains from collecting memory that
+``looks'' as if it might be pointed by truly reachable storage,
+and collects instead a heuristically selected subset of candidate
+memory.  
+
+\paragraph{Automatic Garbage Collection in Horn.}  
+You must have the Boehm-Demers-Weiser collector installed on your
+system to compile programs produced by Horn.  Any C++ source files you
+use should link the
+executable with the option {\tt-lgc} (and any necessary {\tt-L}
+option needed to inform the linker where to find that library).
+
+For the most part, the use of garbage collection in \Horn{}-generated
+compilers is invisible, but there are some precautions you must take.
+The
+standard \Horn{} tree and token types (see \S\ref{sec:tree-building}) 
+derive from a class {\tt gc}, which causes
+objects of these types to be allocated in garbage-collected storage.
+Any of your own code that stores semantic values pointing to these types 
+in dynamically allocated storage (allocated using the C++ {\bf new}
+operator) must make sure that all such storage is known to the garbage
+collector (we say that the storage is {\it traced}.) 
+Traced storage includes:
+\begin{itemize}
+\item Local variables, those declared {\tt static}, and those with
+external linkage;
+\item Objects of type {\tt
+      gcvector} or {\tt gcmap}, which are defined by the \Horn{}
+      framework as garbage-collected substitutes for the
+       C++ library classes {\tt vector} and {\tt map};
+\item Objects of classes that extend the class {\tt gc} (part of the 
+      Boehm-Demers-Weiser collector.)
+\item Objects that are explicitly allocated in garbage-collected
+storage with the C++ placement syntax:
+\begin{program}
+new (GC) MyType(...)
+\end{program}
+\item Standard C++  container objects that are allocated in traced
+storage and that are declared using {\tt gc\_allocator} for the
+allocation template parameter. For example:
+\begin{program}
+#include <list>
+std::list<Node*, gc_allocator> nodeList;
+\end{program}
+The allocation
+parameter is not often used in C++ programs.  It is needed because the
+C++ standard collection types dynamically allocate their (private) internal 
+data structures; the
+allocation parameters tell them where to allocate this memory.  
+If in addition your program allocates the objects themselves on the
+heap, you must also use placement syntax, as in 
+\begin{program}
+typedef std::list<Node*, gc_allocator> MyList;
+MyList* L = new (GC) MyList();
+\end{program}
+The types {\tt gcvector} and {\tt gcmap} already do all of this for C++
+classes {\tt std::vector} and {\tt std::map}, so that you get the
+effect of the statement above simply by saying
+\begin{program}
+gcvector<Node*>* V = new gcvector<Node*>();
+\end{program}
+\end{itemize}
+
+\section{Building Abstract Syntax Trees}\label{sec:tree-building}
+
+One very common application of parser frameworks is the production of
+{\it abstract syntax trees\/} (ASTs), which are essentially tree
+representations of a program that elide certain syntactic or lexical details.
+\Horn{} includes a set of notations
+that allow you to specify transformations from textual representations
+of programs to ASTs, and provides some basic AST classes that you can
+extend to suit your application.
+
+This framework provides trees in which each node is labeled by a
+token and has an arbitrary number of children.  For example, consider
+again a language of arithmetic  expressions, and suppose that the
+translation we're after takes each expression, $E =E_1 \oplus E_2$
+(where `$\oplus$' is a binary operator) and produces a tree, $T(E)$, labeled 
+with the token for $\oplus$ and having two children representing the
+translations of $E_1$ and $E_2$ (or in Lisp-like prefix notation, {\tt($\oplus$
+$T(E_1)$ $T(E_2)$)}).  We could re-work the calculator example in
+Figure~\ref{fig:calc} to do this by modifying the actions:
+\begin{program}
+expr : L=expr op="+" R=expr { $$ = make_tree ($op.value(), $L.value(), $R.value(); };
+expr : L=expr op="-" R=expr { $$ = make_tree ($op.value(), $L.value(), $R.value(); };
+expr : L=expr op="*" R=expr { $$ = make_tree ($op.value(), $L.value(), $R.value(); };
+expr : L=expr op="/" R=expr { $$ = make_tree ($op.value(), $L.value(), $R.value(); };
+expr : L=expr op="**" R=expr { $$ = make_tree ($op.value(), $L.value(), $R.value(); };
+expr : NUM;
+expr : "(" expr ")"         { $$ = $expr; };
+
+_DIG : '0' .. '9' ;
+NUM : _DIG+ ("." _DIG*)? (("e"|"E") ("+"|"-")? _DIG+)?
+\end{program}
+
+As you can see, this leads to a rather tedious and repetitive 
+definition.  You can be considerably more clear and concise
+by using \Horn's tree-forming
+operators, which allow the following specification:
+\begin{program}
+%right "**"
+%left "*" "/"
+%left "+" "-"
+
+%token EXPO "**"
+%%
+
+expr : expr "+"^ expr;
+expr : expr "-"^ expr;
+expr : expr "*"^ expr;
+expr : expr "/"^ expr;
+expr : expr "**"^ expr;
+expr : NUM;
+expr : "("! expr ")"!;
+
+_DIG : '0' .. '9' ;
+NUM : _DIG+ ("." _DIG*)? (("e"|"E") ("+"|"-")? _DIG+)?;
+\end{program}
+This produces the same definition as before.  The `\verb|^|' symbols
+mark the operators, and the `\verb|!|' symbols mark tokens that are to
+be ignored and not included in the tree.  All defaulted lexical rules that
+are supposed to return tokens use a call to a {\tt make\_token}
+operator, as in the previous version.  (We've also defined the
+symbolic name {\tt EXPO} as a synonym for the `{\tt**}' token.  We
+won't really need it, however, until \S\ref{sec:tree-factory}.)
+
+More precisely, consider a general grammar rule of the form
+\begin{program}
+\{$x0 : a_1~\cdots~ a_k~ b_{1}\mbox{\tt\string^} ~a_{k+1}~\cdots~ a_{k'}
+~b_2\mbox{\tt\string^}~ a_{k'+1}~ \cdots;$\}
+\end{program}
+where all the $a_i$ and $b_i$ are grammar symbols.  We eliminate any
+symbols followed by {\tt!}, and then proceed from left to right,
+adding the value of each $a_i$ to the ``current node''.  Initially,
+the current node is a special kind of tree node that acts as a list
+(it has a null operator), so that in the absence of any $b_j$\verb|^|
+clauses, the default action will just produce a list of the values of
+the $a_i$. Each time a $b_j$\verb|^| is encountered, the framework
+creates a new node with $b_j$ as its operator and the current node as
+its child.  This new node now becomes the current node.
+
+Adding a list node, $L$, as a child of another node, $N$,
+``unpacks'' $L$; that is, its children become the
+(direct) children of $N$, so that lists {\it per se\/} 
+are never children of other nodes (including other lists).  This is
+similar to Perl, in which there are no lists of lists, since lists are
+always flattened into single-level structures.  Therefore, a rule such
+as
+\begin{program}
+thing : ID ID  "<>"^ NUM NUM
+\end{program}
+gives trees of the form
+\begin{program}
+("<>" ID ID NUM NUM)
+\end{program}
+rather than something like
+\begin{program}
+("<>" (ID ID) NUM NUM)
+\end{program}
+Likewise, the rules 
+\begin{program}
+thing : ids "<>"^ nums ;
+ids : ID ID ;
+nums : NUM NUM ;
+\end{program}
+yield the same trees as the first form ({\tt ids} yields a list of two 
+{\tt ID} nodes, since there is no \verb|^| operator present.
+
+When combined with extended BNF operators, you can get some nice
+effects.
+For example,
+\begin{program}
+arg_list : "("! (expr (","! expr)*)? ")"! ;
+\end{program}
+turns input ``{\tt (e1, e2, e3)}'' into a list of three expression trees,
+discarding the commas and parentheses.  The same rule matches input
+``{\tt ()},'' yielding an empty list.
+As another example,
+\begin{program}
+expr : NUM (op^ NUM)+ ;
+op : "+" | "-" ;
+\end{program}
+would yield a left-associated tree such as 
+\begin{program}
+(+ (- (+ NUM NUM) NUM) NUM)
+\end{program}
+from input text ``{\tt NUM + NUM - NUM + NUM}.''
+
+\subsection{Explicit tree formation}\label{sec:explicit-tree}
+
+Sometimes, the convenient and concise tree-formation operators
+`\verb|^|' doesn't quite fit the grammar.  For example, to translate a
+function call with a syntax such as
+\begin{program}
+expr : expr "("! arg_list ")"! 
+\end{program}
+you'll most likely want an operator with a name such as \verb|CALL|,
+defined with
+\begin{program}
+%token CALL
+\end{program}
+in the prelude (see \S\ref{sec:declare-tokens}).
+(You {\it could\/} instead use `\verb|(|' as an operator, as in
+\begin{program}
+expr : expr "("^ arg_list ")"!    /* ?? */
+\end{program}
+but this seems a bit artificial.)  There's nothing for it but to set
+\verb|$$| explicitly.  Fortunately, there are a few shortcuts.  In
+actions, the symbol \verb|$^| is shorthand for the name of the
+tree-forming function.  Its first argument, the operator, can either
+be a token from the right-hand side of the rule, or it can be the name
+of a terminal symbol from the grammar.  So, for example,
+\begin{program}
+expr : expr "("! arg_list ")"!   { $$ = $^(CALL, $expr, $arg_list); }
+\end{program}
+For even more brevity, you can refer to the entire list of tree
+operands (if there is at least one) with `\verb|$*|':
+\begin{program}
+expr : expr "("! arg_list ")"!   { $$ = $^(CALL, $*); }
+\end{program}
+
+\subsection{Defining tree types}\label{sec:tree-types}
+
+The \Horn{} framework includes a generic tree type that serves as the 
+base class of user-defined trees.  This provides for simple tree formation,
+and for accessors for children and operators.  Any particular tree type 
+used in your program will be derived from the generic type, and will add 
+whatever additional methods and other members needed for your application.  
+The simplest possible definition, giving only the basics, looks like this:
+\begin{program}
+%define semantic_tree_type Node
+
+%{
+class Token;
+class Tree;
+
+class Node : public CommonNode<Node, Token, Tree> {
+   /* The predefined class CommonNode defines the type NodePtr as a
+    * synonym for Node*. */
+};
+
+class Tree : public CommonTree<Node, Token, Tree> {
+public: 
+   /** An internal node with operator OPER (which must be a token),
+     *  and the children between iterators BEGIN (inclusive) and END 
+     *  (exclusive). */
+    template <class InputIterator>
+    Tree (Node::NodePtr oper, InputIterator begin, InputIterator end) 
+	: CommonTree<Node, Token, Tree>(oper, begin, end) { }
+
+};
+
+class Token : public CommonToken<Node, Token, Tree> {
+public:
+    Token (int syntax, const char* text, size_t len, bool owner = false)
+	: CommonToken<Node, Token, Tree>
+             (syntax, text, len, owner) { }
+    Token (int syntax, const std::string& text, bool owner)
+        : CommonToken<Node, Token, Tree>
+             (syntax, text, owner) { }
+};
+%}
+\end{program}
+The rather convoluted definitions of {\tt Node}, {\tt
+Tree}, and {\tt Token} address a problem with the static
+typing of \CPP{}.  First, we want to have a common type that defines operations
+on all tree nodes, with two derived types covering tokens (a type of
+leaf) and inner nodes.  So far, so easy: we just define
+\begin{program}
+class CommonNode { 
+    ... 
+    CommonNode* child (int k) const { ... }
+    ...
+};
+class CommonToken : public CommonNode { ... }
+class CommonTree : public CommonNode { ... }
+\end{program}
+Unfortunately, what we really want is for the user to be able to
+extend these three types.  However, when you derive {\tt YourNode} 
+from {\tt CommonNode}, the 
+new type is no longer a supertype of {\tt CommonToken} and {\tt CommonTree}, so
+that types you derive from those latter two types will not be subtypes of
+{\tt YourNode}.  Therefore, we define our base node types as taking the 
+types you want to define as parameters.  The real definitions look more 
+like this:
+\begin{program}
+template <class YourNode, class YourToken, class YourTree>
+class CommonNode {
+public:
+    ...
+    virtual YourNode* child (int k) const { ... }
+    ...
+};
+
+template <class YourNode, class YourToken, class YourTree>
+class CommonToken : public YourNode {
+   ... 
+};
+
+template <class YourNode, class YourToken, class YourTree>
+class CommonTree : public YourNode {
+   ... 
+};
+\end{program}
+It looks strange, but when these are instantiated (so that {\tt Node}, 
+is substituted for {\tt YourNode}, {\tt Token} for {\tt YourToken},
+and {\tt Tree} for {\tt YourTree}), the subtyping relations will all
+be right: {\tt Token} and {\tt Tree} will be subtypes of {\tt Node},
+as desired. 
+
+\subsection{Node Factories}\label{sec:tree-factory}
+
+One common pattern used in compilers and other language processors
+assigns a subtype of the tree type to each different kind (or ``{\it
+phylum}'') of AST---one for {\tt if} statements, one for function
+calls, etc.  By defining appropriate virtual methods in the base node
+type, you can then customize the behavior of each type of node---say
+by having a different overriding of a code-generating method for each.
+
+The \Horn{} framework helps out here by providing a static node {\it
+factory\/} method that allows the framework to decide what type of
+node to create depending on the syntactic category of the operator.
+By putting the appropriate boilerplate into an AST class,
+you can get the framework to generate an instance of it for each
+instance of a given operator.
+
+Let's consider again the arithmetic-expression example from
+\S\ref{sec:tree-building}, which had the operators
+\begin{program}
+ "+" "-" "*" "/" "**"
+\end{program}
+We'll give our AST nodes an {\tt eval} method, which yields the
+integer value denoted by that tree (performing whatever its operator
+is supposed to do on the values of its operands).
+Figure~\ref{fig:arith-eg2}
+shows the definition of
+the parent node, token, and tree types.
+\begin{figure}
+\begin{program}
+class Arith_Token;
+class Arith_Tree;
+
+class Arith_Token;
+class Arith_Tree;
+
+class Arith_Node : public CommonNode<Arith_Node, Arith_Token, Arith_Tree> {
+public:
+    virtual int eval () { return 0; }
+};
+
+class Arith_Tree : public CommonTree<Arith_Node, Arith_Token, Arith_Tree> {
+protected:
+    template <class InputIterator>
+    Arith_Tree (const Arith_Tree::NodePtr& oper,
+                InputIterator begin, InputIterator end)
+          : CommonTree<Arith_Node, Arith_Token, Arith_Tree (oper,  begin, end)
+    { }
+    /** Factory constructor.  See text. */
+    Arith_Tree (int syntax) 
+          : CommonTree<Arith_Node, Arith_Token, Arith_Tree> (syntax) { }
+
+};
+
+class Arith_Token : public CommonToken<Arith_Node, Arith_Token, Arith_Tree> {
+public:
+    Arith_Token (int syntax, const char* text, size_t len, bool owner = false)
+	: CommonToken<Arith_Node, Arith_Token, Arith_Tree>
+            (syntax, text, len, owner),
+          _value (atoi(string(text, len).c_str()))
+    { }
+
+    Arith_Token (int syntax, const std::string& text, bool owner)
+        : CommonToken<Arith_Node, Arith_Token, Arith_Tree> (syntax, text, owner) { }
+
+    int eval () { return _value; }
+
+private:
+    int _value;
+};
+\end{program}
+\caption{Parent classes for arithmetic ASTs (unabbreviated.)}
+\label{fig:arith-eg2}
+\end{figure}
+
+Now we can define separate classes for each of the operators.  Here's
+addition:
+
+\begin{program}
+class Add_Tree : public Arith_Tree {
+public:
+    int eval() {
+        return child(0)->eval() + child(1)->eval();
+    }
+
+protected:
+
+    Add_Tree* make (const Arith_Node::NodePtr& oper,
+                    const Arith_Node::iterator& begin, 
+                    const Arith_Node::iterator& end) {
+	return new Type (oper, begin, end);
+    }
+
+    Add_Tree(const Arith_Node::NodePtr& oper,
+                    const Arith_Node::iterator& begin, 
+                    const Arith_Node::iterator& end) 
+            : Arith_Tree(oper, begin, end) { }
+
+    /** Use for factory only. */
+    Add_Tree() : Arith_Tree('+') { }
+    static const Add_Tree factory;
+};
+
+const Add_Tree Add_Tree::factory;
+\end{program}
+
+That's about it.  The declaration of {\tt Add\_Tree::factory} (which
+cannot be referenced outside the {\tt Add\_Tree class}) is a C++ trick
+that calls the one-argument constructor defined by the
+{\tt CommonTree} template class before the main program gets executed.
+This in turn causes the factory variable to get stored in a mapping
+between syntactic categories and
+factory nodes.
+The {\tt make} method overrides a virtual {\tt make} method in the
+{\tt CommonTree} template class.  To create a new node whose operator
+has the syntactic category '+', the \Horn{} framework first looks up 
+the factory for {\tt Add\_Tree} in a table indexed by syntactic
+category, and then calls the {\tt make} method on that factory,
+which, as you see, then calls the constructor for {\tt Add\_Tree}.
+
+For single-character tokens like
+{\tt"+"}, the framework simply uses the ASCII character value as the
+syntactic category. For others, you'll need to use (and define)
+symbolic names with {\tt \%token} declarations.
+
+\subsection{Useful Abbreviations}\label{sec:node_abbrevs}
+
+The definitions in this section are involved and, when repeated many
+times for each subclass of tree, tend to clutter one's source
+programs.  Therefore, the \Horn{} framework provides some abbreviating
+macros.  Figure~\ref{fig:arith-eg2-abbrev} 
+gives an abbreviated version of Figure~\ref{fig:arith-eg2} and of {\tt
+Add\_Tree}.  The confusion of constructors is reduced to a few lines
+for each class.  The macro {\tt NODE\_BASE\_CONSTRUCTORS} defines the
+necessary constructors for a base class---one that is not
+instantiated.  {\tt NODE\_CONSTRUCTORS} defines the necessary
+constructors and declares the factory variable
+for a node that will be instantiated, and
+{\tt NODE\_FACTORY} defines the actual factory variable.
+
+\begin{figure}
+\begin{program}
+class Arith_Token;
+class Arith_Tree;
+
+class Arith_Token;
+class Arith_Tree;
+
+class Arith_Node : public CommonNode<Arith_Node, Arith_Token, Arith_Tree> {
+public:
+    virtual int eval () { return 0; }
+};
+
+typedef CommonTree<Arith_Node, Arith_Token, Arith_Tree> Arith_Tree_Parent;
+
+class Arith_Tree : public Arith_Tree_Parent {
+protected:
+      NODE_BASE_CONSTRUCTORS (Arith_Tree, Arith_Tree_Parent);
+};
+
+class Arith_Token ... /* \{\it as in Figure~\ref{fig:arith-eg2}\} */
+
+class Add_Tree : public Arith_Tree {
+public:
+    int eval() {
+        return child(0)->eval() + child(1)->eval();
+    }
+
+protected:
+
+    NODE_CONSTRUCTORS (Add_Tree, Arith_Tree);
+};
+
+NODE_FACTORY (Add_Tree, '+');
+\end{program}
+\caption{Abbreviated version of arithmetic trees.}
+\label{fig:arith-eg2-abbrev}
+\end{figure}
+
+Occasionally, you'll need to have your node constructors perform
+additional initialization.  In the general case, you'll have to forego
+using the macros and write the full definitions (as shown in
+Figure~\ref{fig:arith-eg2}).  However, if the definitions are simple
+initializers, the \Horn{} framework provides a couple of macros to do
+the job.  
+
+For example, suppose that you have a tree subclass that has two
+additional integer fields that must be initialized to 0.  In expanded
+form, such a class would look like this:
+\begin{program}
+class Fancy_Tree : public Arith_Tree {
+private:
+    int writes, reads;
+
+protected:
+
+    Fancy_Tree* make (const Arith_Node::NodePtr& oper,
+                      const Arith_Node::iterator& begin, 
+                      const Arith_Node::iterator& end)
+    {
+	return new Type (oper, begin, end);
+    }
+
+    Add_Tree(const Arith_Node::NodePtr& oper,
+                    const Arith_Node::iterator& begin, 
+                    const Arith_Node::iterator& end) 
+            : Arith_Tree(oper, begin, end), writes(0), reads(0) {
+    }
+
+    ... \{\it etc. \}
+
+};
+\end{program}
+The abbreviated version is
+\begin{program}
+class Fancy_Tree : public Arith_Tree {
+private:
+    int writes, reads;
+
+protected:
+
+    NODE_CONSTRUCTORS_INIT (Fancy_Tree, Arith_Tree, writes(0), reads(0));
+};
+\end{program}
+There is likewise a {\tt NODE\_BASE\_CONSTRUCTORS\_INIT} for base types.
+
+\section{Source Locations}\label{sec:locations}
+When you push a file or string into a \Horn{} lexer, it will keep track
+of the correspondence between the lexeme text it returns (in the form
+of C {\tt{}char*} pointers) and positions (line numbers) that the text
+came from, relative to the file or string that contained it.  The
+function {\tt yyprinted\_location}($P$) (see \S\ref{sec:yysem-methods})
+will convert a text pointer, $P$, into a string of the form
+$F${\tt:}$L$, where $F\/$ is the supplied to {\tt yypush\_lexer} for
+the file or string that contains $P$, and $L$ is the line number
+within that file or string. 
+The functions {\tt yylocation\_line} and {\tt yylocation\_source}
+break out $L$ and $P$ individually.
+Thus, these {\tt{}char*} pointers double
+as source locations.  
+
+During the parse, the function {\tt yysource\_location()} returns the
+lexer's current position, which is generally somewhere {\it after\/}
+that of the last token it found.  
+Each terminal symbol in a rule stores its source position, which you
+may access using the {\tt.loc()} method, as in {\tt\$ID.loc()}.
+Nonterminal nodes don't automatically track source locations and by
+default {\tt.loc()} will return NULL (the unknown location) 
+when applied to them. However, if
+your semantic values do contain locations (see below), 
+then {\tt.loc()} will work on nonterminals as well.  
+
+Semantic values may carry location information as well.  In
+particular, the standard tree-building routines supplied in the
+\Horn{} framework do so: if {\tt x} is a node (token or tree), then 
+{\tt x->loc()} is its location and {\tt x->set\_loc(L)} allows you to
+change the location it stores.  In the absence of {\tt set\_loc}
+operations upon it, a tree node will report its location as that of
+the first child that has a known location (or {\tt NULL} if none
+does).
+
+When semantic values carry locations, the operation {\tt.loc()} on
+grammar symbols will consult that location and {\tt.set\_loc($L$)}
+will set both the location maintained in the grammar symbol, but also
+that of the semantic value.
+
+\section{The Prologue}\label{sec:prologue}
+
+Throughout this document we've introduced a number of items that may
+appear in the prologue of a \Horn{} program---the part preceding the
+first \verb|%%| separator line.  This section consolidates them for
+easier reference.
+
+The {\sc Bison} engine that underlies \Horn{} supports a large number
+of prologue directives and declarations.  For expendience, \Horn{}
+just passes most of these through at the moment, but to be honest,
+their interactions with the \Horn{} framework are untested and
+potentially problematic.  It is probably best to stick to the features
+described here.
+
+\subsection{Inserting code}\label{sec:code-insertions}
+
+Actions in the grammar are general \CPP{} source text.  Any functions,
+global variables, or types that they refer to must be defined in the
+prologue.  You can insert arbitrary \CPP{} code before the grammar
+section by enclosing it in the delimiters `\verb|%{|' and
+`\verb|%}|', as in
+\begin{program}
+%{
+#include <iostream>
+
+using namespace std;
+
+static bool need_postprocessing;
+
+static void eval (const char* expr);
+
+%}
+\end{program}
+This code will appear in the midst of framework definitions generated
+by \Horn{} itself.  To specify that it appear as early as possible
+(seldom necessary, but see \S\ref{sec:namespace}), use
+\begin{program}
+%code top {
+\{\it C++ code\}
+}
+\end{program}
+
+\subsection{Namespaces}\label{sec:namespace}
+
+Especially when you need more than one parser in your program, it is
+convenient encapsulate each in a \CPP{} {\it namespace\/} so that the
+global names used in each do not conflict.  The declaration
+\begin{program}
+%define api.namespace "\{\it name\/\}"
+\end{program}
+does this, enclosing the entire parser and lexer in
+\begin{program}
+namespace \{\it name\/\} {
+    \{$\vdots$\}
+};
+\end{program}
+If you do this, you will need to put {\tt\#include} directives for
+all headers used in the parser that do not define names in the parser
+namespace in a `{\tt \%code top}' region 
+so as to come
+before the namespace declaration.  It doesn't matter if this results
+in redundant {\tt \#includes}, assuming that (like the system headers), all
+header files follow the C/\CPP{} convention of protecting their contents
+using conditional compilation:
+\begin{program}
+#ifndef _THISHEADERFILENAME_H
+#define _THISHEADERFILENAME_H
+
+   \{\it contents \}
+
+#endif
+\end{program}
+thus guaranteeing that each header's declarations get processed
+exactly once.
+
+\subsection{Collected directives and declarations}\label{sec:decls}
+
+\begin{description}
+\item[\%convention {\it TERMINALS}~{\it NONTERMINALS}] Set the
+conventions for identifiers representing terminal and nonterminal
+symbols.  This directive must appear before any appearance of a
+grammar or lexical symbol in the file.
+Normally, identifiers that start with an upper-case
+character denote terminal symbols and those that start with a
+lower-case character denote nonterminals.  The {\it TERMINALS\/} and
+{\it NONTERMINALS} arguments here denote the various alternative
+conventions (their case is ignored):
+\begin{description}
+\item[LOW] identifiers that start with a lower-case letter.
+\item[CAP] identifiers that start with an upper-case letter.
+\item[ALLCAP] identifiers consisting only of upper-case letters,
+digits, and underscores (starting with an upper-case letter).
+\item[ANY] any identifier (starting with either an upper- or
+lower-case letter).
+\end{description}
+When the two conventions overlap, the more specific takes precedence.
+For example, with 
+\begin{program}
+%convention allcap any
+\end{program}
+the symbol `{\tt ID}' is a terminal symbol, and `{\tt Id}' is a
+nonterminal.  Only the following combinations are
+allowed (the first is the default):
+\begin{program}
+%convention cap low
+%convention allcap any
+%convention low cap
+%convention any allcap
+\end{program}
+\item[\%define api.namespace {\it NAME\/}] Place all the parser's
+exported definitions in namespace {\it NAME\/} (see
+\S\ref{sec:namespace}).
+\item[\%define semantic\_type "{\it TYPE}"] Defines {\it TYPE\/} to
+   to be the semantic type of all grammar symbols.  {\it TYPE\/} may
+   be any POD type (see \S\ref{sec:semantic-types}).  Lists (created
+   by the {\tt+=} operator) will have type {\tt std::list<{\it
+   TYPE\/}>*}, where {\tt std::list} is the standard \CPP{} library
+   list type. 
+\item[\%define semantic\_tree\_type "{\it TYPE}"] Defines {\it TYPE} to
+   be semantic type of all grammar symbols and of all lists of
+   symbols, and enables the {\tt\string^} operator.  By default, all
+   rules will create trees as their semantic values.
+\item[\%define token\_factory "{\it FUNCTIONNAME\/}"] Unless  you have defined {\tt semantic\_tree\_type},
+   lexical rules by default assign the default value of the 
+   semantic type as the value of the token.  You can instead define a function
+   to do this, and specify its name with this definition
+   (see \S\ref{sec:lex-actions}).
+\item[\%define error\_function\_name "{\it FUNC}"]
+In case of syntax error, call the function {\it FUNC}, which you must
+define in a \verb|%{ ... %}| section, passing it two arguments, both
+of type {\tt const char*}: a source location, and an error message to print.
+\item[\%defines "{\it FILENAME\/}"] \Horn{}
+produces a header file containing definitions of token syntax values
+for use elsewhere in your program.  By default, its name is {\tt {\it
+BASE\/}-parser.hh}, where {\it BASE\/} is the base for forming the
+names of the {\tt.cc} files that \Horn{} generates.  This declaration
+replaces the name of this header file with {\it FILENAME}.
+\item[\%expect $N$] Tells \Horn{} not to complain if there are exactly
+$N$ shift-reduce conflicts in the grammar.  In general, you should only
+use this with GLR parsers, and only after having checked each of the
+shift-reduce errors to ensure that it is expected.
+\item[\%expect-rr $N$] Tells \Horn{} not to complain if there are exactly
+$N$ reduce-reduce conflicts in the grammar.  The same considerations
+apply as for `{\tt\%expect}.'
+\item[\%glr-parser] Produce a GLR parser (see \S\ref{sec:glr}).
+\item[\%interactive] Produce a lexer that reads as little input as it
+needs to determine its next token.  You'll need this when writing
+programs that take input from the terminal.  Without it, the lexer
+tries to buffer as much data as it can before producing any tokens.
+That's generally the more efficient course, but with an interactive
+program, it simply doesn't work.
+\item[\%start {\it SYMBOL}] Use nonterminal symbol {\it SYMBOL\/} as
+the start symbol, rather than the left-hand side of the first grammar
+rule.
+\item[\%token {\it NAME} ...] Define the specified {\it NAME}s (upper-case identifiers)
+as token (terminal symbol) names.  This essentially introduces new
+integer-valued symbols that stand for the  syntactic categories of
+terminals that may be used in grammar rules.  It is unnecessary (but
+harmless) for names that appear on  the left side of a lexical rule.
+\item[\%left {\it TERMINAL\_SYMBOL} ...] Define the specified symbols to
+be left-associative operators of the same precedence.  Multiple
+{\tt\%left}, {\tt\%right}, and {\tt\%nonassoc} rules define symbols of
+different precedence, lowest first.  See \S\ref{sec:precedence}.
+\item[\%right {\it TERMINAL\_SYMBOL} ...] Define the specified symbols to
+be right-associative operators of the same precedence.
+\item[\%nonassoc {\it TERMINAL\_SYMBOL} ...] Define the specified symbols to
+be non-associative operators of the same precedence.
+\end{description}
+
+\section{Predefined Types, Functions, Macros, and Values}\label{sec:functions}
+
+Generated parsers provide a number of definitions to support parsing
+and lexical analysis.  
+
+\begin{description}
+\item[gcmap{\tt<}\it Key, Value{\tt>}] A garbage-collected map (dictionary)
+   template class, distinct from, but having the same interface as the
+   C++ type {\tt std::map}.
+\item[gcstring] A garbage-collected string class, distinct from, but having
+   the same interface as the C++ type {\tt std::string}.
+\item[gcvector{\tt<}$T${\tt>}] A template class denoting garbage-collected
+   sequences of values of type $T$.  Has the same interface as the C++
+   type {\tt std::vector}. 
+\item[const char* yysource\_location()] ~\\
+   Returns the current position in the source file(s).
+\item[bool yyis\_known\_location(const char* loc)] ~\\
+   True iff LOC is a location known to the lexer.
+\item[int yylocation\_line(const char* loc)] ~\\
+   Returns the line number within its source file or string of LOC
+   (1-based).  Returns~0 for an unknown location.
+\item[string yylocation\_source(const char* loc)]~\\
+   Returns the name of the source file or string containing LOC.
+   This is the second argument provided to \verb|yypush_lexer| for
+   that source.
+   Returns an empty string for an unknown location.
+\item[string yyprinted\_location(const char* loc)] ~\\
+   Returns a string containing a standard Unix description of location
+   LOC with the form \hbox{{\it file name}:{\it line number}}.
+   Thus, it is the result of concatenating {\tt yylocation\_source}
+   and {\tt yylocation\_line} separated by a colon.
+\item[yyqueue\_token(int token, $T$ value, const char* loc, const char* text, size\_t text\_size)] ~\\
+   Add an instance of the terminal symbol denoted by TOKEN (as defined
+   by {\tt\%token} declarations or by appearing on the left side of a
+   lexial rule) to the end of the queue of pending tokens to be
+   delivered by the lexical analyzer, letting VALUE be its semantic
+   value.  $T$ here is the semantic type of symbols, as defined by
+   \verb|%define semantic_type| or \verb|%define semantic_tree_type|.
+   Each time the parser requests a token, the lexer checks
+   this queue first, before looking for an applicable rule.
+   Set the {\tt.loc()}, {\tt.text()}, and {\tt.text\_size()} values of the
+   enqueued token to LOC, TEXT, and TEXT\_SIZE (which default to NULL
+   or 0, as appropriate).  
+\item[yyqueue\_token(int token, $S$ value)] ~\\
+   {}[Usually used in grammar rules.]  As for the first form of
+   \verb|yyqueue_token|, but takes a grammar symbol (such as
+   \verb|$expr|) as the token to be pushed.
+\item[const char* yyexternal\_token\_name(int token)] ~\\
+   A printable representation of TOKEN (the left side of a lexical
+   rule or defined by {\tt \%token}).
+\item[YYMAKE\_TREE({\it oper, child1, child2,\dots})]
+   {}[Only defined when creating trees.] A macro that 
+   gives the same
+   result as \verb|$^| does in context-free rules, but that can be
+   used in the epilogue as well.
+\item[YYSET\_TOKEN(int token)]~\\ {}[Used in lexical rules only.] Set the syntactic
+   category to be returned by the current lexical rule to TOKEN.
+   A value of~0 indicates the end of input (normally, \Horn{} and {\sc
+   Flex} supply it
+   automatically upon reaching the end of input, but there are cases
+   where you'll need to produce an ``artificial'' end of input yourself.)
+   A value of -1 indicates an ignored token (see {\tt YYIGNORE}).
+\item[YYIGNORE] ~\\
+   {}[Used in lexical rules only.] Discard the token matched by the
+   current lexical rule.
+   This is equivalent to {\tt YYSET\_TOKEN(-1)}.
+\item[yypush\_lexer (FILE* input, string name)] ~\\
+   Start reading input from INPUT (a C file stream), and use NAME as
+   the file name to give for source locations from INPUT. Any current
+   input file is kept at its current location until this file is
+   popped (see {\tt yypop\_lexer}).  
+   In general, you should use a lexical rule that matches
+   {\tt\_EOF} to determine when you reach the end of INPUT and pop it off.
+\item[yypush\_lexer (const string\& input, string name)] ~\\
+   As for previous overloading of yypush\_lexer, but takes input from
+   a string rather than a file.
+\item[yypop\_lexer()] ~\\
+   Discontinue input from the current input source (file or string)
+   and revert to the
+   input stream active before the call to {\tt yypush\_lexer}
+   that started the current one.
+\item[yylex\_init()] ~\\
+   Clear out all inputs from the parser and prepare to restart it.
+\item[yyparse()] ~\\
+   Begin parsing.
+\item[yy\_set\_bol($V\/$)]{}
+[Used in lexical rules only.] Indicates
+whether {\tt\_BOL} will match at the beginning of the next rule
+applcation, overriding the default behavior.  The argument $V$ may be
+either non-zero (true), indicating that the input is currently at the
+beginning of a line (even if it  really isn't) or zero
+(false), indicating that the input is not at the beginning of line
+(even if it really is).  
+\item[NODE\_BASE\_CONSTRUCTORS(Type, Parent){}[Used to define
+AST tree base types] Defines the standard
+constructors for type {\tt Type},
+whose immediate base type is {\tt Parent}. See~\ref{sec:tree-factory}.
+\item[NODE\_CONSTRUCTORS(Type, Parent)] {}[Used to define
+AST tree subtypes] Defines the standard
+constructors and declares the factory methods for type {\tt Type},
+whose immediate base type is {\tt Parent}.  These definitions allow
+the \Horn{} framework to construct tree nodes appropriate for a
+particular syntactic category.  See~\ref{sec:tree-factory}.
+\item[NODE\_FACTORY(Type, Category)] Used outside the definition of
+class {\tt Type} to complete its factory, and to associate that
+factory with a specified syntactic category (an integer).
+\item[NODE\_BASE\_CONSTRUCTORS\_INIT(Type, Parent, ARGS)]
+As for {\tt NODE\_BASE\_CONSTRUCTORS}, but adds
+{\tt ARGS} as additional constructor initializers in the constructors.
+\item[NODE\_CONSTRUCTORS\_INIT(Type, Parent, ARGS)] 
+As for {\tt NODE\_CONSTRUCTORS}, but adds
+{\tt ARGS} as additional constructor initializers in the constructors.
+\item[TOKEN\_BASE\_CONSTRUCTORS(Type, Parent){}[Used to define
+AST token base types] Defines the standard
+constructors for token type {\tt Type},
+whose immediate base type is {\tt Parent}. See~\ref{sec:tree-factory}.
+\item[TOKEN\_CONSTRUCTORS(Type, Parent)] {}[Used to define
+AST token subtypes] Defines the standard
+constructors and declares the factory methods for type {\tt Type},
+whose immediate base type is {\tt Parent}.  These definitions allow
+the \Horn{} framework to construct token nodes appropriate for a
+particular syntactic category.  See~\ref{sec:tree-factory}.
+\item[TOKEN\_FACTORY(Type, Category)] Used outside the definition of
+token class {\tt Type} to complete its factory, and to associate that
+factory with a specified syntactic category (an integer).
+\item[TOKEN\_BASE\_CONSTRUCTORS\_INIT(Type, Parent, ARGS)]
+As for {\tt TOKEN\_BASE\_CONSTRUCTORS}, but adds
+{\tt ARGS} as additional constructor initializers in the constructors.
+\item[TOKEN\_CONSTRUCTORS\_INIT(Type, Parent, ARGS)] 
+As for {\tt TOKEN\_CONSTRUCTORS}, but adds
+{\tt ARGS} as additional constructor initializers in the constructors.
+\end{description}
+
+
+\end{document}

@@ -3,5 +3,16 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Add local bin
-export PATH=$DIR/bin/:$PATH
+export PATH=$DIR/root/bin/:$PATH
 
+# Path to servers
+SERVER=cs164-do@torus.cs.berkeley.edu
+SRC_PATH="~/work/proj/proj2/src"
+
+function send {
+  scp -r DIR/src/* $SERVER:$SRC_PATH
+}
+
+function connect {
+  ssh $SERVER
+}

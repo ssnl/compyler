@@ -286,9 +286,9 @@ process_lexical (const string& input_name, ostream& out)
     }
 
     if (interactive_parser)
-	lexer_template_file = data_dir + INTERACTIVE_LEXER_TEMPLATE_FILE_TAIL;
+	lexer_template_file = data_dir + INTERACTIVE_LEXER_TEMPLATE_FILE;
     else
-	lexer_template_file = data_dir + LEXER_TEMPLATE_FILE_TAIL;
+	lexer_template_file = data_dir + LEXER_TEMPLATE_FILE;
 
     copy_subst_file (out, lexer_template_file.c_str (), dict);
 }
@@ -452,49 +452,25 @@ add_explicit_token ()
 
 				/* Lexical rules */
 
-static Token* LEX_RULE_TOK = new Token (LEX_RULE);
-
 class Lex_Rule_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_Rule_Tree, LEX_RULE);
+
 protected:
-
-    Lex_Rule_Tree (Node* op, Unit) : Tree (op, UNIT) { }
-
-    Lex_Rule_Tree (va_list args, Node* op) : Tree (args, op) {
-	if (arity () != 3)
-	    throw invalid_argument ("LEX_RULE takes 3 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Rule_Tree (args, op);
-    }
 
     void write_grammar (ostream& out) const {
 	out << child (1) << "\t" << child (2) << endl;
     }
 
-private:
-
-    static const Lex_Rule_Tree exemplar;
-
 };
 
-const Lex_Rule_Tree Lex_Rule_Tree::exemplar (LEX_RULE_TOK, UNIT);
-
-static Token* LEX_RULE_PREFERRED_TOK = new Token (LEX_RULE_PREFERRED);
+EXEMPLAR (Lex_Rule_Tree);
 
 class Lex_Rule_Preferred_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_Rule_Preferred_Tree, LEX_RULE_PREFERRED);
+
 protected:
-
-    Lex_Rule_Preferred_Tree (Node* op, Unit) : Tree (op, UNIT) { }
-
-    Lex_Rule_Preferred_Tree (va_list args, Node* op) : Tree (args, op) {
-	if (arity () != 3)
-	    throw invalid_argument ("LEX_RULE_PREFERRED takes 3 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Rule_Preferred_Tree (args, op);
-    }
 
     void write_grammar (ostream& out) const {
 	out << "<YYPREFERRED>" << child (1);
@@ -503,32 +479,17 @@ protected:
 	out << "\t" << child (2) << endl;
     }
 
-private:
-
-    static const Lex_Rule_Preferred_Tree exemplar;
-
 };
 
-const Lex_Rule_Preferred_Tree 
-    Lex_Rule_Preferred_Tree::exemplar (LEX_RULE_PREFERRED_TOK, UNIT);
+EXEMPLAR (Lex_Rule_Preferred_Tree);
 
 				/* Subrules */
 
-static Token* LEX_SUBRULE_TOK = new Token (LEX_SUBRULE);
-
 class Lex_Subrule_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_Subrule_Tree, LEX_SUBRULE);
+
 protected:
-
-    Lex_Subrule_Tree (Unit) : Tree (LEX_SUBRULE_TOK, UNIT) { }
-
-    Lex_Subrule_Tree (va_list args) : Tree (args, LEX_SUBRULE_TOK) {
-	if (arity () != 2)
-	    throw invalid_argument ("LEX_SUBRULE takes 2 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Subrule_Tree (args);
-    }
 
     void write_grammar (ostream& out) const {
 	out << child (0) << "\t" << child (1) << endl;
@@ -544,63 +505,39 @@ protected:
 	Node::check_lex_subrules ();
 	lex_dict.insert (name);
     }
-
-
-private:
-
-    static const Lex_Subrule_Tree exemplar;
-
 };
 
-const Lex_Subrule_Tree Lex_Subrule_Tree::exemplar (UNIT);
+EXEMPLAR (Lex_Subrule_Tree);
     
 		/* LEX_PHRASE */
 
-static Token* LEX_PHRASE_TOK = new Token (LEX_PHRASE);
-
 class Lex_Phrase_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_Phrase_Tree, LEX_PHRASE); 
+
 protected:
 
-    Lex_Phrase_Tree (Unit) : Tree (LEX_PHRASE_TOK, UNIT) { }
-
-    Lex_Phrase_Tree (va_list args) : Tree (args, LEX_PHRASE_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	Node* tree = new Lex_Phrase_Tree (args);
-	if (tree->arity () == 1) {
-	    Node* result = tree->child (0);
-	    delete tree;
+    Node* add (va_list args) {
+        Tree::add (args);
+	if (arity () == 1) {
+	    Node* result = child (0);
+	    delete this;
 	    return result;
 	} else
-	    return tree;
+	    return this;
     }
-
-private:
-
-    static const Lex_Phrase_Tree exemplar;
 
 };
 
-const Lex_Phrase_Tree Lex_Phrase_Tree::exemplar (UNIT);
+EXEMPLAR (Lex_Phrase_Tree);
     
 		/* LEX_STAR */
 
-static Token* LEX_STAR_TOK = new Token (LEX_STAR);
-
 class Lex_Star : public Tree {
+
+    CONSTRUCTORS (Lex_Star, LEX_STAR);
+
 protected:
-
-    Lex_Star (Unit) : Tree (LEX_STAR_TOK, UNIT) { }
-
-    Lex_Star (va_list args) : Tree (args, LEX_STAR_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("LEX_STAR takes 1 argument");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Star (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << child (0) << "*";
@@ -611,61 +548,33 @@ protected:
     }
 
 
-private:
-
-    static const Lex_Star exemplar;
-
 };
 
-const Lex_Star Lex_Star::exemplar (UNIT);
+EXEMPLAR (Lex_Star);
 
 		/* LEX_PLUS */
 
-static Token* LEX_PLUS_TOK = new Token (LEX_PLUS);
-
 class Lex_Plus : public Tree {
+
+    CONSTRUCTORS (Lex_Plus, LEX_PLUS);
+
 protected:
-
-    Lex_Plus (Unit) : Tree (LEX_PLUS_TOK, UNIT) { }
-
-    Lex_Plus (va_list args) : Tree (args, LEX_PLUS_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("LEX_PLUS takes 1 argument");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Plus (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << child (0) << "+";
     }
 
-private:
-
-    static const Lex_Plus exemplar;
-
 };
 
-const Lex_Plus Lex_Plus::exemplar (UNIT);
+EXEMPLAR (Lex_Plus);
 
 		/* LEX_OPT */
 
-static Token* LEX_OPT_TOK = new Token (LEX_OPT);
-
 class Lex_Opt : public Tree {
+
+    CONSTRUCTORS (Lex_Opt, LEX_OPT);
+
 protected:
-
-    Lex_Opt (Unit) : Tree (LEX_OPT_TOK, UNIT) { }
-
-    Lex_Opt (va_list args) : Tree (args, LEX_OPT_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("LEX_OPT takes 1 argument");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Opt (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << child (0) << "?";
@@ -674,20 +583,16 @@ protected:
     bool static_match_nonempty () const {
 	return false;
     }
-
-private:
-
-    static const Lex_Opt exemplar;
-
 };
 
-const Lex_Opt Lex_Opt::exemplar (UNIT);
+EXEMPLAR (Lex_Opt);
 
 		/* LEX_SET */
 
-static Token* LEX_SET_TOK = new Token (LEX_SET);
-
 class Lex_Set : public Tree {
+
+    CONSTRUCTORS (Lex_Set, LEX_SET);
+
 public:
 
     void add_set (Lex_Set* node) {
@@ -704,14 +609,9 @@ public:
 
 protected:
 
-    Lex_Set (Unit) : Tree (LEX_SET_TOK, UNIT) { }
-
-    Lex_Set (va_list args) : Tree (LEX_SET_TOK) {
+    Node* add (va_list args) {
+        assert (arity () == 0);
 	memset (charset, '\0', sizeof (charset));
-    }
-
-    Node* make (Node* op, va_list args) {
-	Lex_Set* result = new Lex_Set (args);
 
 	while (true) { 
 	    Node* c0 = va_arg (args, Node*);
@@ -721,11 +621,11 @@ protected:
 	    if (c1 == NULL)
 		throw invalid_argument ("Lex_Set::make takes an even "
 					"number of arguments");
-	    memset (result->charset + to_char (c0->as_string ()), '\01', 
+	    memset (charset + to_char (c0->as_string ()), '\01', 
 		    to_char (c1->as_string ()) - to_char (c0->as_string ()) + 1);
 	}
 
-	return result;
+	return this;
     }
 
     void write_grammar (ostream& out) const {
@@ -768,30 +668,17 @@ private:
     }
 
     unsigned char charset[257];
-
-    static const Lex_Set exemplar;
-
 };
 
-const Lex_Set Lex_Set::exemplar (UNIT);
+EXEMPLAR (Lex_Set);
 
 		/* LEX_SUB */
 
-static Token* LEX_SUB_TOK = new Token (LEX_SUB);
-
 class Lex_Sub : public Tree {
-public:
+
+    CONSTRUCTORS (Lex_Sub, LEX_SUB);
 
 protected:
-
-    Lex_Sub (Unit) : Tree (LEX_SUB_TOK, UNIT) { }
-
-    Lex_Sub (va_list args) : Tree (args, LEX_SUB_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-        return new Lex_Sub (args);
-    }
 
     Node* rewrite_extended () {
 	Tree::rewrite_extended ();
@@ -808,29 +695,17 @@ protected:
 	return true;
     }
 
-private:
-
-    static const Lex_Sub exemplar;
-
 };
 
-const Lex_Sub Lex_Sub::exemplar (UNIT);
+EXEMPLAR (Lex_Sub);
 
 		/* LEX_GROUP */
 
-static Token* LEX_GROUP_TOK = new Token (LEX_GROUP);
-
 class Lex_Group : public Tree {
+
+    CONSTRUCTORS (Lex_Group, LEX_GROUP);
+
 protected:
-
-    Lex_Group (Unit) : Tree (LEX_GROUP_TOK, UNIT) { }
-
-    Lex_Group (va_list args) : Tree (args, LEX_GROUP_TOK) {
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Group (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	if (arity () == 0)
@@ -868,31 +743,17 @@ protected:
 		return false;
 	return true;
     }
-
-private:
-
-    static const Lex_Group exemplar;
-
 };
 
-const Lex_Group Lex_Group::exemplar (UNIT);
+EXEMPLAR (Lex_Group);
 
 		/* LEX_STRING */
 
-static Token* LEX_STRING_TOK = new Token (LEX_STRING);
-
 class Lex_String_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_String_Tree, LEX_STRING);
+
 protected:
-    Lex_String_Tree (Unit) : Tree (LEX_STRING_TOK, UNIT) { }
-
-    Lex_String_Tree (va_list args) : Tree (args, LEX_STRING_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("LEX_STRING takes 1 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_String_Tree (args);
-    }
 
     lstring text () const {
 	return child (0)->text ();
@@ -914,32 +775,18 @@ protected:
 	return (text ().len > 0);
     }
 
-
-private:
-
-    static const Lex_String_Tree exemplar;
-
 };
 
-const Lex_String_Tree Lex_String_Tree::exemplar (UNIT);
+EXEMPLAR (Lex_String_Tree);
     
 
 		/* LEX_REF */
 
-static Token* LEX_REF_TOK = new Token (LEX_REF);
-
 class Lex_Ref_Tree : public Tree {
+
+    CONSTRUCTORS (Lex_Ref_Tree, LEX_REF);
+
 protected:
-    Lex_Ref_Tree (Unit) : Tree (LEX_REF_TOK, UNIT) { }
-
-    Lex_Ref_Tree (va_list args) : Tree (args, LEX_REF_TOK) {
-	if (arity () != 1)
-	    throw invalid_argument ("LEX_REF takes 1 arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new Lex_Ref_Tree (args);
-    }
 
     lstring text () const {
 	return child (0)->text ();
@@ -961,32 +808,17 @@ protected:
     bool static_match_nonempty () const {
 	return false;
     }
-
-private:
-
-    static const Lex_Ref_Tree exemplar;
-
 };
 
-const Lex_Ref_Tree Lex_Ref_Tree::exemplar (UNIT);
+EXEMPLAR (Lex_Ref_Tree);
     
 				/* _BOL expression  */
 
-static Token* BOL_TOK = new Token (BOL);
-
 class BOL_Tree : public Tree {
+
+    CONSTRUCTORS (BOL_Tree, BOL);
+
 protected: 
-
-    BOL_Tree (Unit) : Tree (BOL_TOK, UNIT) { }
-
-    BOL_Tree (va_list args) : Tree (args, BOL_TOK) {
-	if (arity () > 0)
-	    throw invalid_argument ("BOL takes no arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new BOL_Tree (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << "^";
@@ -996,32 +828,18 @@ protected:
 	return false;
     }
 
-private:
-
-    static const BOL_Tree exemplar;
-    
 };
 
-const BOL_Tree BOL_Tree::exemplar (UNIT);
+EXEMPLAR (BOL_Tree);
 
 
 				/* _EOF expression  */
 
-static Token* ENDFILE_TOK = new Token (ENDFILE);
-
 class ENDFILE_Tree : public Tree {
+
+    CONSTRUCTORS (ENDFILE_Tree, ENDFILE);
+
 protected: 
-
-    ENDFILE_Tree (Unit) : Tree (ENDFILE_TOK, UNIT) { }
-
-    ENDFILE_Tree (va_list args) : Tree (args, ENDFILE_TOK) {
-	if (arity () > 0)
-	    throw invalid_argument ("ENDFILE takes no arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new ENDFILE_Tree (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << "{_EOF}";
@@ -1031,31 +849,17 @@ protected:
 	return true;
     }
 
-private:
-
-    static const ENDFILE_Tree exemplar;
-    
 };
 
-const ENDFILE_Tree ENDFILE_Tree::exemplar (UNIT);
+EXEMPLAR (ENDFILE_Tree);
 
 				/* _EOL expression  */
 
-static Token* EOL_TOK = new Token (EOL);
-
 class EOL_Tree : public Tree {
+
+    CONSTRUCTORS (EOL_Tree, EOL);
+
 protected: 
-
-    EOL_Tree (Unit) : Tree (EOL_TOK, UNIT) { }
-
-    EOL_Tree (va_list args) : Tree (args, EOL_TOK) {
-	if (arity () > 0)
-	    throw invalid_argument ("EOL takes no arguments");
-    }
-
-    Node* make (Node* op, va_list args) {
-	return new EOL_Tree (args);
-    }
 
     void write_grammar (std::ostream& out) const {
 	out << "/\\r?\\n";
@@ -1064,12 +868,8 @@ protected:
     bool static_match_nonempty () const {
 	return true;
     }
-
-private:
-
-    static const EOL_Tree exemplar;
     
 };
 
-const EOL_Tree EOL_Tree::exemplar (UNIT);
+EXEMPLAR (EOL_Tree);
 

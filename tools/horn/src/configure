@@ -2,12 +2,24 @@
 
 src="`cd \`dirname $0\`; pwd`"
 
+MAKE=${MAKE:-make}
+
 Usage () {
     echo "Usage: DIR/configure [ OPTION ... ]
     where OPTION may be any of these:
        --prefix=PREFIX   Base installation directory (default $HOME).
-       --bindir=DIR      Executables' directory (default PREFIX/bin).
-       --datadir=DIR     Templates (default PREFIX/lib/horn).
+       --exec-prefix=EPREFIX
+                         Base installation directory for architecture-dependent
+                         files (default PREFIX).
+       --bindir=DIR      Executables' directory (default EPREFIX/bin).
+       --libdir=DIR      Architecture-dependent libraries (default EPREFIX/lib).
+       --include=DIR     Include files defining parser data structures
+                         (default PREFIX/include)
+       --datadir=DIR     Templates (default PREFIX/share/horn/lib).
+       --gcprefix=DIR    Directory prefix for installing Boehm-Demers-Weiser
+                         collector.
+       --gc-exec-prefix=DIR  Architecture-dependent directory prefix for 
+                         installing Boehm-Demers-Weiser collector.
        --with-python=PATH
        --with-bison=PATH
        --with-flex=PATH
@@ -41,6 +53,7 @@ doconfig () {
     rm -f $2
     sed -e "s,@BINDIR@,$bindir,g" \
         -e "s,@DATADIR@,$datadir,g" \
+        -e "s,@INCLUDEDIR@,$includedir,g" \
         -e "s,@PYTHON@,$python,g" \
 	-e "s,@BISON@,$bison,g" \
 	-e "s,@FLEX@,$flex,g" \
@@ -57,8 +70,11 @@ prefix=
 bindir=
 datadir=
 python=
+includedir=
 bison=
 flex=
+gcprefix=
+gceprefix=
 
 cmnd="$0 $@"
 cmnd="$0"
@@ -70,8 +86,13 @@ while [ $# -gt 0 ]; do
     arg="`echo $1 | sed 's/.*=//'`"
     case "$1" in
     --prefix=*)      prefix="`fullpath $arg`";;
+    --exec-prefix=*) eprefix="`fullpath $arg`";;
     --bindir=*)      bindir="`fullpath $arg`";;
     --datadir=*)     datadir="`fullpath $arg`";;
+    --gcprefix=*)    gcprefix="`fullpath $arg`";;
+    --gc-exec-prefix=*) gceprefix="`fullpath $arg`";;
+    --libdir=*)      libdir="`fullpath $arg`";;
+    --includedir=*)  includedir="`fullpath $arg`";;
     --with-python=*) python="$arg";;
     --with-bison=*)  bison="$arg";;
     --with-flex=*)   flex="$arg";;
@@ -89,11 +110,17 @@ echo $cmnd >> config.status
 if [ -z "$prefix" ]; then
     prefix="$HOME"
 fi
+if [ -z "$eprefix" ]; then
+    eprefix="$prefix"
+fi
 if [ -z "$bindir" ]; then
-    bindir="$prefix/bin"
+    bindir="$eprefix/bin"
 fi
 if [ -z "$datadir" ]; then
-    datadir="$prefix/lib/horn"
+    datadir="$prefix/share/horn"
+fi
+if [ -z "$includedir" ]; then
+    includedir="$prefix/include"
 fi
 if [ -z "$python" ]; then
     python=`findprog python`
@@ -105,7 +132,20 @@ if [ -z "$flex" ]; then
     flex=`findprog flex`
 fi
 
+if [ -z "$gcprefix" ]; then
+    gcprefix="$prefix"
+fi
+
+if [ -z "$gceprefix" ]; then
+    gceprefix="$gcprefix"
+fi
+
+[ -d bdw-gc ] || mkdir bdw-gc
+$MAKE -C bdw-gc -f $src/bdw-gc/Makefile.horn \
+     PREFIX="$gcprefix" EPREFIX="$gceprefix" SRCDIR="$src/bdw-gc" configure
+
 doconfig $src/Makefile.in ./Makefile
+doconfig $src/params.h.in ./params.h
 chmod a-w Makefile
 if [ -f $src/tests/Makefile.in ]; then
     if [ ! -x tests ]; then mkdir tests; fi

@@ -1,0 +1,37 @@
+# Makefile for configuring, building, checking, and installing the 
+# Boehm-Demers-Weiser conservative garbage collector.
+# Invocation:
+#     make -f <source directory>/Makefile.horn PREFIX=<full prefix directory> \
+#             SRCDIR=<full source directory> TARGET
+
+.PHONY: default configure install uninstall check compile clean distclean
+
+RMAKE = $(MAKE) -f $(SRCDIR)/Makefile.horn \
+        PREFIX=$(PREFIX) EPREFIX=$(EPREFIX) SRCDIR=$(SRCDIR)
+
+default:
+	$(RMAKE) compile
+
+install:
+	$(MAKE) DESTDIR=$(DESTDIR) install
+
+uninstall:
+	$(MAKE) DESTDIR=$(DESTDIR) uninstall
+
+check:
+	$(MAKE) check
+
+configure:
+	$(SRCDIR)/configure --prefix=$(PREFIX) --exec-prefix=$(EPREFIX) \
+        --enable-cplusplus --disable-shared
+
+compile:
+	$(MAKE)
+
+clean:
+	$(MAKE) clean
+
+distclean:
+	-$(MAKE) distclean
+	-$(MAKE) -C libatomic_ops distclean
+

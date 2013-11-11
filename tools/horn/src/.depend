@@ -1,33 +1,39 @@
 util.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/util.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/util.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h
 text_buffer.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/text_buffer.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/text_buffer.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h
 nodes.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/nodes.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/parse-horn.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/nodes.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/parse-horn.h
 process-lexical.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/process-lexical.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/parse-horn.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/process-lexical.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/parse-horn.h
 process-cfg.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/process-cfg.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/parse-horn.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/process-cfg.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/parse-horn.h
 lang-specific.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/lang-specific.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/horn.h \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/lang-specific.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/horn.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/params.h
 xmalloc.o:  \
- /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xmalloc.cc \
-  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/xalloc.h
-parse-horn.o: parse-horn.cc horn.h xalloc.h
-scan-horn.o: scan-horn.cc horn.h xalloc.h parse-horn.h
-scan-action.o: scan-action.cc horn.h xalloc.h
+ /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xmalloc.cc \
+  /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/xalloc.h
+parse-horn.o: parse-horn.cc horn.h xalloc.h params.h
+scan-horn.o: scan-horn.cc horn.h xalloc.h params.h parse-horn.h
+scan-action.o: scan-action.cc horn.h xalloc.h params.h

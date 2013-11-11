@@ -1,16 +1,17 @@
 #!/usr/local/bin/python
+# -*-Python-*-
 
 import sys, re, os
 from subprocess import Popen, PIPE
 from getopt import getopt, GetoptError
 from os.path import join, dirname, basename
 
-VERSION = "Horn parser generator, version 1.7"
+VERSION = "Horn parser generator, version 2.3"
 
 # Installation parameters
 
-datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/lib"
-bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/horn/src/bin"
+datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/data"
+bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/bin"
 
 def Usage():
     print >>sys.stderr, '''\
@@ -46,7 +47,7 @@ verbose = False
 try:
     opts, args = getopt(sys.argv[1:], 'o:hv',
                         [ 'output=', 'post-process', 'no-post-process',
-                          'help', 'verbose', 'version' ])
+                          'datadir=', 'help', 'verbose', 'version' ])
 
     if len(args) > 1:
         Usage()
@@ -63,6 +64,8 @@ try:
                 Usage()
             except:
                 sys.exit(0)
+        elif opt == '--datadir':
+            datadir = val
         elif opt == '--version':
             print >>sys.stderr, VERSION
             sys.exit(0)

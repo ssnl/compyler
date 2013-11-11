@@ -1,9 +1,18 @@
 SRCDIR  = @SRCDIR@
 BINDIR  = @BINDIR@
 DATADIR = @DATADIR@
+INCLUDEDIR = @INCLUDEDIR@
 PYTHON  = @PYTHON@
 BISON   = @BISON@
 FLEX    = @FLEX@
+GCDIR = @GCDIR@
+HERE := $(shell pwd)/
+
+GC_SRCDIR = $(SRCDIR)/bdw-gc
+
+GC_MAKEFILE = $(GC_SRCDIR)/Makefile.horn
+
+GC_MAKE = $(MAKE) -C bdw-gc -f $(GC_MAKEFILE) SRCDIR=$(GC_SRCDIR)
 
 DESTDIR =
 
@@ -17,22 +26,23 @@ GENERATED_SRCS = parse-horn.cc scan-horn.cc scan-action.cc
 
 GENERATED_HEADERS = parse-horn.h
 
-DATA_FILES = horn-common.h horn-parse-lex.cc \
-	     interactive-lexer-template.l lexer-template.l parser-template.y
+INCLUDE_FILES = horn-common.h horn-parse-lex.cc
+
+DATA_FILES = interactive-lexer-template.l lexer-template.l parser-template.y
 
 LOCAL_INSTALLS = bin/hornpp bin/horn $(DATA_FILES:%=lib/%)
 
 ALL_SRCS = $(CXX_SRCS:%=$(SRCDIR)/%) $(GENERATED_SRCS)
 
 RELEASE_SRCDIR_FILES = Makefile.in configure VERSION horn.in README \
-        parse-horn.y scan-horn.l scan-action.l \
+        params.h.in parse-horn.y scan-horn.l scan-action.l \
         $(CXX_SRCS) horn.h xalloc.h \
-	$(DOC_RELEASE_FILES) $(DATA_FILES:%=data/%)
+	$(DOC_RELEASE_FILES) $(DATA_FILES:%=data/%) $(INCLUDE_FILES:%=data/%)
 
 RELEASE_FILES = $(RELEASE_SRCDIR_FILES:%=$(SRCDIR)/%) \
 	$(GENERATED_SRCS) $(GENERATED_HEADERS)
 
-DOC_RELEASE_FILES = doc/horn.tex doc/Makefile doc/horn.pdf
+DOC_RELEASE_FILES = doc/horn.pic doc/Makefile doc/horn.pdf
 
 OBJS = $(patsubst %.c,%.o,$(patsubst %.cc,%.o, $(CXX_SRCS) $(GENERATED_SRCS)))
 
@@ -75,15 +85,19 @@ lib/%: data/% lib
 	cp -p $< $@
 	chmod a-w $@
 
-.PHONY: all default clean local-clean distclean depend check doc \
-	install uninstall make-release
+.PHONY: all default clean gc local-clean distclean depend check doc \
+	install uninstall make-release install-gc uninstall-gc \
+	install-linked
 
-default: $(PROGRAM) .local-installs
+default: $(PROGRAM) gc .local-installs
 
 all: default doc 
 
-$(PROGRAM): $(OBJS)
+$(PROGRAM): $(OBJS) 
 	$(CXX) -o $@ $(LDFLAGS) $^
+
+gc:
+	$(GC_MAKE) 
 
 parse-horn.h parse-horn.cc: $(SRCDIR)/parse-horn.y
 	$(YACC) -v -o parse-horn.cc --defines=parse-horn.h $<
@@ -107,21 +121,24 @@ local-clean:
 clean: local-clean
 	-$(MAKE) -C tests clean
 	-$(MAKE) -C $(SRCDIR)/doc clean
+	-$(GC_MAKE) clean
 
 distclean: local-clean
-	$(RM) config.log config.status Makefile 
+	$(RM) -r config.log config.status Makefile release
 	-$(MAKE) -C tests distclean
 	-$(MAKE) -C $(SRCDIR)/doc clean
+	-$(GC_MAKE) distclean
 
 depend: $(ALL_SRCS) 
 	$(RM) .depend
 	g++ -MM $(CXXINCLUDES) $^ > .depend
 
 doc:
+	if [ ! -d doc ]; then mkdir doc; fi
 	$(MAKE) -C $(SRCDIR)/doc 
 
-check: default 
-	$(MAKE) -C tests check
+check: default
+	$(MAKE) -C tests $(CHECKFLAGS) check
 
 install: $(PROGRAM)
 	@if [ "$(BINDIR)" = "" -o "$(DATADIR)" = "" ]; then \
@@ -134,6 +151,9 @@ install: $(PROGRAM)
 	@if [ ! -d $(DESTDIR)$(DATADIR) ]; then \
              echo mkdir -p $(DESTDIR)$(DATADIR); mkdir -p $(DESTDIR)$(DATADIR); \
         fi
+	@if [ ! -d $(DESTDIR)$(INCLUDEDIR) ]; then \
+             echo mkdir -p $(DESTDIR)$(INCLUDEDIR); mkdir -p $(DESTDIR)$(INCLUDEDIR); \
+        fi
 	cp -fp $(PROGRAM) $(DESTDIR)$(BINDIR);
 	$(RM) $(DESTDIR)$(BINDIR)/horn
 	sed -e 's,%%DATADIR%%,$(DESTDIR)$(DATADIR),g' \
@@ -144,20 +164,28 @@ install: $(PROGRAM)
 	    -e 's,%%VERSION%%,$(VERSION),g' \
 	    $(SRCDIR)/horn.in > $(DESTDIR)$(BINDIR)/horn
 	chmod 0555 $(DESTDIR)$(BINDIR)/horn
-	cd $(SRCDIR)/data; cp -f $(DATA_FILES) $(DESTDIR)$(DATADIR); 
+	cd $(SRCDIR)/data; cp -f $(DATA_FILES) $(DESTDIR)$(DATADIR);
+	cd $(SRCDIR)/data; cp -f $(INCLUDE_FILES) $(DESTDIR)$(INCLUDEDIR)
 	cd $(DESTDIR)$(DATADIR); chmod a-w $(DATA_FILES)
+
+install-gc:
+	$(GC_MAKE) install
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/horn $(DESTDIR)$(BINDIR)/$(PROGRAM)
 	cd $(DESTDIR)$(DATADIR); $(RM) $(DATA_FILES)
+	cd $(DESTDIR)$(INCLUDEDIR); $(RM) $(INCLUDE_FILES)
+
+uninstall-gc:
+	$(GC_MAKE) uninstall
 
 bump:
 	$(RM) $(SRCDIR)/VERSION
 	echo "$(MAJOR_VERSION).`expr $(MINOR_VERSION) + 1`" > $(SRCDIR)/VERSION
 
-make-release: $(ALL_SRCS)
+make-release: 
 	$(RM) -r release
-	$(MAKE) -C doc 
+	$(MAKE) doc 
 	mkdir release release/doc release/data
 	for f in $(RELEASE_SRCDIR_FILES); do \
 	    cp -p $(SRCDIR)/$$f release/$$f; \
@@ -165,11 +193,25 @@ make-release: $(ALL_SRCS)
 	for f in $(GENERATED_SRCS) $(GENERATED_HEADERS); do \
 	    cp -p $$f release; \
         done
+	rsync -a $(SRCDIR)/bdw-gc release
 
 $(LOCAL_INSTALLS): .local-installs
 
 .local-installs: $(PROGRAM) $(DATA_FILES:%=$(SRCDIR)/data/%) $(SRCDIR)/horn.in
-	$(MAKE) BINDIR=`pwd`/bin DATADIR=`pwd`/lib install
+	@if [ ! -d bin ]; then \
+             echo mkdir -p bin; mkdir -p bin; \
+        fi
+	$(RM) bin/$(PROGRAM)
+	cp -fp $(PROGRAM) bin
+	$(RM) bin/horn
+	sed -e 's,%%DATADIR%%,$(SRCDIR)/data,g' \
+	    -e 's,%%BINDIR%%,$(HERE)bin,g' \
+	    -e 's,%%PYTHON%%,$(PYTHON),g' \
+	    -e 's,%%BISON%%,$(BISON),g' \
+	    -e 's,%%FLEX%%,$(FLEX),g' \
+	    -e 's,%%VERSION%%,$(VERSION),g' \
+	    $(SRCDIR)/horn.in > bin/horn
+	chmod 0555 bin/horn
 	touch .local-installs
 
 .depend:

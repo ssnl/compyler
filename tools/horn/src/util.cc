@@ -283,8 +283,7 @@ copy_subst_file (ostream& out, const char* infile_name,
 
 	if (buffer.compare (next+3, 8, "include:") == 0)
 	    copy_file (out, 
-		       (data_dir +
-			buffer.substr (next+11, delim-next-11)).c_str (),
+		       (buffer.substr (next+11, delim-next-11)).c_str (),
 		       &newlines);
 	else if (buffer.compare (next+3, 8, "*RESYNC*") == 0
 		 && outfile_name != NULL)

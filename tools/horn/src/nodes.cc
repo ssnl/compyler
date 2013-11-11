@@ -1,5 +1,6 @@
 #include <cstdarg>
 #include <iomanip>
+#include <cassert>
 #include "horn.h"
 #include "parse-horn.h"
 
@@ -13,8 +14,8 @@ separation (const string& base, int syntax)
     if (!base.empty ())
 	return base;
     switch (syntax) {
-    case LOWER_ID:
-    case UPPER_ID:
+    case TERM_ID:
+    case NONTERM_ID:
     case UNDERSCORE_ID:
     case STRING:
     case CHAR:
@@ -30,7 +31,10 @@ separation (const string& base, int syntax)
 
 member
 ~Node ()
-{ }
+{ 
+    assert (sane());
+    _sanity = 0;
+}
 
 location member
 get_loc () const
@@ -43,6 +47,18 @@ get_loc () const
 	    return L;
     }
     return NULL;
+}
+
+bool member
+is_list () const
+{
+    return false;
+}
+
+bool member
+is_rhs () const
+{
+    return false;
 }
 
 bool member
@@ -319,26 +335,41 @@ init_loc ()
 
 #define member Tree::
 
-static Token LIST_OBJ (NULL_LS, NULL_LS, LIST_TAG);
-Token* const _LIST = &LIST_OBJ;
-
 map<int, Tree*>* member exemplars;
 
 Node* member
 make (Node* op, ...) 
 {
-    va_list ap;
-    Node* result;
-
+    Tree* result;
     Tree* exemplar = (*exemplars)[op->as_token ()->syntax ()];
 
-    va_start (ap, op);
     if (exemplar == NULL)
-	result = new Tree (ap, op);
+	result = new Tree (op);
     else
-	result = exemplar->make (op, ap);
-    va_end (ap);
+	result = exemplar->make0 (op);
 
+    va_list ap;
+    va_start (ap, op);
+    result->add (ap);
+    va_end (ap);
+    return result;
+}
+
+Node* member
+make (int syntax, ...) 
+{
+    Tree* result;
+    Tree* exemplar = (*exemplars)[syntax];
+
+    if (exemplar == NULL)
+	result = new Tree (new Token (syntax));
+    else
+	result = exemplar->make0 (exemplar->oper ());
+
+    va_list ap;
+    va_start (ap, syntax);
+    result = (Tree*) result->add (ap);
+    va_end (ap);
     return result;
 }
 
@@ -350,43 +381,18 @@ make (Node* op, Node_Vector& kids)
     Tree* exemplar = (*exemplars)[op->as_token ()->syntax ()];
 
     if (exemplar == NULL)
-	result = new Tree (op, UNIT, false);
+	result = new Tree (op);
     else
-	result = exemplar->make (op, UNIT);
+	result = (Tree*) exemplar->make0 (op);
     result->_kids.swap (kids);
 
     return result;
 }
 
-Node* member
-make (int syntax, ...) 
-{
-    va_list ap;
-    Node* result;
-
-    Tree* exemplar = (*exemplars)[syntax];
-    Token* op = new Token (syntax);
-
-    va_start (ap, syntax);
-    if (exemplar == NULL)
-	result = new Tree (ap, op);
-    else
-	result = exemplar->make (op, ap);
-    va_end (ap);
-
-    return result;
-}
-
-Node* member
-make (Node* op, va_list ap)
-{
-    return new Tree (ap, op);
-}
-
 Tree* member
-make (Node* op, Unit)
+make0 (Node* op)
 {
-    UNIMPLEMENTED_METHOD (make);
+    UNIMPLEMENTED_METHOD (make0);
 }
 
 bool member
@@ -398,27 +404,29 @@ register_me ()
     return true;
 }
 
-void member
+Node* member
 add (va_list ap)
 {
+    assert (sane() && arity () == 0);
     while (true) {
 	Node* v = va_arg (ap, Node*);
 	if (v == NULL)
 	    break;
-	if (v->oper () == _LIST)
+        assert (v->sane());
+	if (v->is_list ())
 	    _kids.insert (_kids.end (), 
 			  v->children ().begin (), v->children ().end ());
 	else 
 	    _kids.push_back (v);
     }
+    return this;
 }
 
 member
-Tree (Node* op, Unit, bool reg)
-    : _oper (op->as_token ())
+Tree (int syntax, Unit)
+    : _oper (new Token (syntax))
 {
-    if (reg)
-	register_me ();
+    register_me ();
 }
 
 member
@@ -426,16 +434,6 @@ Tree (Node* op)
     : _oper (op->as_token ())
 {
 }
-
-member
-Tree (int op, ...)
-    : Node (), _oper (new Token (op))
-{
-    va_list ap;
-    va_start (ap, op);
-    add (ap);
-    va_end (ap);
-}    
 
 member
 Tree (va_list ap, Node* op)
@@ -486,25 +484,30 @@ oper () const
 Node* member
 child (int i) const
 {
+    assert (sane());
+    assert (_kids.at (i)->sane());
     return _kids.at (i);
 }
 
 void member
 replace (int i, Node* val, size_t n)
 {
-    if (val->oper () == _LIST) {
+    assert (val->sane());
+    if (val->is_list ()) {
 	_kids.erase (_kids.begin () + i, _kids.begin () + i + n);
 	_kids.insert (_kids.begin () + i, 
 		      val->children ().begin (), val->children ().end ());
     } else {
 	_kids.at (i) = val;
-	_kids.erase (_kids.begin () + i + 1, _kids.begin () + i + n);
+        if (n > 1)
+            _kids.erase (_kids.begin () + i + 1, _kids.begin () + i + n);
     }
 }
 
 Node* member
 extract_to_list ()
 {
+    assert (sane());
     List* result = new List ();
     result->swap (_kids);
     return result;
@@ -519,13 +522,16 @@ swap (Node_Vector& kids)
 const Node_Vector& member
 children () const
 {
+    assert (sane());
     return _kids;
 }
 
 Node* member
 add (Node* child, int k)
 {
-    if (child->oper () != _LIST) {
+    assert (sane());
+    assert (child->sane());
+    if (!child->is_list ()) {
 	_kids.insert (k == -1 ? _kids.end () : _kids.begin () + k, child);
     } else
 	merge (child, k);
@@ -535,6 +541,8 @@ add (Node* child, int k)
 Node* member
 merge (Node* tree, int k)
 {
+    assert (sane());
+    assert (tree->sane());
     _kids.insert (k == -1 ? _kids.end () : _kids.begin () + k, 
 		  tree->children ().begin (), tree->children ().end ());
     return this;
@@ -543,8 +551,10 @@ merge (Node* tree, int k)
 Node* member
 dadd (Node* child, int k)
 {
+    assert (sane ());
+    assert (child->sane ());
     add (child, k);
-    if (child->oper () == _LIST)
+    if (child->is_list ())
 	delete child;
     return this;
 }
@@ -592,8 +602,20 @@ compare (Node* x) {
 
 #define member List::
 
+EXEMPLAR (List);
+
 member
-List (Node* first, ...) : Tree (_LIST)
+List(Unit) : Tree (LIST_TAG, UNIT)
+{
+}
+
+Tree* member
+make0 (Node* op) {
+    return new List();
+}
+
+member
+List (Node* first, ...) : Tree (exemplar.oper ())
 {
     va_list ap;
    
@@ -604,6 +626,12 @@ List (Node* first, ...) : Tree (_LIST)
 	add (elt);
     }
     va_end (ap);
+}
+
+bool member
+is_list () const
+{
+    return true;
 }
 
 bool member
@@ -624,14 +652,9 @@ to_string (stringstream& out, int indent) const
     out << " ]";
 }
 
-Node* member
-copy () 
-{
-    return internal_copy ();
-}
-
+/* Debugging */
 void
-debug_tree (Node* t)
+DT (Node* t)
 {
     fprintf (stderr, "%s\n", t->to_string ().c_str ());
 }

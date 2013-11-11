@@ -92,10 +92,25 @@
   PERCENT_VERBOSE         "%verbose"
   PERCENT_YACC            "%yacc"
 
+  PERCENT_CONVENTION      "%convention"
   PERCENT_EXPAND          "%expand"
   PERCENT_PREFER          "%prefer"
   PERCENTS
+
   ANY                     "_ANY"
+  UPPER                   "_UPPER"
+  LOWER                   "_LOWER"
+  LETTER                  "_LETTER"
+  DIGIT                   "_DIGIT"
+  HEX                     "_HEX"
+  ALNUM                   "_ALNUM"
+  SPACE                   "_SPACE"
+  BLANK                   "_BLANK"
+  CONTROL                 "_CONTROL"
+  GRAPHIC                 "_GRAPHIC"
+  PRINTABLE               "_PRINTABLE"
+  PUNCTUATION             "_PUNCTUATION"
+
   BOL			  "_BOL"
   EOL			  "_EOL"
   ENDFILE		  "_EOF"
@@ -109,8 +124,8 @@
 %token EPILOGUE        "epilogue"
 %token '='             "="
 %token ID
-%token UPPER_ID
-%token LOWER_ID      
+%token TERM_ID
+%token NONTERM_ID      
 %token UNDERSCORE_ID
 %token OTHER_ID
 %token PERCENT_PERCENT "%%"
@@ -198,6 +213,16 @@ static bool preferred_lexical_rule;
 static NodePtr lexical_lhs, lexical_rhs;
 
 static void excluded_feature (const std::string& name);
+static symbol_convention as_convention(const lstring& conv);
+
+#define O_RANGE(Low, High)                                                   \
+        new Token (lstring ("'\\" #Low "'", 6), lstring ("", 0), CHAR),      \
+        new Token (lstring ("'\\" #High "'", 6), lstring ("", 0), CHAR)
+
+#define RANGE(Low, High)                                                     \
+        new Token (lstring (#Low, 3), lstring ("", 0), CHAR),        \
+        new Token (lstring (#High, 3), lstring ("", 0), CHAR)
+        
 
 %}
 
@@ -234,6 +259,11 @@ prologue_declaration:
   grammar_declaration
 | "%{...%}"
 | "%<flag>"
+| "%convention" any_id any_id
+  { set_lexical_convention((symbol_convention)
+			   (as_convention ($2->text ()) * 4 +
+			    as_convention ($3->text ())));
+    $$ = EMPTY; }
 | "%define" variable content.opt   { 
   	 std::string variable = $2->as_string ();
 	 std::string content = strip_quotes ($3->as_string ());
@@ -401,15 +431,15 @@ generic_symlist_item:
 
 /* One token definition.  */
 symbol_def:
-  UPPER_ID			  { $$ = $1; $1->add_explicit_token (); }
+  TERM_ID			  { $$ = $1; $1->add_explicit_token (); }
 | CHAR                            { $$ = $1; $1->add_explicit_token (); }
-| UPPER_ID INT			  { $$ = LIST ($1, $2); 
+| TERM_ID INT			  { $$ = LIST ($1, $2); 
      				    $1->add_explicit_token ();}
-| UPPER_ID string_as_id		  { $$ = LIST ($1, $2); 
+| TERM_ID string_as_id		  { $$ = LIST ($1, $2); 
      				    $1->add_explicit_token ($2); }
 | CHAR string_as_id		  { $$ = LIST ($1, $2); 
      				    $1->add_explicit_token ($2); }
-| UPPER_ID INT string_as_id	  { $$ = LIST ($1, $2, $3); 
+| TERM_ID INT string_as_id	  { $$ = LIST ($1, $2, $3); 
      	 			    $1->add_explicit_token ($3); }
 | TAG				  { excluded_feature ("<...> tagging"); 
   				    $$ = TREE (NONE); }
@@ -446,7 +476,7 @@ rules_or_grammar_declaration:
 ;
 
 rules:
-  LOWER_ID ":" rhses ";"
+  NONTERM_ID ":" rhses ";"
                                   { $$ = TREE (RULE, $1, 
 				               TREE (RHS_CHOICES, $3)); }
 | lexical_rule                    { $$ = EMPTY; }
@@ -504,6 +534,10 @@ annotation:
   	  		     APPEND (APPEND (rule_annotations, $1), $2); }
 | "%dprec" INT		{ rule_annotations = 
   	  		     APPEND (APPEND (rule_annotations, $1), $2); }
+| "%expect" INT         { rule_annotations =
+  	  		     APPEND (APPEND (rule_annotations, $1), $2); }
+| "%expect-rr" INT      { rule_annotations =
+  	  		     APPEND (APPEND (rule_annotations, $1), $2); }
 | "%merge" TAG		{ excluded_feature ("%merge"); }
 | "%expand"	        { expand_rule = true; }
 ;
@@ -539,8 +573,8 @@ braceless:
 `--------------*/
 
 any_id:
-  UPPER_ID
-| LOWER_ID
+  TERM_ID
+| NONTERM_ID
 | UNDERSCORE_ID
 ;
 
@@ -555,8 +589,8 @@ symbol:
 ;
 
 cf_symbol:
-  UPPER_ID
-| LOWER_ID
+  TERM_ID
+| NONTERM_ID
 | CHAR
     { $$ = $1; $1->add_implicit_token (); }
 | string_as_id
@@ -584,7 +618,7 @@ epilogue.opt:
 `----------------*/
 
 lexical_rule:
-  UPPER_ID ":" { lexical_lhs = $1; lexical_rhs = EMPTY; } lexical_rhs ";"
+  TERM_ID ":" { lexical_lhs = $1; lexical_rhs = EMPTY; } lexical_rhs ";"
   	       { make_plain_lexical_rule (); }
 | "*" ":"      { lexical_lhs = NULL; lexical_rhs = EMPTY; } lexical_rhs ";"
   	       { make_plain_lexical_rule (); }
@@ -654,11 +688,28 @@ lexical_atom:
 | "(" lexical_rhs_no_rules ")"	   { $$ = TREE (LEX_GROUP, $2); }
 | CHAR                             { $$ = TREE (LEX_SET, $1, $1); }
 | STRING                           { $$ = TREE (LEX_STRING, $1); }
-| "_ANY"
-     { $$ = TREE (LEX_SET, 
-                  new Token (lstring ("'\\001'", 6), lstring ("", 0), CHAR),
-                  new Token (lstring ("'\\376'", 6), lstring ("", 0), CHAR));
-     }
+| predefined_atoms
+;
+
+predefined_atoms:
+  "_ANY"         { $$ = TREE (LEX_SET, O_RANGE(001, 376));  }
+| "_UPPER"       { $$ = TREE (LEX_SET, RANGE('A', 'Z')); }
+| "_LOWER"       { $$ = TREE (LEX_SET, RANGE('a', 'z')); }
+| "_LETTER"      { $$ = TREE (LEX_SET, RANGE('A', 'Z'), RANGE('a', 'z')); }
+| "_DIGIT"       { $$ = TREE (LEX_SET, RANGE('0', '9')); }
+| "_HEX"         { $$ = TREE (LEX_SET, RANGE('0', '9'), 
+                              RANGE('a', 'f'), RANGE('A', 'F')); }
+| "_ALNUM"       { $$ = TREE (LEX_SET, RANGE(0, 9), 
+                              RANGE('A', 'Z'), RANGE('a', 'z')); }
+| "_SPACE"       { $$ = TREE (LEX_SET, RANGE(' ', ' '), RANGE('\t', '\t'),
+                              RANGE('\n', '\n'), RANGE('\r', '\r'),
+                              RANGE('\f', '\f'), RANGE('\v', '\v')); }
+| "_BLANK"       { $$ = TREE (LEX_SET, RANGE(' ', ' '), RANGE('\t', '\t')); }
+| "_CONTROL"     { $$ = TREE (LEX_SET, O_RANGE(001, 037), O_RANGE(177, 177)); }
+| "_GRAPHIC"     { $$ = TREE (LEX_SET, RANGE('!', '~')); }
+| "_PRINTABLE"   { $$ = TREE (LEX_SET, RANGE(' ', '~')); }
+| "_PUNCTUATION" { $$ = TREE (LEX_SET, RANGE('!', '/'), RANGE(':', '@'), 
+                              RANGE('[', '`'), RANGE('{', '~')); }
 ; 
   
 char_range:
@@ -699,15 +750,28 @@ bare_action.opt:
 
 using namespace std;
 
-const char* parser_support_files[] = {
-      "horn-common.h", "horn-parse-lex.cc", 0
-};
-
 static void 
 excluded_feature (const string& feature_name)
 {
     complain ("Bison feature %s is not part of the Horn dialect",
     	      feature_name.c_str ());
+}
+
+static symbol_convention
+as_convention(const lstring& sym)
+{
+    if (sym.compare_folded ("ANY") == 0)
+      return ANYSYM;
+    if (sym.compare_folded ("LOW") == 0)
+      return LOWSYM;
+    if (sym.compare_folded ("CAP") == 0)
+      return CAPSYM;
+    if (sym.compare_folded ("ALLCAP") == 0)
+      return ALLCAPSYM;
+    else {
+        complain ("Unknown symbol capitalization convention");
+        return CAP_LOW;
+    }
 }
 
 static string
@@ -743,10 +807,10 @@ make_plain_lexical_rule ()
 {
     Node* new_rhs;
 
-    if (lexical_rhs->oper () == _LIST && lexical_rhs->arity () > 1) {
+    if (lexical_rhs->is_list () && lexical_rhs->arity () > 1) {
 	new_rhs = TREE (LEX_GROUP, lexical_rhs);
 	delete lexical_rhs;
-    } else if (lexical_rhs->oper () == _LIST && lexical_rhs->arity () == 0)
+    } else if (lexical_rhs->is_list () && lexical_rhs->arity () == 0)
         return;
     else 
 	new_rhs = lexical_rhs;
@@ -789,7 +853,8 @@ make_rhses_1 (NodePtr result, NodePtr rhs_accum, NodePtr syms, int k,
 	      NodePtr annotations)
 {
     if (k >= syms->arity ())
-	result->add (TREE (RHS, rhs_accum, annotations)->normalize_action ());
+	result->add (TREE (RHS, rhs_accum->copy (), annotations)
+        ->normalize_action ());
     else {
 	NodePtr child;
 	child = syms->child (k);
@@ -803,12 +868,19 @@ make_rhses_1 (NodePtr result, NodePtr rhs_accum, NodePtr syms, int k,
 		make_rhses_1 (result, rhs_accum->copy (), new_syms, k,
 			      annotations);
 	    }
-	} else
+	} else if (child->oper ()->syntax () == '?') {
+            syms->replace (k, EMPTY);
+            NodePtr new_syms = syms->copy ();
+            new_syms->add (child->child (0), k);
+            make_rhses_1 (result, rhs_accum->copy (), new_syms, k,
+                          annotations);
+            make_rhses_1 (result, rhs_accum->copy (), syms->copy(), 
+	                  k, annotations);
+        } else
 	    make_rhses_1 (result, rhs_accum->add (child), syms, k+1,
 			  annotations);
     }
 }
-	
 
 static NodePtr
 make_rhses (NodePtr syms)
@@ -862,14 +934,25 @@ string lexical_outfile;
 string lex_generated_file;
 string infile;
 string file_root;
-
 string data_dir;
-string parser_template_file;
-string directory_separator;
 
 string api_namespace;
 
 static string file_dir;
+
+static void
+set_data_dir(const char* dir)
+{
+    const char* dirSep = DIRECTORY_SEPARATOR;
+    const int sepLen = sizeof(dirSep) - 1;
+    data_dir = dir;
+    while (sepLen < data_dir.size()
+           && data_dir.compare (data_dir.size() - sepLen, sepLen, dirSep)
+           == 0) {
+        data_dir.erase (data_dir.size() - sepLen);
+    }
+    data_dir += dirSep;
+}
 
 static void
 process_args (int argc, char* argv[])
@@ -878,15 +961,16 @@ process_args (int argc, char* argv[])
     lexical_outfile = "";
     infile = "";
     token_factory = "";
+    set_data_dir(DATA_DIR);
     
     int i;
     for (i = 1; i < argc; i += 1) {
 	if (string("-o") == argv[i] && i < argc-1) {
 	    file_root = argv[i+1];
 	    i += 1;
-	} else if (string(argv[i]).compare(0, 10, "--datadir=") == 0)
-	    data_dir = argv[i]+10;
-	else if (argv[i][0] == '-')
+        } else if (string(argv[i]).compare(0, 10, "--datadir=") == 0) {
+	    set_data_dir(argv[i]+10);
+	} else if (argv[i][0] == '-')
 	    Usage ();
 	else
 	    break;
@@ -897,25 +981,11 @@ process_args (int argc, char* argv[])
     else if (i == argc-1)
 	infile = argv[i];
 
-    if (data_dir == "")
-	directory_separator = "/";
-    else {
-	size_t sep_loc = data_dir.find_first_of ("/\\");
-	if (sep_loc == string::npos)
-	    directory_separator = "/";
-	else
-	    directory_separator = data_dir[sep_loc];
-    }
-    if (data_dir[data_dir.size ()-1] != directory_separator[0])
-	data_dir += directory_separator;
-
-    parser_template_file = data_dir + PARSER_TEMPLATE_FILE_TAIL;
-
     if (file_root == "" && infile == "")
 	file_root = "yy";
     else if (file_root == "") {
 	file_root = infile;
-	size_t tail = file_root.rfind (directory_separator);
+	size_t tail = file_root.rfind (DIRECTORY_SEPARATOR);
 	if (tail == string::npos)
 	    tail = 0;
 	size_t ext = file_root.find ('.', tail);
@@ -925,7 +995,7 @@ process_args (int argc, char* argv[])
 
     {
 	file_dir = file_root;
-	size_t tail = file_dir.rfind (directory_separator);
+	size_t tail = file_dir.rfind (DIRECTORY_SEPARATOR);
 	if (tail == string::npos)
 	    file_dir = ".";
 	else
@@ -996,11 +1066,6 @@ main (int argc, char* argv[])
 	lexer_out << out.str ();
 	lexer_out.close ();
     }
-
-    for (int i = 0; parser_support_files[i] != NULL; i += 1)
-        copy_file_if_needed (file_dir + directory_separator 
-                             + parser_support_files[i],
-                             data_dir + parser_support_files[i]);
 
     exit (0);
 }
