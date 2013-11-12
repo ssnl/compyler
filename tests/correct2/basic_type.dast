@@ -1,0 +1,26 @@
+((assign 2
+        (typed_id 2
+            (id 2 x 1)
+            (type 2
+                (id 2 int)
+                (type_list 0)))
+        (int_literal 2 5))
+    (println 3
+        ()
+        (expr_list 3
+            (id 3 x)))
+    (assign 5
+        (id 5 y 2)
+        (int_literal 5 10))
+    (println 6
+        ()
+        (expr_list 6
+            (binop 6
+                (id 6 x 1)
+                (id 6 +)
+                (id 6 y 2)
+                (id 6 __add__)))))
+
+(vardecl 1 x 0 (type 0 (id 0 int) (type_list 0)) )
+
+(vardecl 2 y 0 (type 0 (id 0 int) (type_list 0)) )

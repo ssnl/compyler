@@ -1,0 +1,59 @@
+((def 2
+        (id 2 foo 1)
+        (formals_list 2
+            (typed_id 2
+                (id 2 x 2)
+                (type 2
+                    (id 2 int)
+                    (type_list 0))))
+        ()
+        (block 3
+            (assign 3
+                (id 3 y 3)
+                (binop 3
+                    (id 3 x 2)
+                    (id 3 +)
+                    (int_literal 3 1)
+                    (id 3 __add__)))
+            (def 4
+                (id 4 bar 4)
+                (formals_list 4
+                    (typed_id 4
+                        (id 4 z)
+                        (type 4
+                            (id 4 str)
+                            (type_list 0))))
+                ()
+                (block 5
+                    (println 5
+                        ()
+                        (expr_list 5
+                            (id 5 z 5)))
+                    (return 6
+                        (id 6 y 3))))
+            (return 7
+                (id 7 bar 4))))
+    (call 9
+        (id 9 foo 1)
+        (expr_list 9
+            (int_literal 9 5))))
+
+(funcdecl 1 foo 0
+    (function_type 0
+        (function_type 0
+            (type 0 (id 0 int) (type_list 0))
+            (type_list 0 (type 0 (id 0 str) (type_list 0))))
+        (type_list 0 (type 0 (id 0 int) (type_list 0))))
+    (index_list 2))
+
+(vardecl 2 x 1 (type 0 (id 0 int) (type_list 0)))
+
+(vardecl 3 y 1 (type 0 (id 0 int) (type_list 0)))
+
+(funcdecl 4 bar 0
+    (function_type 0
+        (type 0 (id 0 int) (type_list 0))
+        (type_list 0 (type 0 (id 0 str) (type_list 0))))
+    (index_list 5))
+
+(vardecl 5 z 4 (type 0 (id 0 str) (type_list 0)))

@@ -1,0 +1,28 @@
+((def 2
+        (id 2 f 1)
+        (formals_list 2
+            (id 2 x 2))
+        ()
+        (block 3
+            (println 3
+                ()
+                (expr_list 3
+                    (id 3 x 2)))
+            (return 4
+                (id 4 x 2))))
+    (call 6
+        (id 6 f 1)
+        (expr_list 6
+            (int_literal 6 2)))
+    (call 7
+        (id 7 f 1)
+        (expr_list 7
+            (string_literal 7 "hi"))))
+
+(funcdecl 1 f 0
+    (function_type 0
+        (type_var 0 x)
+        (type_list 0 (type_var 0 x)))
+    (index_list 2))
+
+(vardecl 2 x 1 (type_var 0 x))

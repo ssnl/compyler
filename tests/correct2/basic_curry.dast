@@ -1,0 +1,99 @@
+((def 2
+        (id 2 foo 1)
+        (formals_list 2
+            (id 2 f 2)
+            (id 2 x 3))
+        ()
+        (block 3
+            (def 3
+                (id 3 bar 4)
+                (formals_list 3
+                    (id 3 y 5))
+                ()
+                (block 4
+                    (return 4
+                        (call 4
+                            (id 4 f 2)
+                            (expr_list 4
+                                (id 4 x 3)
+                                (id 4 y 5))))))
+            (return 5
+                (id 5 bar 4))))
+    (def 7
+        (id 7 baz 6)
+        (formals_list 7
+            (id 7 a 7)
+            (id 7 b 8))
+        ()
+        (block 8
+            (return 8
+                (binop 8
+                    (id 8 a 7)
+                    (id 8 +)
+                    (id 8 b 8)
+                    (id 8 __add__)))))
+    (assign 10
+        (id 10 func)
+        (call 10
+            (id 10 foo 1)
+            (expr_list 10
+                (id 10 baz 6)
+                (int_literal 10 10))))
+    (println 11
+        ()
+        (expr_list 11
+            (call 11
+                (id 11 func 9)
+                (expr_list 11
+                    (int_literal 11 5))))))
+
+(funcdecl 1 foo 0
+    (function_type 0
+        (function_type 0
+            (type_var 0 f_ret)
+            (type_list 0
+                (type_var 0 bar_y)))
+        (type_list 0
+            (function_type 0
+                (type_var 0 f_ret)
+                (type_list 0
+                    (type_var 0 f_x)
+                    (type_var 0 f_y)))
+            (type_var 0 f_x))
+    (index_list 2 3 4))
+
+(vardecl 2 f 1
+    (function_type 0
+        (type_var 0 f_ret)
+        (type_list 0
+            (type_var 0 f_x)
+            (type_var 0 f_y))))
+
+(vardecl 3 x 1 (type_var 0 f_x))
+
+(funcdecl 4 bar 1
+    (function_type 0
+            (type_var 0 f_ret)
+            (type_list 0
+                (type_var 0 bar_y)))
+    (index_list 5))
+
+(vardecl 5 y 4 (type_var 0 bar_y))
+
+(funcdecl 6 baz 0
+    (function_type 0
+        (type 0 (id 0 int) (type_list 0))
+        (type_list 0
+            (type 0 (id 0 int) (type_list 0))
+            (type 0 (id 0 int) (type_list 0))))
+    (index_list 7 8))
+
+(vardecl 7 a 6 (type 0 (id 0 int) (type_list 0)))
+
+(vardecl 8 b 6 (type 0 (id 0 int) (type_list 0)))
+
+(vardecl 9 func 0
+    (function_type 0
+        (type_var 0 f_ret)
+        (type_list 0
+            (type_var 0 bar_y))))
