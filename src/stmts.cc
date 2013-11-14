@@ -20,13 +20,9 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     AST_Ptr doOuterSemantics () {
-        // First recursively scope children
-        for_each_child_var (c, this) {
-            c = c->doOuterSemantics ();
-        } end_for;
-
-        // Extra Typing
-
+        child(1)->resolveSimpleIds(outer_environ);
+        child(1)->resolveSimpleTypeIds(outer_environ);
+        child(0)->doOuterSemantics();
         return this;
     }
 };

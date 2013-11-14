@@ -36,6 +36,7 @@ AST_Token::append_text(const gcstring& s)
 }
 
 
+
 /** The supertype of tokens with a type. */
 class Typed_Token : public AST_Token {
 public:
@@ -48,7 +49,7 @@ public:
 
 protected:
 
-    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities, 
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         if (_type == NULL) {
             _type = computeType ();
@@ -65,7 +66,7 @@ protected:
 
     TOKEN_BASE_CONSTRUCTORS (Typed_Token, AST_Token);
 
-};    
+};
 
 /** Represents an integer literal. */
 class Int_Token : public Typed_Token {
@@ -133,6 +134,23 @@ protected:
         _me.erase (_me.begin () + k);
     }
 
+    void resolveSimpleIds(const Environ* env)
+    {
+        gcstring text = as_string();
+        decl = env.find(text);
+        if(decl != None) {
+            addDecl(decl);
+        } else {
+            // Throw error here
+            error (loc (), "Name '%s' is not defined", text.c_str ());
+        }
+    }
+
+    AST_Ptr doOuterSemantics () {
+
+        return this;
+    }
+
 private:
 
     Decl_Vector _me;
@@ -144,7 +162,7 @@ TOKEN_FACTORY(Id_Token, ID);
 /** Represents a string. */
 class String_Token : public Typed_Token {
 private:
-    
+
     String_Token* post_make () {
         if (syntax () == RAWSTRING) {
             literal_text = gcstring (as_chars (), text_size ());
@@ -171,8 +189,8 @@ private:
                     case '\'': v = '\''; break;
                     case '"': case '\\': v = s[i-1]; break;
                     case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': 
-                    { 
+                    case '5': case '6': case '7':
+                    {
                         v = s[i-1] - '0';
                         for (int j = 0; j < 2; j += 1) {
                             if ('0' > s[i] || s[i] > '7')
@@ -183,7 +201,7 @@ private:
                         break;
                     }
                     case 'x': {
-                        if (i+2 > text_size () || 
+                        if (i+2 > text_size () ||
                             !isxdigit (s[i]) || !isxdigit (s[i+1])) {
                             error (s, "bad hexadecimal escape sequence");
                             break;
@@ -195,7 +213,7 @@ private:
                     }
                 } else
                     v = s[i-1];
-                literal_text += (char) v;        
+                literal_text += (char) v;
             }
         }
         return this;
@@ -225,7 +243,7 @@ private:
     Type_Ptr computeType () {
         return strDecl->asType ();
     }
-        
+
     TOKEN_CONSTRUCTORS(String_Token, Typed_Token);
     static const String_Token raw_factory;
 
@@ -238,6 +256,6 @@ TOKEN_FACTORY(String_Token, STRING);
  *  to use for RAWSTRING tokens produced by the lexer.  (The
  *  TOKEN_FACTORY macro above registers String_Token as the class for
  *  non-raw STRING tokens as well.)
- */ 
+ */
 const String_Token String_Token::raw_factory (RAWSTRING);
 
