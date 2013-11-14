@@ -34,7 +34,7 @@ error (const char* loc, const char* format, ...)
 }
 
 void
-error_no_file (const char* format, ...) 
+error_no_file (const char* format, ...)
 {
     va_list ap;
     va_start (ap, format);
@@ -57,7 +57,7 @@ printTree (AST_Ptr tree, const gcstring& output)
 {
     if (freopen (output.c_str (), "w", stdout) == NULL) {
 	error_no_file ("Could not open %s", output.c_str ());
-	return;	
+	return;
     }
     tree->print (cout, 0);
 }
@@ -76,7 +76,7 @@ main (int argc, char* argv[])
 	    i += 1;
 	} else if (opt.compare (0, 8, "--phase=") == 0)
 	    maxPhase = atoi(opt.c_str () + 8);
-	else if (opt == "-dp") 
+	else if (opt == "-dp")
 	    debugParser = true;
 	else if (opt.size () == 0 || opt[0] == '-')
 	    Usage();
@@ -88,7 +88,7 @@ main (int argc, char* argv[])
     errCount = 0;
     string infile = argv[i];
 
-    if (infile.size () < 4 
+    if (infile.size () < 4
         || infile.compare (infile.size ()-3, 3, ".py") != 0) {
         error_no_file ("Unknown file type: %s\n", argv[i]);
         exit (1);
@@ -96,7 +96,7 @@ main (int argc, char* argv[])
 
     string outfileStr;
     if (outfile == NULL)
-        outfileStr = string(infile, 0, infile.size ()-3) 
+        outfileStr = string(infile, 0, infile.size ()-3)
             + (maxPhase == 1 ? ".ast" : ".dast");
     else
         outfileStr = outfile;
@@ -117,6 +117,7 @@ main (int argc, char* argv[])
         tree = tree->doOuterSemantics ();
     if (errCount == 0) {
         printTree (tree, outfileStr);
+        printf("\n");
         outputDecls ();
     }
 
@@ -124,7 +125,7 @@ main (int argc, char* argv[])
 }
 
 /* Debugging routines.  These are never called in the skeleton.  They
- * are intended to be called from GDB, as in 
+ * are intended to be called from GDB, as in
  *     (gdb) call DB(aTree)
  */
 

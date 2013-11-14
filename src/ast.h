@@ -95,9 +95,9 @@ public:
     /** Do inner-level semantic analysis on me---all scope and type
      *  analysis that applies to definitions and statements that are
      *  also nested inside classes or function definitions.  Adds any
-     *  declarations that I represent to ENCLOSING, the environment in
+     *  declarations that I represent to ENV, the environment in
      *  which I am nested. Returns the modified tree.  */
-    virtual AST_Ptr doInnerSemantics (Decl* enclosing);
+    virtual AST_Ptr doInnerSemantics (const Environ* env);
 
     /** Add any declarations that I represent to ENCLOSING, the
      *  environment in which I am nested.  This does not add

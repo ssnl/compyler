@@ -236,7 +236,6 @@ extern Decl* dictDecl;
 extern Decl* boolDecl;
 extern Decl* fileDecl;
 extern Decl* rangeDecl;
-extern const Decl* moduleDecl;
 
 typedef gcvector<Decl*> Decl_Vector;
 

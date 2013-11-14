@@ -30,14 +30,27 @@ function connect {
   ssh $SERVER
 }
 
-function testcorr {
+function testcor {
+  if [ $1 == -s ]
+  then
+    TEST=$2
+  else
+    TEST=$1
+  fi
+
   printf "\nRunning apyc...\n"
-  ./apyc --phase=2 -o out tests/correct2/$1.py
+  ./apyc --phase=2 -o out tests/correct2/$TEST.py
   printf "\nActual program...\n"
   tail -n +1272 out
   printf "\nUnparsing out...\n"
   pyunparse -o output out
-  tail -n +156 output
-  rm out
-  rm output
+
+  if [ $1 != -s ]
+  then
+    echo output
+    rm out
+    rm output
+  else
+    printf "\nSaved in 'out' and 'output'\n"
+  fi
 }
