@@ -30,8 +30,8 @@ protected:
         Decl* moduleDecl = makeModuleDecl("__main__");
         outer_environ = moduleDecl->getEnviron();
         for_each_child_var (c, this) {
-            c = c->doOuterSemantics();
             c->collectDecls(moduleDecl);
+            c = c->doOuterSemantics();
         } end_for;
         return this;
     }
