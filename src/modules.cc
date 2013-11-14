@@ -28,6 +28,7 @@ protected:
     /** Top-level semantic processing for the program. */
     AST_Ptr doOuterSemantics () {
         outer_environ = new Environ (NULL);
+        module_decl = makeModuleDecl("__main__");
         for_each_child_var (c, this) {
             c = c->doOuterSemantics ();
         } end_for;
