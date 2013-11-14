@@ -6,51 +6,126 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export PATH=$DIR/root/bin/:$PATH
 
 # Path to servers
-SERVER=cs164-$1@torus.cs.berkeley.edu
-PROJ_PATH="~/work/compyler"
+SERVER=torus.cs.berkeley.edu
+PROJ_PATH=$1
 
-function sendcorr {
-	scp -r $DIR/tests/correct2/* $SERVER:$PROJ_PATH/tests/correct2
+function send_usage {
+  echo "Usage: send -f FILE -i ID"
 }
 
-function senderr {
-	scp -r $DIR/tests/error2/* $SERVER:$PROJ_PATH/tests/error2
-}
+function send {
+  OPTIND=1
+  ID=
+  FILE=
+  while getopts "f:i:h" O; do
+    case $O in
+      f)
+        FILE=$OPTARG
+        ;;
+      i)
+        ID=$OPTARG
+        ;;
+      h)
+        send_usage; return
+        ;;
+      ?)
+        send_usage; return 1
+        ;;
+    esac
+  done
 
-function sendsrc {
-  if [ -z $1 ]
-  then
-    scp -r $DIR/src/* $SERVER:$1
-  else
-    scp -r $DIR/src/* $SERVER:$PROJ_PATH/src
+  if [ -z $FILE ] || [ -z $ID ]; then
+    send_usage; return 1
   fi
+
+  if [ -z $PROJ_PATH ]; then
+    echo Error: No PROJ_PATH set.; return 1
+  fi
+
+  ADDRESS=cs164-$ID@$SERVER
+  scp -r $FILE $ADDRESS:$PROJ_PATH
 }
 
 function connect {
-  ssh $SERVER
+  if [ -z $1 ]; then
+    echo "Usage: connect ID"; return 1
+  fi
+  ssh cs164-$1@$SERVER
 }
 
-function testcor {
-  if [ $1 == -s ]
-  then
-    TEST=$2
-  else
-    TEST=$1
+function test_usage {
+  echo "Usage: test [-vs] [-d TESTDIR] [-o FILE] [-p PHASE] -t TEST"
+  echo "  -v          : Verbose output                        [Default: true]"
+  echo "  -s          : Saves output.                         [Default: false]"
+  echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
+  echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
+  echo "  -p PHASE    : Which phase to use for apyc.          [Default: 2]"
+}
+
+function test {
+  OPTIND=1
+  FILE=out
+  VERBOSE=false
+  SPEC=false
+  TEST=
+  SAVE=false
+  PHASE=2
+  TESTDIR=tests/correct2
+
+  while getopts "sd:p:o:t:vh" O; do
+    case $O in
+      s)
+        SAVE=true
+        ;;
+      d)
+        TESTDIR=$OPTARG
+        ;;
+      p)
+        PHASE=$OPTARG
+        ;;
+      o)
+        SPEC=true
+        FILE=$OPTARG
+        ;;
+      t)
+        TEST="$OPTARG.py"
+        ;;
+      v)
+        VERBOSE=true
+        ;;
+      h)
+        test_usage; return
+        ;;
+      ?)
+        test_usage; return 1
+        ;;
+    esac
+  done
+
+  if [ -z $TEST ]; then
+    test_usage; return 1
   fi
 
-  printf "\nRunning apyc...\n"
-  ./apyc --phase=2 -o out tests/correct2/$TEST.py
-  printf "\nActual program...\n"
-  tail -n +1272 out
-  printf "\nUnparsing out...\n"
-  pyunparse -o output out
-
-  if [ $1 != -s ]
-  then
-    echo output
-    rm out
-    rm output
-  else
-    printf "\nSaved in 'out' and 'output'\n"
+  if $VERBOSE; then
+    echo ">> Original file..."
+    cat $TESTDIR/$TEST
   fi
+  echo ">> Running apyc..."
+  ./apyc --phase=$PHASE -o $FILE.ast $TESTDIR/$TEST
+  echo ">> Decorated AST..."
+  tail -n +0 $FILE.ast
+  echo ">> Unparsing AST..."
+  pyunparse -o $FILE $FILE.ast
+  cat $FILE
+
+  if $SPEC || $SAVE; then
+    printf ">> Saved AST in %s. Saved pyunparsed program in %s.\n" "$FILE.ast" "$FILE"
+  else
+    rm out out.ast
+  fi
+}
+
+function test-clean {
+  rm -f out out.ast
+  echo ">> Removed 'out' and 'out.ast'"
 }
