@@ -22,8 +22,13 @@ protected:
     AST_Ptr doOuterSemantics () {
         child(1)->resolveSimpleIds(outer_environ);
         child(1)->resolveSimpleTypeIds(outer_environ);
-        child(0)->doOuterSemantics();
+        // Typing goes here
         return this;
+    }
+
+    void collectDecls (Decl* enclosing) {
+        child(0)->addTargetDecls(enclosing);
+        // Typing goes here
     }
 };
 

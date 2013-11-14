@@ -284,7 +284,6 @@ private:
 
 /** The current outer (__main__) environment */
 extern const Environ* outer_environ;
-extern const Decl* module_decl;
 
 #endif
 
