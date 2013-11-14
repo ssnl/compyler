@@ -78,7 +78,7 @@ except GetoptError:
     Usage()
 
 hornpp = join(bindir, 'hornpp')
-bison = "/usr/bin/bison"
+bison = "/usr/local/Cellar/bison/3.0/bin/bison"
 flex = "/usr/bin/flex"
 
 if output_file:

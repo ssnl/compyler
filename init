@@ -4,24 +4,3 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Add local bin
 export PATH=$DIR/root/bin/:$PATH
-
-# Path to servers
-SERVER=cs164-$1@torus.cs.berkeley.edu
-PROJ_PATH="~/work/compyler"
-
-function send {
-	scp -r $DIR/tests/correct2/* $SERVER:$PROJ_PATH/tests/correct2
-}
-
-# function send {
-#   if [ -z $1 ]
-#   then
-#     scp -r $DIR/src/* $SERVER:$1
-#   else
-#     scp -r $DIR/src/* $SERVER:$SRC_PATH
-#   fi
-# }
-
-function connect {
-  ssh $SERVER
-}
