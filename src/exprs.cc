@@ -13,6 +13,24 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/*****   TYPED_ID   *****/
+class Typed_Id_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
+
+    void addTargetDecls(Decl* enclosing) {
+       child(0)->addTargetDecls(enclosing);
+    }
+
+    void resolveSimpleIds(const Environ* env) {
+        child(0)->resolveSimpleIds(env);
+        child(1)->resolveSimpleTypeIds(env);
+    }
+};
+
+NODE_FACTORY (Typed_Id_AST, TYPED_ID);
+
 /*****   EXPR_LIST    *****/
 
 /** A list of expressions. */
@@ -39,7 +57,7 @@ class Callable : public AST_Tree {
 protected:
 
     NODE_BASE_CONSTRUCTORS (Callable, AST_Tree);
-    
+
     /** Returns the expression representing the quantity that is
      *  called to evaluate this expression. */
     virtual AST_Ptr calledExpr () = 0;
@@ -106,7 +124,7 @@ class Binop_AST : public Callable {
         replace (2*k, expr);
     }
 
-};    
+};
 
 NODE_FACTORY (Binop_AST, BINOP);
 
@@ -131,7 +149,7 @@ class Unop_AST : public Callable {
         replace (2*k + 1, expr);
     }
 
-};    
+};
 
 NODE_FACTORY (Unop_AST, UNOP);
 

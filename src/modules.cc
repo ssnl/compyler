@@ -31,6 +31,7 @@ protected:
         outer_environ = moduleDecl->getEnviron();
         for_each_child_var (c, this) {
             c->collectDecls(moduleDecl);
+            c->resolveSimpleIds(outer_environ);
             c = c->doOuterSemantics();
         } end_for;
         return this;

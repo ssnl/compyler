@@ -144,14 +144,21 @@ protected:
         }
     }
 
+    void resolveSimpleTypeIds (const Environ* env) {
+        resolveSimpleIds(env);
+    }
+
     void addTargetDecls (Decl* enclosing) {
         gcstring text = as_string();
         Decl* decl = enclosing->getEnviron()->find_immediate(text);
         if (decl == NULL) {
-            decl = makeVarDecl (text, enclosing, NULL);
+            decl = enclosing->addVarDecl(this);
         }
+    }
 
-        addDecl(decl);
+    void addParamDecls (Decl* enclosing, int k) {
+        Decl *decl = makeParamDecl (as_string(), enclosing, k,
+            Type::makeVar ());
         enclosing->addMember(decl);
     }
 

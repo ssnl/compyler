@@ -16,7 +16,7 @@ using namespace std;
 static GCINIT _gcdummy;
 
 AST_Ptr
-AST::resolveTypesOuter (Decl* context) 
+AST::resolveTypesOuter (Decl* context)
 {
     AST_Ptr r;
     r = this;
@@ -119,7 +119,7 @@ Type::unify (Type_Ptr type, Unwind_Stack& bindings)
 }
 
 bool
-Type::unifyLists (AST_Ptr L1, AST_Ptr L2, Unwind_Stack& bindings) 
+Type::unifyLists (AST_Ptr L1, AST_Ptr L2, Unwind_Stack& bindings)
 {
     size_t b0 = bindings.size ();
     if (L1->arity () != L2->arity ())
@@ -260,11 +260,11 @@ Type::_freshen ()
         return this;
     }
 
-    AST_Ptr kids[2] = { 
+    AST_Ptr kids[2] = {
         arg0, AST::make_tree (TYPE_LIST, type_args, type_args + type_arity)
     };
     _forward = AST::make_tree (oper ()->syntax (), kids, kids + 2)->asType ();
-    
+
     delete [] type_args;
     return _forward;
 }
@@ -288,12 +288,11 @@ Type::replaceBindings ()
     return me;
 }
 
-
 /*****  TYPE VARIABLES *****/
 
 class TypeVar_AST : public Type {
 protected:
-    
+
     NODE_CONSTRUCTORS_INIT (TypeVar_AST, Type, _me (NULL));
 
     bool isTypeVariable () {
@@ -324,7 +323,7 @@ protected:
         assert (_binding == NULL && target != NULL);
         Decl* me = getDecl ();
         assert (me != NULL);
-        TypeVar_AST* canonical = 
+        TypeVar_AST* canonical =
             dynamic_cast<TypeVar_AST*> (me->getAst ());
         if (canonical == this) {
             bindings.push (this);
@@ -333,7 +332,7 @@ protected:
         } else
             return canonical->bind (target, bindings);
     }
-    
+
     void unwind () {
         assert (_binding != NULL);
         Decl* me = getDecl ();
@@ -364,7 +363,7 @@ protected:
         Type_Ptr me = binding ();
         if (me == this) {
             if (arity () == 1) {
-                out << "(type_var " << lineNumber () << " " 
+                out << "(type_var " << lineNumber () << " "
                     << child(0)->as_string ();
             } else
                 out << "(type_var 0 $#" << uid;
@@ -398,6 +397,11 @@ protected:
     void addDecl (Decl* decl) {
         assert (_me == NULL);
         _me = decl;
+    }
+
+    void collectDecls(Decl *unused) {
+        Decl* decl = makeTypeVarDecl (child(0)->as_string(), this);
+        addDecl(decl);
     }
 
 private:

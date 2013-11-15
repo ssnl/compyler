@@ -70,7 +70,7 @@ public:
 
     /** Add DECL to the end of the list of declarations of this node,
      *  if allowed. */
-    virtual void addDecl (Decl* decl);
+    virtual void addDecl (Decl* declaration);
 
     /** Remove Kth declaration (0 <= K < numDecls()) of me. */
     virtual void removeDecl (int k);
@@ -94,10 +94,11 @@ public:
 
     /** Do inner-level semantic analysis on me---all scope and type
      *  analysis that applies to definitions and statements that are
-     *  also nested inside classes or function definitions.  Adds any
-     *  declarations that I represent to ENV, the environment in
-     *  which I am nested. Returns the modified tree.  */
-    virtual AST_Ptr doInnerSemantics (const Environ* env);
+     *  also nested inside classes or function definitions. Assumes
+     *  that declarations for myself have been created. Modifies my
+     *  enclosing environment with any definitions I represent.
+     *  Returns the modified tree.  */
+    virtual AST_Ptr doInnerSemantics ();
 
     /** Add any declarations that I represent to ENCLOSING, the
      *  environment in which I am nested.  This does not add
@@ -109,6 +110,11 @@ public:
      *  ENCLOSING, my enclosing construct.  (Used by overridings of
      *  collectDecls.) */
     virtual void addTargetDecls (Decl* enclosing);
+
+    /** Assuming I am a parameter of a function, add a declaration
+     *  for myself at index K inside ENCLOSING, my enclosing function.
+     *  (Used by overridings of collectDecls.) */
+    virtual void addParamDecls (Decl* enclosing, int k);
 
     /** Resolve all simple (non-qualified) identifiers in me, assuming
      *  that ENV defines declarations visible at my outer level. */

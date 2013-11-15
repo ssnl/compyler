@@ -112,7 +112,7 @@ AST::doOuterSemantics ()
 
 /** Default does nothing. */
 AST_Ptr
-AST::doInnerSemantics (const Environ* env)
+AST::doInnerSemantics ()
 {
     return this;
 }
@@ -130,6 +130,14 @@ AST::addTargetDecls (Decl* enclosing)
 {
     for_each_child (c, this) {
         c->addTargetDecls (enclosing);
+    } end_for;
+}
+
+void
+AST::addParamDecls (Decl* enclosing, int k)
+{
+    for_each_child (c, this) {
+        c->addParamDecls (enclosing, k);
     } end_for;
 }
 
