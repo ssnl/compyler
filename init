@@ -60,6 +60,7 @@ function test_usage {
   echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
   echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
   echo "  -p PHASE    : Which phase to use for apyc.          [Default: 2]"
+  echo "  -a KEY      : Run on all tests relevant to KEY      [Default: assign]"
 }
 
 function test {
@@ -72,8 +73,12 @@ function test {
   PHASE=2
   TESTDIR=tests/correct2
 
-  while getopts "sd:p:o:t:vh" O; do
+  while getopts "sd:p:o:a:t:vh" O; do
     case $O in
+      a)
+        python collect_tests.py $OPTARG
+        return
+        ;;
       s)
         SAVE=true
         ;;

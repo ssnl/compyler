@@ -1,4 +1,4 @@
-
+# Test type and assignment
 x::int = 5
 print x
 

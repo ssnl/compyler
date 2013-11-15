@@ -1,4 +1,4 @@
-
+# Polymorphic function call
 def f(x):
 	print x
 	return x

@@ -1,4 +1,4 @@
-
+# Makes and calls a curried function definition
 def foo(f,x):
 	def bar(y):
 		return f(x,y)
