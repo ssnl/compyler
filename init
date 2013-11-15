@@ -112,19 +112,19 @@ function test {
   fi
 
   if $VERBOSE; then
-    echo ">> Original file..."
+    echo; echo ">> Original file..."; echo
     cat $TESTDIR/$TEST
   fi
-  echo ">> Running apyc..."
+  echo; echo ">> Running apyc..."; echo
   ./apyc --phase=$PHASE -o $FILE.ast $TESTDIR/$TEST
-  echo ">> Decorated AST..."
+  echo ">> Decorated AST..."; echo
   tail -n +0 $FILE.ast
-  echo ">> Unparsing AST..."
+  echo; echo ">> Unparsing AST..."; echo
   pyunparse -o $FILE $FILE.ast
-  cat $FILE
+  cat $FILE; echo
 
   if $SPEC || $SAVE; then
-    printf ">> Saved AST in %s. Saved pyunparsed program in %s.\n" "$FILE.ast" "$FILE"
+    echo; printf ">> Saved AST in %s. Saved pyunparsed program in %s.\n" "$FILE.ast" "$FILE"; echo
   else
     rm out out.ast
   fi
