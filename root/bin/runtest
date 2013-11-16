@@ -10,8 +10,8 @@ function runtest-usage {
   echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
   echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
   echo "  -p PHASE    : Which phase to use for apyc.          [Default: 2]"
-  echo "  -a KEY      : Looks in TESTDIR and runs all tests   [Default: assign]"
-  echo "                relevant to KEY. Ignores other flags."
+  echo "  -a          : Looks in TESTDIR and runs all         [Default: assign]"
+  echo "                relevant tests. See batch-tests."
 }
 
 # Flags
@@ -19,14 +19,14 @@ TEST=
 FILE=out
 PHASE=2
 TESTDIR=./tests/correct2
-COLLECT=
+COLLECT=false
 VERBOSE=false
 OUT=false
 SAVE=false
 
 # Reset getopts
 OPTIND=1
-while getopts "sd:p:o:a:vh" O; do
+while getopts "sd:p:o:avh" O; do
   case $O in
     s)
       SAVE=true
@@ -41,7 +41,7 @@ while getopts "sd:p:o:a:vh" O; do
       OUT=true; FILE=$OPTARG
       ;;
     a)
-      COLLECT=$OPTARG
+      COLLECT=true
       ;;
     v)
       VERBOSE=true
@@ -51,15 +51,12 @@ while getopts "sd:p:o:a:vh" O; do
       ;;
   esac
 done
-
-# If collecting tests
-if [ ! -z $COLLECT ]; then
-  batch-tests -d  $TESTDIR/ $COLLECT; exit
-fi
-
-# Shift and get test
+# Shift to get arguments
 shift $((OPTIND-1))
-if [ -z $1 ]; then
+# Collect tests
+if $COLLECT; then
+  batch-tests -d  $TESTDIR/ $*; exit
+elif [ -z $1 ]; then
   runtest-usage; exit
 else
   TEST=$1.py

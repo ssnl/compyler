@@ -30,11 +30,6 @@ protected:
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }
-
-    void resolveSimpleIds(const Environ* env) {
-        child(0)->resolveSimpleIds(env);
-        child(1)->resolveSimpleTypeIds(env);
-    }
 };
 
 NODE_FACTORY (Typed_Id_AST, TYPED_ID);
@@ -91,6 +86,15 @@ protected:
         for (int i = 0; i < numActuals(); i++) {
             actualParam(i)->resolveSimpleIds(env);
         }
+    }
+
+    AST_Ptr rewriteAllocators (const Environ* env) {
+        if (child(0)->asType() != NULL) {
+            return consTree(CALL1, make_token(ID, 8, "__init__"),
+                child(1)->insert(0, consTree(NEW, child(0))));
+        }
+
+        return this;
     }
 };
 

@@ -125,13 +125,17 @@ public:
      *  that ENV defines declarations visible at my outer level. */
     virtual void resolveSimpleTypeIds (const Environ* env);
 
+    /** Replace any identifiers in me that resolve to types with
+     *  appropriate Type nodes, returning the modified node. */
+    virtual AST_Ptr rewriteSimpleTypes (const Environ* env);
+
     /** Replace any instances of the identifier None with the function
      *  call __None__(), returning the modified node. */
-    virtual AST_Ptr resolveNone ();
+    virtual AST_Ptr rewriteNone ();
 
     /** Replace any allocators in me with appropriate NEW nodes,
      *  returning the modified node. */
-    virtual AST_Ptr resolveAllocators (const Environ* env);
+    virtual AST_Ptr rewriteAllocators (const Environ* env);
 
     /** Resolve all selections of the form CLASS.ID by replacing them
      *  with ID, appropriately decorated, assuming that ENV defines
@@ -348,6 +352,8 @@ public:
      *  by their bindings. */
     static Type_Ptr replaceBindings (Type_Ptr type);
 
+    /** A type is already rewritten, so do nothing by default. */
+    virtual AST_Ptr rewriteSimpleTypes (const Environ* env);
 
     NODE_BASE_CONSTRUCTORS_INIT (Type, AST_Tree, _binding (NULL));
 

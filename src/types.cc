@@ -288,6 +288,11 @@ Type::replaceBindings ()
     return me;
 }
 
+AST_Ptr
+Type::rewriteSimpleTypes (const Environ* env) {
+    return this;
+}
+
 /*****  TYPE VARIABLES *****/
 
 class TypeVar_AST : public Type {

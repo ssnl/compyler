@@ -133,13 +133,22 @@ protected:
         _me.erase (_me.begin () + k);
     }
 
-    AST_Ptr resolveNone () {
+    AST_Ptr rewriteNone () {
         gcstring text = as_string();
         if (text == "None") {
             return consTree(CALL, make_token(ID, 8, "__None__"),
                 consTree(EXPR_LIST));
         }
 
+        return this;
+    }
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        gcstring text = as_string();
+        Decl* decl = env->find(text);
+        if (decl->isType()) {
+            return consTree(TYPE, this, consTree(TYPE_LIST));
+        }
         return this;
     }
 
@@ -152,10 +161,6 @@ protected:
             error (loc (), "name '%s' is not defined",
                    text.c_str ());
         }
-    }
-
-    void resolveSimpleTypeIds (const Environ* env) {
-        resolveSimpleIds(env);
     }
 
     void addTargetDecls (Decl* enclosing) {

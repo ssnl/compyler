@@ -1,2 +1,2 @@
-# basic none assign: assign with none
+# basic none assign: assign a variable to None
 x = None

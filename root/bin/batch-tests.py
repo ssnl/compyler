@@ -16,17 +16,25 @@ def collectTests(args):
         descriptions.append(desc)
   for tn,desc in zip(tnames,descriptions):
     print "\n"
-    print "================== TESTING: " + tn + "=================="
+    print "================== TESTING: " + tn + " =================="
     print desc
     os.system("runtest -v " + tn)
 
-def checkDescr(fpath, word):
+def checkDescr(fpath, key):
+  if type(key) is str:
+    key = [key,]
   f = open(fpath)
-  desc = f.readline()
-  if word in desc.lower():
-    return desc
-  else:
+  desc = f.readline().lower()
+  f.close()
+  colidx = desc.find(":")
+  if colidx == -1:
     return None
+  else:
+    wset = set(desc[:colidx].split(" "))
+    for k in key:
+      if k not in wset:
+        return None
+    return desc
 
 if __name__ == '__main__':
   HOME = os.environ["HOME"]
@@ -36,7 +44,8 @@ if __name__ == '__main__':
     help="The directory to search for tests.",
     default=HOME+"/tests/correct2/")
   parser.add_argument("key",
-    help="The key to search for")
+    help="The key to search for",
+    nargs="*")
   args = parser.parse_args()
 
   collectTests(args)

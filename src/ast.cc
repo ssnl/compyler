@@ -158,19 +158,28 @@ AST::resolveSimpleTypeIds (const Environ* env)
 }
 
 AST_Ptr
-AST::resolveNone ()
+AST::rewriteSimpleTypes (const Environ* env)
 {
     for_each_child_var (c, this) {
-        c = c->resolveNone ();
+        c = c->rewriteSimpleTypes (env);
     } end_for;
     return this;
 }
 
 AST_Ptr
-AST::resolveAllocators (const Environ* env)
+AST::rewriteNone ()
 {
     for_each_child_var (c, this) {
-        c = c->resolveAllocators (env);
+        c = c->rewriteNone ();
+    } end_for;
+    return this;
+}
+
+AST_Ptr
+AST::rewriteAllocators (const Environ* env)
+{
+    for_each_child_var (c, this) {
+        c = c->rewriteAllocators (env);
     } end_for;
     return this;
 }

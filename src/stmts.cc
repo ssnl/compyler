@@ -167,6 +167,16 @@ protected:
     void resolveSimpleIds (const Environ* env) {
         child(0)->resolveSimpleIds(env);
     }
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        const Environ *myenv = getDecl()->getEnviron();
+        for_each_child_var (c, this) {
+            if (c_i_ != 0) {
+                c = c->rewriteSimpleTypes(myenv);
+            }
+        } end_for;
+        return this;
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -234,6 +244,16 @@ protected:
 
     void resolveSimpleIds (const Environ* env) {
         child(0)->resolveSimpleIds(env);
+    }
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        const Environ *myenv = getDecl()->getEnviron();
+        for_each_child_var (c, this) {
+            if (c_i_ != 0) {
+                c = c->rewriteSimpleTypes(myenv);
+            }
+        } end_for;
+        return this;
     }
 };
 

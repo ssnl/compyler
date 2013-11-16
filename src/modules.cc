@@ -30,16 +30,16 @@ protected:
         Decl* moduleDecl = makeModuleDecl("__main__");
         outer_environ = moduleDecl->getEnviron();
         // TODO: Error checking
-        // Rewriting None and Allocators
+        rewriteNone();
+        // Create declarations, simple resolutions, and basic rewrites
         for_each_child_var (c, this) {
-            c = c->resolveNone();
-            c = c->resolveAllocators(outer_environ);
-        } end_for;
-        // Create declarations and simple resolution
-        for_each_child_var (c, this) {
+            // Declarations
             c->collectDecls(moduleDecl);
             c->resolveSimpleIds(outer_environ);
             c = c->doOuterSemantics();
+            // Rewrites
+            c = c->rewriteSimpleTypes(outer_environ);
+            c = c->rewriteAllocators(outer_environ);
         } end_for;
         return this;
     }

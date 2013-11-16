@@ -1,5 +1,5 @@
 # misc: random tests
-None
-x=3
-x
-x, None
+class A:
+  def __init__(self, x, y):
+    pass
+x = A(1, 2)

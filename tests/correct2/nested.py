@@ -1,4 +1,4 @@
-# Adv class def for if: nested class, function def, for using tuple, if
+# adv nested: tests nested definitions and control structures
 class A:
     def f(self,x):
         def g():
