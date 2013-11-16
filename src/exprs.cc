@@ -19,6 +19,10 @@ protected:
 
     NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
 
+    void collectDecls(Decl *enclosing) {
+        // do nothing
+    }
+
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }

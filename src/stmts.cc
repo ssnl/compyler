@@ -54,6 +54,7 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
+        // Only collect declarations on right hand side
         child(0)->addTargetDecls(enclosing);
     }
 };
@@ -102,7 +103,9 @@ protected:
     NODE_CONSTRUCTORS (For_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
+        // Add declarations for variable in head
         child(0)->addTargetDecls(enclosing);
+        // Recursively collect declarations for body
         child(1)->collectDecls(enclosing);
         child(2)->collectDecls(enclosing);
         child(3)->collectDecls(enclosing);
@@ -120,18 +123,19 @@ protected:
     AST_Ptr doInnerSemantics () {
         Decl *decl = getDecl();
         const Environ *myenv = decl->getEnviron();
+        // Collect and resolve formals
         child(1)->collectDecls(decl);
         child(1)->resolveSimpleIds(myenv);
+        // Collect and resolve return type
         child(2)->collectDecls(decl);
         child(2)->resolveSimpleIds(myenv);
-
-        // Fix type
-
+        // Collect and resolve function body
         for_each_child (c, child(3)) {
             c->collectDecls(decl);
             c->resolveSimpleIds(myenv);
         } end_for;
         child(3)->doInnerSemantics();
+        // Fix type
         return this;
     }
 
@@ -167,12 +171,16 @@ protected:
     AST_Ptr doInnerSemantics () {
         Decl *decl = getDecl();
         const Environ *myenv = decl->getEnviron();
-        // Fix type
+        // Collect and resolve class type parameters
+        child(1)->collectDecls(decl);
+        child(1)->resolveSimpleIds(myenv);
+        // Collect and resolve class body
         for_each_child (c, child(2)) {
             c->collectDecls(decl);
             c->resolveSimpleIds(myenv);
         } end_for;
         child(2)->doInnerSemantics();
+        // Fix type
         return this;
     }
 
@@ -197,6 +205,7 @@ protected:
     NODE_CONSTRUCTORS (Formal_List_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
+        // Add Parameter Declarations for all children
         for_each_child (c, this) {
             c->addParamDecls(enclosing, c_i_);
         } end_for;
