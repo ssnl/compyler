@@ -135,7 +135,21 @@ protected:
             c->resolveSimpleIds(myenv);
         } end_for;
         child(3)->doInnerSemantics();
-        // Fix type
+
+        // Set the return type
+        AST_Ptr returntype = Type::makeVar();
+        // Set the type_list of param types
+        int arity = child(1)->arity();
+        AST_Ptr *args = new AST_Ptr[arity];
+        for (int i = 0; i < arity; i++) {
+            args[i] = Type::makeVar();
+        }
+        AST_Ptr typelist = make_tree(TYPE_LIST, args,
+            args + sizeof(args) / sizeof(args[0]));
+        // Make a new function type AST
+        AST_Ptr functype = consTree(FUNCTION_TYPE, returntype, typelist);
+        // Set decl's type to the type AST
+        decl->setType(functype->asType());
         return this;
     }
 

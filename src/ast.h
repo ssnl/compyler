@@ -347,6 +347,7 @@ public:
 
     NODE_BASE_CONSTRUCTORS_INIT (Type, AST_Tree, _binding (NULL));
 
+
 protected:
 
     /** Bind me to TARGET.  Returns true and records the binding on
