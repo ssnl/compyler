@@ -125,6 +125,10 @@ public:
      *  that ENV defines declarations visible at my outer level. */
     virtual void resolveSimpleTypeIds (const Environ* env);
 
+    /** Replace any instances of the identifier None with the function
+     *  call __None__(), returning the modified node. */
+    virtual AST_Ptr resolveNone ();
+
     /** Replace any allocators in me with appropriate NEW nodes,
      *  returning the modified node. */
     virtual AST_Ptr resolveAllocators (const Environ* env);

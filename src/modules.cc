@@ -22,13 +22,20 @@ class Module_AST : public AST_Tree {
 protected:
 
     int lineNumber () {
-	return 0;
+        return 0;
     }
 
     /** Top-level semantic processing for the program. */
     AST_Ptr doOuterSemantics () {
         Decl* moduleDecl = makeModuleDecl("__main__");
         outer_environ = moduleDecl->getEnviron();
+        // TODO: Error checking
+        // Rewriting None and Allocators
+        for_each_child_var (c, this) {
+            c = c->resolveNone();
+            c = c->resolveAllocators(outer_environ);
+        } end_for;
+        // Create declarations and simple resolution
         for_each_child_var (c, this) {
             c->collectDecls(moduleDecl);
             c->resolveSimpleIds(outer_environ);

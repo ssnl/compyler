@@ -1,2 +1,5 @@
 # misc: random tests
-x = None
+None
+x=3
+x
+x, None

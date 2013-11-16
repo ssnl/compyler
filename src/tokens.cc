@@ -133,6 +133,16 @@ protected:
         _me.erase (_me.begin () + k);
     }
 
+    AST_Ptr resolveNone () {
+        gcstring text = as_string();
+        if (text == "None") {
+            return consTree(CALL, make_token(ID, 8, "__None__"),
+                consTree(EXPR_LIST));
+        }
+
+        return this;
+    }
+
     void resolveSimpleIds (const Environ* env) {
         gcstring text = as_string();
         Decl* decl = env->find(text);

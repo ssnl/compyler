@@ -158,6 +158,15 @@ AST::resolveSimpleTypeIds (const Environ* env)
 }
 
 AST_Ptr
+AST::resolveNone ()
+{
+    for_each_child_var (c, this) {
+        c = c->resolveNone ();
+    } end_for;
+    return this;
+}
+
+AST_Ptr
 AST::resolveAllocators (const Environ* env)
 {
     for_each_child_var (c, this) {
