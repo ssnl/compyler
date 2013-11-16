@@ -2,11 +2,35 @@ import os, argparse
 from sys import argv
 
 def collectTests(args):
-  tdir = args.dir
-  key = args.key
+  if args.keys:
+    tests = os.listdir(tdir)
+    keys = dict()
+    for test in tests:
+      fpath = tdir + test
+      desc = getDescr(fpath)
+      colidx = desc.find(":")
+      if colidx != -1:
+        keywords = desc[:colidx].split(" ")
+        for kw in keywords:
+          if kw in keys:
+            keys[kw] += 1
+          else:
+            keys[kw] = 1
+    for k in sorted(keys):
+      print k + " (" + keys[k] + ")"
+  else:
+    tdir = args.dir
+    key = args.key
+    tnames,descriptions = findTests(tdir,key)
+    for tn,desc in zip(tnames,descriptions):
+      print "\n"
+      print "================== TESTING: " + tn + " =================="
+      print desc
+      os.system("runtest -v " + tn)
+
+def findTests(tdir,key):
   tests = os.listdir(tdir)
   tnames,descriptions = [],[]
-
   for test in tests:
     fpath = tdir + test
     if ".py" == test[-3:]:
@@ -14,18 +38,18 @@ def collectTests(args):
       if desc:
         tnames.append(test[:-3])
         descriptions.append(desc)
-  for tn,desc in zip(tnames,descriptions):
-    print "\n"
-    print "================== TESTING: " + tn + " =================="
-    print desc
-    os.system("runtest -v " + tn)
+  return tnames,descriptions
+
+def getDescr(fpath):
+  f = open(fpath)
+  desc = f.readline().lower()
+  f.close()
+  return desc
 
 def checkDescr(fpath, key):
   if type(key) is str:
     key = [key,]
-  f = open(fpath)
-  desc = f.readline().lower()
-  f.close()
+  desc = getDescr(fpath)
   colidx = desc.find(":")
   if colidx == -1:
     return None
@@ -46,6 +70,8 @@ if __name__ == '__main__':
   parser.add_argument("key",
     help="The key to search for",
     nargs="*")
+  parser.add_argument("-k","--keys",
+    help="List and count all keywords.",
+    nargs="?")
   args = parser.parse_args()
-
   collectTests(args)
