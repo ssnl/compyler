@@ -23,6 +23,10 @@ protected:
         // do nothing
     }
 
+    void addParamDecls(Decl* enclosing, int k) {
+        child(0)->addParamDecls(enclosing, k);
+    }
+
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }
@@ -78,7 +82,16 @@ protected:
     // PUT COMMON CODE DEALING WITH TYPE-CHECKING or SCOPE RULES HERE.
     // USE THE METHODS ABOVE TO ADAPT IT TO PARTICULAR TYPES OF NODE.
 
+    void collectDecls(Decl *enclosing) {
+        // do nothing
+    }
 
+    void resolveSimpleIds(const Environ* env) {
+        calledExpr()->resolveSimpleIds(env);
+        for (int i = 0; i < numActuals(); i++) {
+            actualParam(i)->resolveSimpleIds(env);
+        }
+    }
 };
 
 /** A function call. */

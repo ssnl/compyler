@@ -65,6 +65,14 @@ else
   TEST=$1.py
 fi
 
+# Compile
+echo ">> Compiling..."
+make 1>/dev/null
+
+if [ $? != 0 ]; then
+  exit
+fi
+
 # Run apyc
 echo ">> Running apyc..."
 ./apyc --phase=$PHASE -o $FILE.ast $TESTDIR/$TEST

@@ -135,22 +135,28 @@ protected:
             c->resolveSimpleIds(myenv);
         } end_for;
         child(3)->doInnerSemantics();
+        _fixType();
+        return this;
+    }
 
+    void _fixType() {
+        Decl *decl = getDecl();
         // Set the return type
         AST_Ptr returntype = Type::makeVar();
         // Set the type_list of param types
+        AST_Ptr typelist = consTree(TYPE_LIST);
         int arity = child(1)->arity();
-        AST_Ptr *args = new AST_Ptr[arity];
-        for (int i = 0; i < arity; i++) {
-            args[i] = Type::makeVar();
+        if (arity > 0) {
+            AST_Ptr *args = new AST_Ptr[arity];
+            for (int i = 0; i < arity; i++) {
+                args[i] = Type::makeVar();
+            }
+            typelist = make_tree(TYPE_LIST, args, args + arity);
         }
-        AST_Ptr typelist = make_tree(TYPE_LIST, args,
-            args + sizeof(args) / sizeof(args[0]));
         // Make a new function type AST
         AST_Ptr functype = consTree(FUNCTION_TYPE, returntype, typelist);
         // Set decl's type to the type AST
         decl->setType(functype->asType());
-        return this;
     }
 
     void collectDecls (Decl* enclosing) {
@@ -183,7 +189,7 @@ protected:
     NODE_CONSTRUCTORS (Class_AST, Region_AST);
 
     AST_Ptr doInnerSemantics () {
-        Decl *decl = getDecl();
+        Decl* decl = getDecl();
         const Environ *myenv = decl->getEnviron();
         // Collect and resolve class type parameters
         child(1)->collectDecls(decl);
@@ -194,8 +200,29 @@ protected:
             c->resolveSimpleIds(myenv);
         } end_for;
         child(2)->doInnerSemantics();
-        // Fix type
+        resolveInit();
         return this;
+    }
+
+    void resolveInit () {
+        Decl* decl = getDecl();
+        const Environ *myenv = decl->getEnviron();
+        Decl* init = decl->getEnviron()->find_immediate("__init__");
+        if (init == NULL) {
+            // Create AST for init
+            AST_Ptr id = make_token(ID, 8, "__init__");
+            AST_Ptr formals = consTree(FORMALS_LIST, make_token(ID, 4, "self"));
+            AST_Ptr type = consTree(EMPTY);
+            AST_Ptr block = consTree(BLOCK, consTree(STMT_LIST));
+            AST_Ptr init = consTree(METHOD, id, formals, type, block);
+            // Add AST class body
+            child(2)->insert(0, init);
+            // Collect and resolve
+            init->collectDecls(decl);
+            init->resolveSimpleIds(myenv);
+            init->doInnerSemantics();
+        }
+
     }
 
     void collectDecls (Decl* enclosing) {

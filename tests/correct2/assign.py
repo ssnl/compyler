@@ -1,3 +1,4 @@
-# Two assignments
+# Basic: assign
 x = 3
 y = 4
+z = x

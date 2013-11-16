@@ -1,3 +1,2 @@
-# Misc file
-y = 3
-x::int = y
+# misc: random tests
+x = None

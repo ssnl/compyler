@@ -1,3 +1,2 @@
-# Test assignment and print
-x = 5
-print x
+# Basic: print
+print 10,
