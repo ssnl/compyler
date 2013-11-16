@@ -90,8 +90,13 @@ protected:
 
     AST_Ptr rewriteAllocators (const Environ* env) {
         if (child(0)->asType() != NULL) {
-            return consTree(CALL1, make_token(ID, 8, "__init__"),
-                child(1)->insert(0, consTree(NEW, child(0))));
+            AST_Ptr id = make_token(ID, 8, "__init__");
+            AST_Ptr nu = consTree(NEW, child(0));
+            AST_Ptr call1 = consTree(CALL1, id, child(1)->insert(0, nu));
+            id->set_loc(loc());
+            nu->set_loc(loc());
+            call1->set_loc(loc());
+            return call1;
         }
 
         return this;

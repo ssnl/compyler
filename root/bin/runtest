@@ -5,46 +5,53 @@ cd $HOME
 
 function runtest-usage {
   echo "Usage: runtest [-vs] [-d TESTDIR] [-o FILE] [-p PHASE] TEST"
-  echo "  -v          : Verbose output                        [Default: true]"
+  echo "  -v          : Verbose output                        [Default: false]"
   echo "  -s          : Saves output.                         [Default: false]"
   echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
   echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
   echo "  -p PHASE    : Which phase to use for apyc.          [Default: 2]"
   echo "  -a          : Looks in TESTDIR and runs all         [Default: assign]"
-  echo "                relevant tests. See batch-tests."
+  echo "                relevant tests. See batch-tests.      [Default: false]"
+  echo "  -k          : Looks in TESTDIR and lists all        [Default: false]"
+  echo "                relevant keywords. Ignores other"
+  echo "                flags."
 }
 
 # Flags
 TEST=
-FILE=out
-PHASE=2
-TESTDIR=./tests/correct2
-COLLECT=false
-VERBOSE=false
 OUT=false
+FILE=out
+TESTDIR=./tests/correct2
+PHASE=2
+VERBOSE=false
 SAVE=false
+LIST=false
+COLLECT=false
 
 # Reset getopts
 OPTIND=1
-while getopts "sd:p:o:avh" O; do
+while getopts "vsokao:d:p:h" O; do
   case $O in
+    v)
+      VERBOSE=true
+      ;;
     s)
       SAVE=true
+      ;;
+    k)
+      LIST=true
+      ;;
+    a)
+      COLLECT=true
+      ;;
+    o)
+      OUT=true; FILE=$OPTARG
       ;;
     d)
       TESTDIR=$OPTARG
       ;;
     p)
       PHASE=$OPTARG
-      ;;
-    o)
-      OUT=true; FILE=$OPTARG
-      ;;
-    a)
-      COLLECT=true
-      ;;
-    v)
-      VERBOSE=true
       ;;
     h|?)
       runtest-usage; exit
@@ -54,7 +61,9 @@ done
 # Shift to get arguments
 shift $((OPTIND-1))
 # Collect tests
-if $COLLECT; then
+if $LIST; then
+  batch-tests -d $TESTDIR/ -k; exit
+elif $COLLECT; then
   batch-tests -d  $TESTDIR/ $*; exit
 elif [ -z $1 ]; then
   runtest-usage; exit

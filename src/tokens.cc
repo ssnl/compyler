@@ -136,8 +136,13 @@ protected:
     AST_Ptr rewriteNone () {
         gcstring text = as_string();
         if (text == "None") {
-            return consTree(CALL, make_token(ID, 8, "__None__"),
-                consTree(EXPR_LIST));
+            AST_Ptr noneId = make_token(ID, 8, "__None__");
+            AST_Ptr body = consTree(EXPR_LIST);
+            AST_Ptr call = consTree(CALL, noneId, body);
+            noneId->set_loc(loc());
+            body->set_loc(loc());
+            call->set_loc(loc());
+            return call;
         }
 
         return this;
@@ -146,8 +151,15 @@ protected:
     AST_Ptr rewriteSimpleTypes (const Environ* env) {
         gcstring text = as_string();
         Decl* decl = env->find(text);
-        if (decl->isType()) {
-            return consTree(TYPE, this, consTree(TYPE_LIST));
+        if (decl == NULL) {
+            error (loc (), "name '%s' is not defined",
+                   text.c_str ());
+        } else if (decl->isType()) {
+            AST_Ptr params = consTree(TYPE_LIST);
+            AST_Ptr type = consTree(TYPE, this, params);
+            params->set_loc(loc());
+            type->set_loc(loc());
+            return type;
         }
         return this;
     }
