@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -f out out.ast
+echo ">> Removed 'out' and 'out.ast'"
