@@ -2,6 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Change this directory to home
+export HOME=$DIR
+
 # Add local bin
 export PATH=$DIR/root/bin/:$PATH
 
@@ -9,7 +12,7 @@ export PATH=$DIR/root/bin/:$PATH
 SERVER=torus.cs.berkeley.edu
 PROJ_PATH=$1
 
-function send_usage {
+function send-usage {
   echo "Usage: send -f FILE -i ID"
 }
 
@@ -26,16 +29,16 @@ function send {
         ID=$OPTARG
         ;;
       h)
-        send_usage; return
+        send-usage; return
         ;;
       ?)
-        send_usage; return 1
+        send-usage; return 1
         ;;
     esac
   done
 
   if [ -z $FILE ] || [ -z $ID ]; then
-    send_usage; return 1
+    send-usage; return 1
   fi
 
   if [ -z $PROJ_PATH ]; then
@@ -51,86 +54,4 @@ function connect {
     echo "Usage: connect ID"; return 1
   fi
   ssh cs164-$1@$SERVER
-}
-
-function test_usage {
-  echo "Usage: test [-vs] [-d TESTDIR] [-o FILE] [-p PHASE] -t TEST"
-  echo "  -v          : Verbose output                        [Default: true]"
-  echo "  -s          : Saves output.                         [Default: false]"
-  echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
-  echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
-  echo "  -p PHASE    : Which phase to use for apyc.          [Default: 2]"
-  echo "  -a KEY      : Run on all tests relevant to KEY      [Default: assign]"
-}
-
-function test {
-  OPTIND=1
-  FILE=out
-  VERBOSE=false
-  SPEC=false
-  TEST=
-  SAVE=false
-  PHASE=2
-  TESTDIR=tests/correct2
-
-  while getopts "sd:p:o:a:t:vh" O; do
-    case $O in
-      a)
-        python collect_tests.py $OPTARG
-        return
-        ;;
-      s)
-        SAVE=true
-        ;;
-      d)
-        TESTDIR=$OPTARG
-        ;;
-      p)
-        PHASE=$OPTARG
-        ;;
-      o)
-        SPEC=true
-        FILE=$OPTARG
-        ;;
-      t)
-        TEST="$OPTARG.py"
-        ;;
-      v)
-        VERBOSE=true
-        ;;
-      h)
-        test_usage; return
-        ;;
-      ?)
-        test_usage; return 1
-        ;;
-    esac
-  done
-
-  if [ -z $TEST ]; then
-    test_usage; return 1
-  fi
-
-  if $VERBOSE; then
-    echo; echo ">> Original file..."; echo
-    cat $TESTDIR/$TEST
-  fi
-  echo; echo ">> Running apyc..."; echo
-  ./apyc --phase=$PHASE -o $FILE.ast $TESTDIR/$TEST
-  echo ">> Decorated AST..."; echo
-  tail -n +0 $FILE.ast
-  echo; echo ">> Unparsing AST..."; echo
-  pyunparse -o $FILE $FILE.ast
-  cat $FILE; echo
-
-  if $SPEC || $SAVE; then
-    echo; printf ">> Saved AST in %s. Saved pyunparsed program in %s.\n" "$FILE.ast" "$FILE"; echo
-  else
-    rm out out.ast
-  fi
-}
-
-function test-clean {
-  rm -f out out.ast
-  echo ">> Removed 'out' and 'out.ast'"
 }
