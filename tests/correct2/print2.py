@@ -1,3 +1,3 @@
-# Basic: print on variable
+# basic print: print a variable
 x = 10
 print x,

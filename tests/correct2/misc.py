@@ -1,2 +1,4 @@
 # misc: random tests
-x = 3
+def f(x::$b):
+  def g(x::$b):
+    x::$b = 5

@@ -1,4 +1,4 @@
-# Basic for: for loop, testing loop variable remaining after loop terminates
+# basic for: tests if loop variable remains after loop terminates
 for x in [1,2]:
   print x
 print x

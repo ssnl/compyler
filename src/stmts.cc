@@ -54,8 +54,24 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
-        // Only collect declarations on right hand side
+        // Only collect declarations on left hand side
         child(0)->addTargetDecls(enclosing);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
+        // } end_for;
+        // int ar = child(0)->arity();
+        // if (ar == 0) {
+        //     // Single target
+        //     child(0)->getType()->unify(child(1)->getType());
+        // } else {
+        //     // Multiple targets
+        //     child(0)->getType()->unifyList(child(1)->getType());
+        // }
+        return this;
     }
 };
 

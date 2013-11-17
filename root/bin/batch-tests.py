@@ -19,7 +19,7 @@ def collectTests(args):
             else:
               keys[kw] = 1
     for k in sorted(keys):
-      print k + " (" + str(keys[k]) + ")"
+      print "%-10s(%d)" %(k, keys[k])
   else:
     key = args.key
     tnames,descriptions = findTests(tdir,key)

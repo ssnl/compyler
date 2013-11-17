@@ -170,8 +170,7 @@ protected:
         if (decl != NULL) {
             addDecl(decl);
         } else {
-            error (loc (), "name '%s' is not defined",
-                   text.c_str ());
+            error (loc (), "name '%s' is not defined", text.c_str ());
         }
     }
 
@@ -187,6 +186,16 @@ protected:
         Decl *decl = makeParamDecl (as_string(), enclosing, k,
             Type::makeVar ());
         enclosing->addMember(decl);
+    }
+
+    Type_Ptr computeType () {
+        Decl* decl = getDecl();
+        if (decl != NULL) {
+            return decl->getType();
+        } else {
+            error (loc (), "name '%s' is not defined", as_string ().c_str());
+        }
+        return NULL;
     }
 
 private:

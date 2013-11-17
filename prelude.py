@@ -11,9 +11,9 @@ class int:
     def __init__(self::int):
         native "__donotcall__"
 
-# class bool:
-#     def __init__(self::bool):
-#         native "__donotcall__"
+class bool:
+    def __init__(self::bool):
+        native "__donotcall__"
 
 class str:
     def __init__(self::str):
@@ -61,14 +61,14 @@ class str:
 # # truth replaces bool(...) in regular Python.  truth(x) is True iff x is a
 # # true value, according to the Python spec.
 
-# def truth(x)::bool:
-#     native "__truth__"
+def truth(x)::bool:
+    native "__truth__"
 
-# def __not__(x)::bool:
-#     native "__not__"
+def __not__(x)::bool:
+    native "__not__"
 
-# True::bool = truth(1)
-# False::bool = truth(0)
+True::bool = truth(1)
+False::bool = truth(0)
 
 # # Type range
 

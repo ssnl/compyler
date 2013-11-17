@@ -370,7 +370,7 @@ protected:
 
     /** Check that my current binding is appropriate: that I am a type
      *  variable or of the same operator as my binding and that our
-     *  children unify.  Add any resulting new bindings to BINDINDS. Returns
+     *  children unify.  Add any resulting new bindings to BINDINGS. Returns
      *  true if the binding succeeds, and otherwise false (leaving
      *  BINDINGS unchanged). Assumes I am bound, and that id nodes for
      *  named types have been decorated with the appropriate Decls. */

@@ -71,6 +71,9 @@ protected:
     /** Return the Kth actual parameter in this call. */
     virtual AST_Ptr actualParam (int k) = 0;
 
+    /** Returns the list of parameters in this call. */
+    virtual AST_Ptr paramsList () = 0;
+
     /** Set the Kth actual parameter in this call to EXPR. */
     virtual void setActual (int k, AST_Ptr expr) = 0;
 
@@ -88,11 +91,19 @@ protected:
         }
     }
 
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        calledExpr()->rewriteSimpleTypes(env);
+        for (int i = 0; i < numActuals(); i++) {
+            actualParam(i)->rewriteSimpleTypes(env);
+        }
+        return this;
+    }
+
     AST_Ptr rewriteAllocators (const Environ* env) {
-        if (child(0)->asType() != NULL) {
+        if (calledExpr()->asType() != NULL) {
             AST_Ptr id = make_token(ID, 8, "__init__");
-            AST_Ptr nu = consTree(NEW, child(0));
-            AST_Ptr call1 = consTree(CALL1, id, child(1)->insert(0, nu));
+            AST_Ptr nu = consTree(NEW, calledExpr());
+            AST_Ptr call1 = consTree(CALL1, id, paramsList()->insert(0, nu));
             id->set_loc(loc());
             nu->set_loc(loc());
             call1->set_loc(loc());
@@ -121,6 +132,10 @@ protected:
         return child (1)->child (k);
     }
 
+    AST_Ptr paramsList () {
+        return child (1);
+    }
+
     void setActual (int k, AST_Ptr expr) {
         child (1)->replace (k, expr);
     }
@@ -143,7 +158,11 @@ class Binop_AST : public Callable {
     }
 
     AST_Ptr actualParam (int k) {
-        return child(k * 2);
+        return child(2*k);
+    }
+
+    AST_Ptr paramsList () {
+        return NULL;
     }
 
     void setActual (int k, AST_Ptr expr) {
@@ -169,6 +188,10 @@ class Unop_AST : public Callable {
 
     AST_Ptr actualParam (int k) {
         return child(2*k + 1);
+    }
+
+    AST_Ptr paramsList () {
+        return NULL;
     }
 
     void setActual (int k, AST_Ptr expr) {

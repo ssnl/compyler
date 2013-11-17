@@ -1,3 +1,3 @@
-# Basic: multiple typed function definition parameters and return
+# basic multiple type function: tests a function with multiple typed parameters
 def f(x::int,y)::int:
-	return 1
+	pass
