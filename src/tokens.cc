@@ -133,6 +133,14 @@ protected:
         _me.erase (_me.begin () + k);
     }
 
+    Type_Ptr computeType () {
+        Decl* decl = getDecl();
+        if (decl != NULL) {
+            return decl->getType();
+        }
+        return NULL;
+    }
+
     AST_Ptr rewriteNone () {
         gcstring text = as_string();
         if (text == "None") {
@@ -186,16 +194,6 @@ protected:
         Decl *decl = makeParamDecl (as_string(), enclosing, k,
             Type::makeVar ());
         enclosing->addMember(decl);
-    }
-
-    Type_Ptr computeType () {
-        Decl* decl = getDecl();
-        if (decl != NULL) {
-            return decl->getType();
-        } else {
-            error (loc (), "name '%s' is not defined", as_string ().c_str());
-        }
-        return NULL;
     }
 
 private:
