@@ -13,20 +13,21 @@ SERVER=torus.cs.berkeley.edu
 PROJ_PATH=$1
 
 function send-usage {
-  echo "Usage: send -f FILE -i ID"
+  echo "Usage: send [-d DIR] -i ID FILES"
 }
 
 function send {
   OPTIND=1
   ID=
-  FILE=
-  while getopts "f:i:h" O; do
+  FILES=
+  DIR=$PROJ_PATH
+  while getopts "i:d:h" O; do
     case $O in
-      f)
-        FILE=$OPTARG
-        ;;
       i)
         ID=$OPTARG
+        ;;
+      d)
+        DIR=$PROJ_PATH/$OPTARG
         ;;
       h)
         send-usage; return
@@ -37,16 +38,18 @@ function send {
     esac
   done
 
-  if [ -z $FILE ] || [ -z $ID ]; then
+  shift $((OPTIND-1))
+  FILES=$*
+  if [ "$FILES" == "" ] || [ -z $ID ]; then
     send-usage; return 1
   fi
 
-  if [ -z $PROJ_PATH ]; then
-    echo Error: No PROJ_PATH set.; return 1
+  if [ -z $DIR ]; then
+    echo Error: No DIR set.; return 1
   fi
 
   ADDRESS=cs164-$ID@$SERVER
-  scp -r $FILE $ADDRESS:$PROJ_PATH
+  scp -r $FILES $ADDRESS:$DIR
 }
 
 function connect {
