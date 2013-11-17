@@ -1,4 +1,2 @@
 # misc: random tests
-class A:
-  pass
-x = A()
+x = 3

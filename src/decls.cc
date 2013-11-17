@@ -11,20 +11,25 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
-/** These must be filled in with declarations from the standard
- *  prelude.  They are used to supply the types of built-in
- *  constructs.  All are initially NULL. */
-Decl* intDecl;
-Decl* listDecl;
-Decl* tuple0Decl;
-Decl* tuple1Decl;
-Decl* tuple2Decl;
-Decl* tuple3Decl;
-Decl* strDecl;
-Decl* dictDecl;
-Decl* boolDecl;
-Decl* fileDecl;
-Decl* rangeDecl;
+/** This map must be filled in with (name, declaration) pairs
+ *  from the standard prelude. They are used to supply the types
+ *  of built-int constructs. */
+static Decl_Map initializeMap() {
+    Decl_Map r;
+    r["int"] = NULL;
+    r["list"] = NULL;
+    r["tuple0"] = NULL;
+    r["tuple1"] = NULL;
+    r["tuple2"] = NULL;
+    r["tuple3"] = NULL;
+    r["str"] = NULL;
+    r["dict"] = NULL;
+    r["bool"] = NULL;
+    r["file"] = NULL;
+    r["range"] = NULL;
+    return r;
+}
+Decl_Map primitiveDecls = initializeMap();
 
 /** List of declarations corresponding to the module and actual
  *  declarations in the program (as opposed to type variables

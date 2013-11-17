@@ -224,20 +224,11 @@ extern bool undefinable (const gcstring& name);
 /** Output all Decl nodes to standard output. */
 extern void outputDecls ();
 
-/** Decls for built-in types. */
-extern Decl* intDecl;
-extern Decl* listDecl;
-extern Decl* tuple0Decl;
-extern Decl* tuple1Decl;
-extern Decl* tuple2Decl;
-extern Decl* tuple3Decl;
-extern Decl* strDecl;
-extern Decl* dictDecl;
-extern Decl* boolDecl;
-extern Decl* fileDecl;
-extern Decl* rangeDecl;
-
+typedef gcmap<gcstring, Decl *> Decl_Map;
 typedef gcvector<Decl*> Decl_Vector;
+
+/** Decls for built-in types. */
+extern Decl_Map primitiveDecls;
 
 class Environ : public gc {
 public:

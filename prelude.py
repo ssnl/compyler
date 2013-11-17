@@ -7,17 +7,17 @@
 # # The __init__ methods of all builtin classes call a function that causes
 # # a fatal error.
 
-# class int:
-#     def __init__(self::int):
-#         native "__donotcall__"
+class int:
+    def __init__(self::int):
+        native "__donotcall__"
 
 # class bool:
 #     def __init__(self::bool):
 #         native "__donotcall__"
 
-# class str:
-#     def __init__(self::str):
-#         native "__donotcall__"
+class str:
+    def __init__(self::str):
+        native "__donotcall__"
 
 # class range:
 #     def __init__(self::range):
