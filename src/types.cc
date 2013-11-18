@@ -404,9 +404,23 @@ protected:
         _me = decl;
     }
 
-    void collectDecls(Decl *unused) {
-        Decl* decl = makeTypeVarDecl (child(0)->as_string(), this);
-        addDecl(decl);
+    void resolveSimpleIds (const Environ* env) {
+        gcstring text = as_string();
+        Decl* decl = env->find(text);
+        if (decl != NULL) {
+            addDecl(decl);
+        } else {
+            error (loc(), "name error: type name '%s' is not defined", text.c_str());
+        }
+    }
+
+    void collectDecls(Decl *enclosing) {
+        gcstring text = child(0)->as_string();
+        Decl* decl = curr_environ->find(text);
+        if (decl == NULL) {
+            decl = makeTypeVarDecl (text, this);
+            curr_environ->define(decl);
+        }
     }
 
 private:

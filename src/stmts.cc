@@ -18,12 +18,6 @@ protected:
 
     NODE_CONSTRUCTORS (Region_AST, AST_Tree);
 
-    /** By default simply run inner semantic analysis using
-     *  outer_environ as the environment */
-    AST_Ptr doOuterSemantics () {
-        return doInnerSemantics ();
-    }
-
     /** By default, a Suite AST_Tree does not do anything
      *  collecting declarations. Will be overloaded by trees
      *  that will actually add appropriate declarations to
@@ -54,8 +48,10 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
-        // Only collect declarations on left hand side
+        // Specify that left hand side is a target
         child(0)->addTargetDecls(enclosing);
+        // Recursively collect declarations from right hand side
+        child(1)->collectDecls(enclosing);
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
@@ -85,9 +81,9 @@ protected:
 
     NODE_CONSTRUCTORS (StmtList_AST, AST_Tree);
 
-    AST_Ptr doOuterSemantics () {
+    AST_Ptr doInnerSemantics () {
         for_each_child_var (c, this) {
-            c = c->doOuterSemantics ();
+            c = c->doInnerSemantics ();
         } end_for;
         return this;
     }
@@ -135,24 +131,30 @@ protected:
 
     NODE_CONSTRUCTORS (Def_AST, Region_AST);
 
+    virtual Environ* setupEnviron () {
+        return new Environ(curr_environ);
+    }
+
     AST_Ptr doInnerSemantics () {
         Decl *decl = getDecl();
-        const Environ* env = decl->getEnviron();
+        Environ* prev_environ = curr_environ;
+        curr_environ = setupEnviron();
         // Collect and resolve formals
         child(1)->collectDecls(decl);
-        child(1)->resolveSimpleIds(env);
+        child(1)->resolveSimpleIds(curr_environ);
         // Collect and resolve return type
         child(2)->collectDecls(decl);
-        child(2)->resolveSimpleIds(env);
+        child(2)->resolveSimpleIds(curr_environ);
         // Collect and resolve function body
         for_each_child (c, child(3)) {
             c->collectDecls(decl);
-            c->resolveSimpleIds(env);
+            c->resolveSimpleIds(curr_environ);
         } end_for;
         // Recursively do inner semantic analysis on function body
         child(3)->doInnerSemantics();
         // Change type from a ordinary type to a function_type
         _fixType();
+        curr_environ = prev_environ;
         return this;
     }
 
@@ -178,6 +180,7 @@ protected:
 
     void collectDecls (Decl* enclosing) {
         Decl* decl = enclosing->addDefDecl(child(0));
+        curr_environ->define(decl);
         addDecl(decl);
     }
 
@@ -185,11 +188,11 @@ protected:
         child(0)->resolveSimpleIds(env);
     }
 
-    AST_Ptr rewriteSimpleTypes (const Environ* env) {
-        const Environ *myenv = getDecl()->getEnviron();
+    AST_Ptr rewriteSimpleTypes (const Environ* unused) {
+        const Environ *env = getDecl()->getEnviron();
         for_each_child_var (c, this) {
             if (c_i_ != 0) {
-                c = c->rewriteSimpleTypes(myenv);
+                c = c->rewriteSimpleTypes(env);
             }
         } end_for;
         return this;
@@ -204,6 +207,10 @@ class Method_AST : public Def_AST {
 protected:
 
     NODE_CONSTRUCTORS (Method_AST, Def_AST);
+
+    Environ* setupEnviron () {
+        return new Environ(curr_environ->get_enclosure());
+    }
 };
 
 NODE_FACTORY (Method_AST, METHOD);
@@ -217,25 +224,26 @@ protected:
 
     AST_Ptr doInnerSemantics () {
         Decl* decl = getDecl();
-        const Environ *env = decl->getEnviron();
+        Environ* prev_environ = curr_environ;
+        curr_environ = new Environ(curr_environ);
         // Collect and resolve class type parameters
         child(1)->collectDecls(decl);
-        child(1)->resolveSimpleIds(env);
+        child(1)->resolveSimpleIds(curr_environ);
         // Collect and resolve class body
         for_each_child (c, child(2)) {
             c->collectDecls(decl);
-            c->resolveSimpleIds(env);
+            c->resolveSimpleIds(curr_environ);
         } end_for;
         // Recursively do inner semantic analysis on class body
         child(2)->doInnerSemantics();
         // Add an __init__ method if required
         _rewriteInit();
+        curr_environ = prev_environ;
         return this;
     }
 
     void _rewriteInit () {
         Decl* decl = getDecl();
-        const Environ *env = decl->getEnviron();
         Decl* init = decl->getEnviron()->find_immediate("__init__");
         if (init == NULL) {
             // Create AST for init
@@ -248,7 +256,7 @@ protected:
             child(2)->insert(0, init);
             // Collect and resolve
             init->collectDecls(decl);
-            init->resolveSimpleIds(env);
+            init->resolveSimpleIds(curr_environ);
             init->doInnerSemantics();
         }
 
@@ -258,6 +266,7 @@ protected:
         gcstring name = child(0)->as_token()->as_string();
         Decl* decl = makeClassDecl(name , child(1));
         enclosing->addMember(decl);
+        curr_environ->define(decl);
         addDecl(decl);
     }
 
@@ -265,11 +274,11 @@ protected:
         child(0)->resolveSimpleIds(env);
     }
 
-    AST_Ptr rewriteSimpleTypes (const Environ* env) {
-        const Environ *myenv = getDecl()->getEnviron();
+    AST_Ptr rewriteSimpleTypes (const Environ* unused) {
+        const Environ *env = getDecl()->getEnviron();
         for_each_child_var (c, this) {
             if (c_i_ != 0) {
-                c = c->rewriteSimpleTypes(myenv);
+                c = c->rewriteSimpleTypes(env);
             }
         } end_for;
         return this;
@@ -285,7 +294,7 @@ protected:
     NODE_CONSTRUCTORS (Formal_List_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
-        // Add Parameter Declarations for all children
+        // Specify that children are parameters
         for_each_child (c, this) {
             c->addParamDecls(enclosing, c_i_);
         } end_for;

@@ -276,5 +276,8 @@ private:
 /** The current outer (__main__) environment */
 extern const Environ* outer_environ;
 
+/** The current enclosing environment */
+extern Environ* curr_environ;
+
 #endif
 

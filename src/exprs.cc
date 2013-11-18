@@ -19,14 +19,18 @@ protected:
 
     NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
 
-    void collectDecls(Decl *enclosing) {
-        // do nothing
-    }
+    /** Stop the recursion. */
+    void collectDecls(Decl *enclosing) {}
 
+    /** Specify that the identifier is a parameter and collect
+     *  the declaration of the type. */
     void addParamDecls(Decl* enclosing, int k) {
         child(0)->addParamDecls(enclosing, k);
+        child(1)->collectDecls(enclosing);
     }
 
+    /** Only recurse down to the identifier since the type should
+     *  not need a declaration. */
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }
@@ -74,9 +78,6 @@ protected:
     /** Returns the list of parameters in this call. */
     virtual AST_Ptr paramsList () = 0;
 
-    /** Set the Kth actual parameter in this call to EXPR. */
-    virtual void setActual (int k, AST_Ptr expr) = 0;
-
     // PUT COMMON CODE DEALING WITH TYPE-CHECKING or SCOPE RULES HERE.
     // USE THE METHODS ABOVE TO ADAPT IT TO PARTICULAR TYPES OF NODE.
 
@@ -89,28 +90,6 @@ protected:
         for (int i = 0; i < numActuals(); i++) {
             actualParam(i)->resolveSimpleIds(env);
         }
-    }
-
-    AST_Ptr rewriteSimpleTypes (const Environ* env) {
-        calledExpr()->rewriteSimpleTypes(env);
-        for (int i = 0; i < numActuals(); i++) {
-            actualParam(i)->rewriteSimpleTypes(env);
-        }
-        return this;
-    }
-
-    AST_Ptr rewriteAllocators (const Environ* env) {
-        if (calledExpr()->asType() != NULL) {
-            AST_Ptr id = make_token(ID, 8, "__init__");
-            AST_Ptr nu = consTree(NEW, calledExpr());
-            AST_Ptr call1 = consTree(CALL1, id, paramsList()->insert(0, nu));
-            id->set_loc(loc());
-            nu->set_loc(loc());
-            call1->set_loc(loc());
-            return call1;
-        }
-
-        return this;
     }
 };
 
@@ -138,6 +117,31 @@ protected:
 
     void setActual (int k, AST_Ptr expr) {
         child (1)->replace (k, expr);
+    }
+
+    void setCalledExpr (AST_Ptr expr) {
+        replace(0, expr);
+    }
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        setCalledExpr(calledExpr()->rewriteSimpleTypes(env));
+        for (int i = 0; i < numActuals(); i++) {
+            setActual(i, actualParam(i)->rewriteSimpleTypes(env));
+        }
+        return this;
+    }
+
+    AST_Ptr rewriteAllocators (const Environ* env) {
+        if (calledExpr()->asType() != NULL) {
+            AST_Ptr id = make_token(ID, 8, "__init__");
+            AST_Ptr nu = consTree(NEW, calledExpr());
+            AST_Ptr call1 = consTree(CALL1, id, paramsList()->insert(0, nu));
+            id->set_loc(loc());
+            nu->set_loc(loc());
+            call1->set_loc(loc());
+            return call1;
+        }
+        return this;
     }
 
 };

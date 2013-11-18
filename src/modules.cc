@@ -14,7 +14,7 @@ using namespace std;
 static GCINIT _gcdummy;
 
 const Environ* outer_environ;
-const Environ* curr_environ;
+Environ* curr_environ;
 
 /*****   MODULE    *****/
 
@@ -33,6 +33,7 @@ protected:
         AST_Ptr self = this;
         Decl* me = makeModuleDecl("__main__");
         outer_environ = me->getEnviron();
+        curr_environ = new Environ(NULL);
 
         /** The steps for processing a module should be, in this
          *  general order:
@@ -50,14 +51,14 @@ protected:
         for_each_child_var (c, self) {
             c->collectDecls(me);
             c->resolveSimpleIds(curr_environ);
-            c = c->doOuterSemantics();
+            c = c->doInnerSemantics();
         } end_for;
 
-        // // 2. Rewrite simple types and allocators
-        // for_each_child_var (c, self) {
-        //     c = c->rewriteSimpleTypes(outer_environ);
-        //     c = c->rewriteAllocators(outer_environ);
-        // } end_for;
+        // 2. Rewrite simple types and allocators
+        for_each_child_var (c, self) {
+            c = c->rewriteSimpleTypes(outer_environ);
+            c = c->rewriteAllocators(outer_environ);
+        } end_for;
         // // 4. Fill in types for primitives
         // gcstring key;
         // for (Decl_Map::iterator i = primitiveDecls.begin();
