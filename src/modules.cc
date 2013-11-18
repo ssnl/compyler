@@ -59,13 +59,13 @@ protected:
             c = c->rewriteSimpleTypes(outer_environ);
             c = c->rewriteAllocators(outer_environ);
         } end_for;
-        // // 4. Fill in types for primitives
-        // gcstring key;
-        // for (Decl_Map::iterator i = primitiveDecls.begin();
-        //     i != primitiveDecls.end(); i++) {
-        //     key = i->first;
-        //     primitiveDecls[key] = outer_environ->find(key);
-        // }
+        // 4. Fill in types for primitives
+        gcstring key;
+        for (Decl_Map::iterator i = primitiveDecls.begin();
+            i != primitiveDecls.end(); i++) {
+            key = i->first;
+            primitiveDecls[key] = outer_environ->find(key);
+        }
         // // 4. Perform type inference
         // int resolved0, ambiguities0, resolved, ambiguities;
         // bool errors = false;
