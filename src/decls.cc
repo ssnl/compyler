@@ -11,22 +11,35 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
-/** This map must be filled in with (name, declaration) pairs
+/** Names of built-int constants used to fill in the primitive map below. */
+const gcstring Int = "int";
+const gcstring List = "list";
+const gcstring Tuple0 = "tuple0";
+const gcstring Tuple1 = "tuple1";
+const gcstring Tuple2 = "tuple2";
+const gcstring Tuple3 = "tuple3";
+const gcstring Str = "str";
+const gcstring Dict = "dict";
+const gcstring Bool = "bool";
+const gcstring File = "file";
+const gcstring Range = "range";
+
+/** This map is filled in with (name, declaration) pairs
  *  from the standard prelude. They are used to supply the types
  *  of built-int constructs. */
 static Decl_Map initializeMap() {
     Decl_Map r;
-    r["int"] = NULL;
-    r["list"] = NULL;
-    r["tuple0"] = NULL;
-    r["tuple1"] = NULL;
-    r["tuple2"] = NULL;
-    r["tuple3"] = NULL;
-    r["str"] = NULL;
-    r["dict"] = NULL;
-    r["bool"] = NULL;
-    r["file"] = NULL;
-    r["range"] = NULL;
+    r[Int] = NULL;
+    r[List] = NULL;
+    r[Tuple0] = NULL;
+    r[Tuple1] = NULL;
+    r[Tuple2] = NULL;
+    r[Tuple3] = NULL;
+    r[Str] = NULL;
+    r[Dict] = NULL;
+    r[Bool] = NULL;
+    r[File] = NULL;
+    r[Range] = NULL;
     return r;
 }
 Decl_Map primitiveDecls = initializeMap();

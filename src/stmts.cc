@@ -56,17 +56,24 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
-        // for_each_child_var (c, this) {
-        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
-        // } end_for;
-        // int ar = child(0)->arity();
-        // if (ar == 0) {
-        //     // Single target
-        //     child(0)->getType()->unify(child(1)->getType());
+        // child(0)->resolveTypes(context, resolved, ambiguities, errors);
+        // child(1)->resolveTypes(context, resolved, ambiguities, errors);
+        // Unwind_Stack unwind_stack;
+        // if (child(0)->getType() != NULL) {
+        //     // Single target: unify
+        //     Type_Ptr left = child(0)->getType();
+        //     Type_Ptr right = child(1)->getType();
+        //     left->unify(right, unwind_stack);
         // } else {
-        //     // Multiple targets
-        //     child(0)->getType()->unifyList(child(1)->getType());
+        //     // Multiple targets: unify lists
+        //     child(0)->arity();
+        //     for_each_child (c, child(0)) {
+        //         args[c_i_] = c->getType();
+        //     } end_for;
+        //     AST_Ptr typelist = make_tree(TYPE_LIST, args, args + arity);
+        //     Type::unifyLists(typelist, child(1)->getType(), unwind_stack);
         // }
+
         return this;
     }
 };
@@ -303,7 +310,7 @@ protected:
 
 NODE_FACTORY (Formal_List_AST, FORMALS_LIST);
 
-/***** BLOCK *****/
+/*****   BLOCK   *****/
 
 /** A list of statements. */
 class Block_AST : public AST_Tree {
@@ -321,7 +328,7 @@ protected:
 
 NODE_FACTORY (Block_AST, BLOCK);
 
-/***** CLASS_BLOCK *****/
+/*****   CLASS_BLOCK   *****/
 
 /** A list of statements. */
 class Class_Block_AST : public Block_AST {
@@ -332,3 +339,15 @@ protected:
 
 NODE_FACTORY (Class_Block_AST, CLASS_BLOCK);
 
+/*****   TARGET_LIST   *****/
+class Target_List_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Target_List_AST, AST_Tree);
+
+    Type_Ptr getType() {
+        return NULL;
+    }
+};
+
+NODE_FACTORY (Target_List_AST, TARGET_LIST);

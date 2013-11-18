@@ -91,7 +91,7 @@ protected:
     }
 
     Type_Ptr computeType () {
-        return primitiveDecls["int"]->asType();
+        return primitiveDecls[Int]->asType();
     }
 
     long value;
@@ -295,7 +295,7 @@ private:
     }
 
     Type_Ptr computeType () {
-        return primitiveDecls["str"]->asType();
+        return primitiveDecls[Str]->asType();
     }
 
     TOKEN_CONSTRUCTORS(String_Token, Typed_Token);

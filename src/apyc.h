@@ -230,6 +230,19 @@ typedef gcvector<Decl*> Decl_Vector;
 /** Decls for built-in types. */
 extern Decl_Map primitiveDecls;
 
+/** Constants names of built-int types. */
+extern const gcstring Int;
+extern const gcstring List;
+extern const gcstring Tuple0;
+extern const gcstring Tuple1;
+extern const gcstring Tuple2;
+extern const gcstring Tuple3;
+extern const gcstring Str;
+extern const gcstring Dict;
+extern const gcstring Bool;
+extern const gcstring File;
+extern const gcstring Range;
+
 class Environ : public gc {
 public:
 

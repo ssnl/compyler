@@ -5,6 +5,8 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <string>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -50,10 +52,21 @@ protected:
 
 NODE_FACTORY (Expr_List_AST, EXPR_LIST);
 
+/*****   TUPLE   *****/
+class Tuple_AST : public AST_Tree {
+protected:
 
-/* The following is an EXAMPLE of a potentially useful AST class
- * structure, showing the macros you can use to set up base classes
- * and their subtypes. */
+    NODE_CONSTRUCTORS (Tuple_AST, AST_Tree);
+
+    Type_Ptr getType() {
+        int ar = arity();
+        stringstream ss;
+        ss << ar;
+        return primitiveDecls["tuple" + ss.str()]->asType();
+    }
+};
+
+NODE_FACTORY (Tuple_AST, TUPLE);
 
 /*****   CALLS    *****/
 
