@@ -91,7 +91,6 @@ protected:
         } end_for;
         return this;
     }
-
 };
 
 NODE_FACTORY (StmtList_AST, STMT_LIST);
@@ -138,19 +137,21 @@ protected:
 
     AST_Ptr doInnerSemantics () {
         Decl *decl = getDecl();
-        const Environ *myenv = decl->getEnviron();
+        const Environ* env = decl->getEnviron();
         // Collect and resolve formals
         child(1)->collectDecls(decl);
-        child(1)->resolveSimpleIds(myenv);
+        child(1)->resolveSimpleIds(env);
         // Collect and resolve return type
         child(2)->collectDecls(decl);
-        child(2)->resolveSimpleIds(myenv);
+        child(2)->resolveSimpleIds(env);
         // Collect and resolve function body
         for_each_child (c, child(3)) {
             c->collectDecls(decl);
-            c->resolveSimpleIds(myenv);
+            c->resolveSimpleIds(env);
         } end_for;
+        // Recursively do inner semantic analysis on function body
         child(3)->doInnerSemantics();
+        // Change type from a ordinary type to a function_type
         _fixType();
         return this;
     }
@@ -216,23 +217,25 @@ protected:
 
     AST_Ptr doInnerSemantics () {
         Decl* decl = getDecl();
-        const Environ *myenv = decl->getEnviron();
+        const Environ *env = decl->getEnviron();
         // Collect and resolve class type parameters
         child(1)->collectDecls(decl);
-        child(1)->resolveSimpleIds(myenv);
+        child(1)->resolveSimpleIds(env);
         // Collect and resolve class body
         for_each_child (c, child(2)) {
             c->collectDecls(decl);
-            c->resolveSimpleIds(myenv);
+            c->resolveSimpleIds(env);
         } end_for;
+        // Recursively do inner semantic analysis on class body
         child(2)->doInnerSemantics();
-        resolveInit();
+        // Add an __init__ method if required
+        _rewriteInit();
         return this;
     }
 
-    void resolveInit () {
+    void _rewriteInit () {
         Decl* decl = getDecl();
-        const Environ *myenv = decl->getEnviron();
+        const Environ *env = decl->getEnviron();
         Decl* init = decl->getEnviron()->find_immediate("__init__");
         if (init == NULL) {
             // Create AST for init
@@ -245,7 +248,7 @@ protected:
             child(2)->insert(0, init);
             // Collect and resolve
             init->collectDecls(decl);
-            init->resolveSimpleIds(myenv);
+            init->resolveSimpleIds(env);
             init->doInnerSemantics();
         }
 

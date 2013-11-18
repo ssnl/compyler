@@ -160,8 +160,8 @@ protected:
         gcstring text = as_string();
         Decl* decl = env->find(text);
         if (decl == NULL) {
-            error (loc (), "name '%s' is not defined",
-                   text.c_str ());
+            error (loc(), "name '%s' is not defined",
+                   text.c_str());
         } else if (decl->isType()) {
             AST_Ptr params = consTree(TYPE_LIST);
             AST_Ptr type = consTree(TYPE, this, params);
@@ -178,7 +178,7 @@ protected:
         if (decl != NULL) {
             addDecl(decl);
         } else {
-            error (loc (), "name '%s' is not defined", text.c_str ());
+            error (loc(), "name '%s' is not defined", text.c_str());
         }
     }
 
@@ -191,9 +191,16 @@ protected:
     }
 
     void addParamDecls (Decl* enclosing, int k) {
-        Decl *decl = makeParamDecl (as_string(), enclosing, k,
-            Type::makeVar ());
-        enclosing->addMember(decl);
+        gcstring text = as_string();
+        Decl* decl = enclosing->getEnviron()->find_immediate(text);
+        if (decl == NULL) {
+            Decl *decl = makeParamDecl (as_string(), enclosing, k,
+                Type::makeVar ());
+            enclosing->addMember(decl);
+        } else {
+            error (loc(), "duplicate argument '%s' in function definition",
+                text.c_str());
+        }
     }
 
 private:
