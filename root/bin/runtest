@@ -64,7 +64,7 @@ shift $((OPTIND-1))
 if $LIST; then
   batch-tests -d $TESTDIR/ -k; exit
 elif $COLLECT; then
-  batch-tests -d  $TESTDIR/ $*; exit
+  batch-tests -d $TESTDIR/ $*; exit
 elif [ -z $1 ]; then
   runtest-usage; exit
 else

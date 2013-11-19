@@ -27,9 +27,9 @@ class str:
 #     def __init__(self::file):
 #         native "__donotcall__"
 
-# class list of [$T]:
-#     def __init__(self::list of [$T]):
-#         native "__donotcall__"
+class list of [$T]:
+    def __init__(self::list of [$T]):
+        native "__donotcall__"
 
 # class dict of [$Key, $Value]:
 #     def __init__(self::dict of [$Key, $Value]):

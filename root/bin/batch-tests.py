@@ -27,7 +27,7 @@ def collectTests(args):
       print "\n"
       print "================== TESTING: " + tn + " =================="
       print desc
-      os.system("runtest -v " + tn)
+      os.system("runtest -v -d %s %s" %(tdir, tn))
 
 def findTests(tdir,key):
   tests = os.listdir(tdir)

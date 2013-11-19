@@ -233,6 +233,7 @@ extern Decl_Map primitiveDecls;
 /** Constants names of built-int types. */
 extern const gcstring Int;
 extern const gcstring List;
+extern const gcstring Tuple;
 extern const gcstring Tuple0;
 extern const gcstring Tuple1;
 extern const gcstring Tuple2;

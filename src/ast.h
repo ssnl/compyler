@@ -318,9 +318,9 @@ public:
      *  and returning false. */
     bool unify (Type_Ptr type, Unwind_Stack& bindings);
 
-    /** Unify the two lists of types L1 and L2, returning true iff
-     *  successful and appending new bindings to BINDINGS.  Otherwise
-     *  returns false and does not change BINDINGS. */
+    /** Unify the two AST's L1 and L2 by unifying the types of each of their
+     *  children, returning true iff successful and appending new bindings to
+     *  BINDINGS. Otherwise returns false and does not change BINDINGS. */
     static bool unifyLists (AST_Ptr L1, AST_Ptr L2, Unwind_Stack& bindings);
 
     /** Pops and reverts all bindings recorded in BINDINGS until
@@ -354,6 +354,9 @@ public:
 
     /** A type is already rewritten, so do nothing by default. */
     virtual AST_Ptr rewriteSimpleTypes (const Environ* env);
+
+    /** Returns the name of the id node associated with the type. */
+    virtual gcstring as_string() const;
 
     NODE_BASE_CONSTRUCTORS_INIT (Type, AST_Tree, _binding (NULL));
 

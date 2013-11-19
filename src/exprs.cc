@@ -15,6 +15,27 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/*****   TYPED_EXPR *****/
+class Typed_Expr : public AST_Tree {
+protected:
+
+    NODE_BASE_CONSTRUCTORS (Typed_Expr, AST_Tree);
+
+    /** Sets the type of the expression. */
+    void setType(Type_Ptr type) {
+        _type = type;
+    }
+
+    /** Override AST::getType to return the type of the expression. Until
+     *  the expression is resolved the default is NULL. */
+    Type_Ptr getType() {
+        return _type;
+    }
+
+private:
+    Type_Ptr _type;
+};
+
 /*****   TYPED_ID   *****/
 class Typed_Id_AST : public AST_Tree {
 protected:
@@ -53,20 +74,60 @@ protected:
 NODE_FACTORY (Expr_List_AST, EXPR_LIST);
 
 /*****   TUPLE   *****/
-class Tuple_AST : public AST_Tree {
+class Tuple_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (Tuple_AST, AST_Tree);
+    NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
 
-    Type_Ptr getType() {
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
         int ar = arity();
-        stringstream ss;
-        ss << ar;
-        return primitiveDecls["tuple" + ss.str()]->asType();
+        if (ar > 3) {
+            error (loc(), "type error: tuple too large");
+        } else {
+            Type_Ptr *params = new Type_Ptr[ar];
+            for_each_child_var (c, this) {
+                params[c_i_] = c->getType();
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+            } end_for;
+            stringstream ss;
+            ss << ar;
+            setType(primitiveDecls[Tuple.c_str() + ss.str()]->asType(ar, params));
+        }
+        return this;
     }
 };
 
 NODE_FACTORY (Tuple_AST, TUPLE);
+
+/*****   LIST_DISPLAY   *****/
+class List_Display_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        int ar = arity();
+        if (ar == 0) {
+            setType(primitiveDecls[List]->asType(1, Type::makeVar()));
+        } else {
+            Type_Ptr type;
+            Unwind_Stack unwind_stack;
+            for_each_child_var (c, this) {
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+                if (c_i_ == 0)
+                    type = c->getType();
+                else
+                    type->unify(c->getType(), unwind_stack);
+            } end_for;
+            setType(primitiveDecls[List]->asType(1, type));
+        }
+        return this;
+    }
+};
+
+NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
 
 /*****   CALLS    *****/
 

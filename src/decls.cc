@@ -14,6 +14,7 @@ static GCINIT _gcdummy;
 /** Names of built-int constants used to fill in the primitive map below. */
 const gcstring Int = "int";
 const gcstring List = "list";
+const gcstring Tuple = "tuple";
 const gcstring Tuple0 = "tuple0";
 const gcstring Tuple1 = "tuple1";
 const gcstring Tuple2 = "tuple2";

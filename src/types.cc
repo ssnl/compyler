@@ -293,6 +293,11 @@ Type::rewriteSimpleTypes (const Environ* env) {
     return this;
 }
 
+gcstring
+Type::as_string () const {
+    return child(0)->as_string();
+}
+
 /*****  TYPE VARIABLES *****/
 
 class TypeVar_AST : public Type {
@@ -415,8 +420,8 @@ protected:
     }
 
     void collectDecls(Decl *enclosing) {
-        gcstring text = child(0)->as_string();
-        Decl* decl = curr_environ->find(text);
+        gcstring text = as_string();
+        Decl* decl = curr_environ->find_immediate(text);
         if (decl == NULL) {
             decl = makeTypeVarDecl (text, this);
             curr_environ->define(decl);
@@ -484,6 +489,20 @@ protected:
 
     void addDecl (Decl* decl) {
         child (0)->addDecl (decl);
+    }
+
+
+    int numTypeParams ()
+    {
+        return child(1)->arity();
+    }
+
+    Type_Ptr typeParam (int k)
+    {
+        int ar = child(1)->arity();
+        if (k == -1 || k > ar)
+            logic_error("invalid parameter index");
+        return (Type_Ptr) child(1)->child(k);
     }
 
 };
