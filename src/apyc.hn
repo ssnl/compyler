@@ -169,6 +169,7 @@
 %token PAIR "@pair"
 %token PRINT "@print"
 %token PRINTLN "@println"
+%token RETURN "@return"
 %token SLICING "@slicing"
 %token SLICING_TARGET "@@slicing"
 %token STMT_LIST "@stmt_list"
@@ -586,8 +587,10 @@ print_stmt:
                 { $$ = $^(PRINT, $*); }
     ;
 
-return_stmt: "return"^ expression_or_list0
-                { check_in_func (); }
+return_stmt: "return"! expression_or_list0
+                { check_in_func ();
+                  $$ = $^(RETURN,$*);
+                }
     ;
 
 break_stmt: "break"^ { check_in_loop (); }

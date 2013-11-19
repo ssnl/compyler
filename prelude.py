@@ -27,29 +27,29 @@ class str:
 #     def __init__(self::file):
 #         native "__donotcall__"
 
-class list of [$T]:
-    def __init__(self::list of [$T]):
-        native "__donotcall__"
+# class list of [$T]:
+#     def __init__(self::list of [$T]):
+#         native "__donotcall__"
 
 # class dict of [$Key, $Value]:
 #     def __init__(self::dict of [$Key, $Value]):
 #         native "__donotcall__"
 
-class tuple0:
-    def __init__(self::tuple0):
-        native "__donotcall__"
+# class tuple0:
+#     def __init__(self::tuple0):
+#         native "__donotcall__"
 
-class tuple1 of [$T0]:
-    def __init__(self::tuple1 of [$a]):
-        native "__donotcall__"
+# class tuple1 of [$T0]:
+#     def __init__(self::tuple1 of [$a]):
+#         native "__donotcall__"
 
-class tuple2 of [$T1, $T2]:
-    def __init__(self::tuple2 of [$a, $b]):
-        native "__donotcall__"
+# class tuple2 of [$T1, $T2]:
+#     def __init__(self::tuple2 of [$a, $b]):
+#         native "__donotcall__"
 
-class tuple3 of [$T1, $T2, $T3]:
-    def __init__(self::tuple3 of [$a, $b, $c]):
-        native "__donotcall__"
+# class tuple3 of [$T1, $T2, $T3]:
+#     def __init__(self::tuple3 of [$a, $b, $c]):
+#         native "__donotcall__"
 
 # # The value None.  References to None are converted to calls __None__().
 

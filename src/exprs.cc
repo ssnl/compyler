@@ -37,10 +37,10 @@ private:
 };
 
 /*****   TYPED_ID   *****/
-class Typed_Id_AST : public AST_Tree {
+class Typed_Id_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
+    NODE_CONSTRUCTORS (Typed_Id_AST, Typed_Expr);
 
     /** Stop the recursion. */
     void collectDecls(Decl *enclosing) {}
@@ -57,6 +57,16 @@ protected:
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                        int& ambiguities,  bool& errors) {
+        Unwind_Stack unwind_stack;
+        Type_Ptr type = child(1)->asType();
+        child(0)->getType()->unify(type, unwind_stack);
+        setType(type);
+        return this;
+    }
+
 };
 
 NODE_FACTORY (Typed_Id_AST, TYPED_ID);
@@ -129,6 +139,84 @@ protected:
 
 NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
 
+/*****   RETURN    *****/
+class Return_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Return_AST, AST_Tree);
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        if (!child(0)->isMissing()) {
+            for_each_child_var (c, this) {
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+            } end_for;
+            Unwind_Stack unwind_stack;
+            Type_Ptr functype = context->getType();
+            Type_Ptr ret_type = functype->returnType();
+            child(0)->getType()->unify(ret_type, unwind_stack);
+        }
+        return this;
+    }
+};
+
+NODE_FACTORY (Return_AST, RETURN);
+
+/*****   LOGICAL EXPRESSIONS   *****/
+class Logical_AST : public Typed_Expr {
+protected:
+
+    NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        Unwind_Stack unwind_stack;
+        child(0)->getType()->unify(child(1)->getType(), unwind_stack);
+        setType(child(0)->getType());
+        return this;
+    }
+};
+
+class And_AST : public Logical_AST {
+protected:
+
+    NODE_CONSTRUCTORS (And_AST, Logical_AST);
+};
+
+NODE_FACTORY (And_AST, AND);
+
+class Or_AST : public Logical_AST {
+protected:
+
+    NODE_CONSTRUCTORS (Or_AST, Logical_AST);
+};
+
+NODE_FACTORY (Or_AST, OR);
+
+class If_Expr_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        Unwind_Stack unwind_stack;
+        Type_Ptr left = child(1)->getType();
+        Type_Ptr right = child(2)->getType();
+        left->unify(right, unwind_stack);
+        setType(left);
+        return this;
+    }
+};
+
+NODE_FACTORY (If_Expr_AST, IF_EXPR);
+
 /*****   CALLS    *****/
 
 /** The supertype of "callable" things, including ordinary calls,
@@ -164,6 +252,11 @@ protected:
         for (int i = 0; i < numActuals(); i++) {
             actualParam(i)->resolveSimpleIds(env);
         }
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        return this;
     }
 };
 

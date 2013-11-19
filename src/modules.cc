@@ -67,18 +67,12 @@ protected:
             primitiveDecls[key] = outer_environ->find(key);
         }
         // 4. Perform type inference
-        int resolved0, ambiguities0, resolved, ambiguities;
-        bool errors = false;
-        resolved = ambiguities = -1;
-        do {
-            resolved0 = resolved;
-            ambiguities0 = ambiguities;
-            resolved = ambiguities = 0;
-            self = self->resolveTypes (me, resolved, ambiguities, errors);
-        } while (!errors && (resolved != resolved0 || ambiguities != ambiguities0));
+        for_each_child_var (c, self) {
+            //c = c->resolveTypesOuter(me);
+        } end_for;
         // TODO: Print errors
 
-        // 5. Final rewrites (TODO  )
+        // 5. Final rewrites (TODO)
 
         return self;
     }

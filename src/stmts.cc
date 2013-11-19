@@ -76,7 +76,7 @@ protected:
             gcstring rightName = right->as_string();
             if (rightName.substr(0, rightName.length() - 1) == Tuple) {
                 if (child(0)->arity() ==  right->numParams())
-                    error(loc(), "value error: too many values to unpack");
+                    error(loc(), "type error: too many values to unpack");
                 for_each_child (c, child(0)) {
                     c->getType()->unify(right->typeParam(c_i_), unwind_stack);
                 } end_for;
@@ -114,18 +114,46 @@ protected:
 
 NODE_FACTORY (StmtList_AST, STMT_LIST);
 
-/*****   PRINTLN   *****/
-
-/** A print statement without trailing comma. */
-class Println_AST : public AST_Tree {
+/*****   PRINTING   *****/
+class Printing_AST : public AST_Tree {
 protected:
 
-    NODE_CONSTRUCTORS (Println_AST, AST_Tree);
+    NODE_BASE_CONSTRUCTORS (Printing_AST, AST_Tree);
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+        Unwind_Stack unwind_stack;
+        if (!child(0)->isMissing()) {
+            child(0)->getType()->unify(primitiveDecls[File]->asType(),
+                unwind_stack);
+        }
+        return this;
+    }
+};
+
+/*****   PRINT   *****/
+/** A print statement with trailing comma. */
+class Print_AST : public Printing_AST {
+protected:
+
+    NODE_CONSTRUCTORS (Print_AST, Printing_AST);
+};
+
+NODE_FACTORY (Print_AST, PRINT);
+
+/*****   PRINTLN   *****/
+/** A print statement without trailing comma. */
+class Println_AST : public Printing_AST {
+protected:
+
+    NODE_CONSTRUCTORS (Println_AST, Printing_AST);
 
     const char* externalName () {
         return "println";
     }
-
 };
 
 NODE_FACTORY (Println_AST, PRINTLN);
@@ -143,6 +171,38 @@ protected:
         child(1)->collectDecls(enclosing);
         child(2)->collectDecls(enclosing);
         child(3)->collectDecls(enclosing);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+        bool success = false;
+        Unwind_Stack unwind_stack;
+        Type_Ptr left = child(0)->getType();
+        Type_Ptr right = child(1)->getType();
+        gcstring leftName = left->as_string();
+        gcstring rightName = right->as_string();
+
+        if (rightName != List && rightName != Range && rightName != Str)
+            error(loc(),
+                "type error: '%s' object is not an iterable",
+                rightName.c_str());
+        if (rightName == List) {
+            success = left->unify(right->typeParam(0), unwind_stack);
+            if (!success)
+                error(loc(),
+                    "type error: type of '%s' does not match list type",
+                    leftName.c_str());
+        } else if (rightName == Range && leftName != Int) {
+            error(loc(), "type error: type of '%s' must be int",
+                leftName.c_str());
+        } else if (rightName == Str && leftName != Str) {
+            error(loc(), "type error: type of '%s' must be str",
+                leftName.c_str());
+        }
+        return this;
     }
 };
 
@@ -220,6 +280,51 @@ protected:
         } end_for;
         return this;
     }
+
+    AST_Ptr _setupSelf(Decl* context, int& resolved,
+                          int& ambiguities,  bool& errors) {}
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities,  bool& errors) {
+        Decl* decl = getDecl();
+        AST_Ptr me = this;
+        // Resolve formal params
+        for_each_child_var (c, me->child(1)) {
+            c = c->resolveTypes(decl, resolved, ambiguities, errors);
+        } end_for;
+        // Resolve function body
+        for_each_child_var (c, me->child(3)) {
+            c = c->resolveTypesOuter(decl);
+        } end_for;
+        Unwind_Stack unwind_stack;
+        Type_Ptr functype = decl->getType();
+        // Unify self (if required)
+        me = _setupSelf(context, resolved, ambiguities, errors);
+        // Unify parameters with formals list
+        for_each_child (c, me->child(1)) {
+            c->getType()->unify(functype->paramType(c_i_), unwind_stack);
+        } end_for;
+        // Unify return type
+        Type_Ptr returnType = functype->returnType();
+        bool noReturn = returnType->binding() == returnType;
+        if (noReturn) {
+            // If there is no function return parameter
+            if (me->child(2)->isMissing()) {
+                Decl* nonedecl = outer_environ->find("__None__");
+                Type_Ptr nonetype = nonedecl->getType()->returnType();
+                returnType->unify(nonetype,unwind_stack);
+            // Otherwise, there should be a return parameter
+            } else {
+                error(loc(), "type error: expected function %s to return a value",
+                    me->child(0)->as_token()->as_string().c_str());
+            }
+        } else {
+            // If there is a function return parameter
+            if (!me->child(2)->isMissing())
+                returnType->unify(me->child(2)->asType(), unwind_stack);
+        }
+        return me;
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -233,6 +338,14 @@ protected:
 
     Environ* setupEnviron () {
         return new Environ(curr_environ->get_enclosure());
+    }
+
+    AST_Ptr _setupSelf(Decl* context, int& resolved,
+                          int& ambiguities,  bool& errors) {
+        Unwind_Stack unwind_stack;
+        Type_Ptr classType = context->getType();
+        child(0)->getType()->unify(classType, unwind_stack);
+        return this;
     }
 };
 
@@ -282,7 +395,6 @@ protected:
             init->resolveSimpleIds(curr_environ);
             init->doInnerSemantics();
         }
-
     }
 
     void collectDecls (Decl* enclosing) {
@@ -295,6 +407,15 @@ protected:
 
     void resolveSimpleIds (const Environ* env) {
         child(0)->resolveSimpleIds(env);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities,  bool& errors) {
+        Decl* decl = getDecl();
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(decl, resolved, ambiguities, errors);
+        } end_for;
+        return this;
     }
 
     AST_Ptr rewriteSimpleTypes (const Environ* unused) {

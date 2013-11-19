@@ -174,9 +174,11 @@ protected:
 
     void resolveSimpleIds (const Environ* env) {
         gcstring text = as_string();
-        Decl* decl = env->find(text);
-        if (decl != NULL) {
-            addDecl(decl);
+        Decl_Vector decls;
+        env->find(text, decls);
+        if (!decls.empty()) {
+            for (int i = 0; i < decls.size(); i++)
+                addDecl(decls.at(i));
         } else {
             error (loc(), "name error: name '%s' is not defined", text.c_str());
         }
