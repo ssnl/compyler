@@ -23,11 +23,25 @@ def collectTests(args):
   else:
     key = args.key
     tnames,descriptions = findTests(tdir,key)
+    errors = 0
+    failures = []
     for tn,desc in zip(tnames,descriptions):
       print "\n"
       print "================== TESTING: " + tn + " =================="
       print desc
-      os.system("runtest -v -d %s %s" %(tdir, tn))
+      r = os.system("runtest -v -d %s %s" %(tdir, tn))
+      if r != 0:
+        errors += 1
+        failures.append(tn)
+    print "------------------------------------"
+    print "Number of Tests Run: " + str(len(tnames))
+    print "Total Errors       : " + str(errors)
+    if errors != 0:
+      print "Failed tests       :",
+      for k, tn in enumerate(failures):
+        if k == len(failures) - 1: print tn,
+        else: print tn + ", ",
+      print "\n"
 
 def findTests(tdir,key):
   tests = os.listdir(tdir)

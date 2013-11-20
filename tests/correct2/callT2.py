@@ -5,5 +5,8 @@ def foo(x::int,y::int):
 def foo(x::str,y):
     pass
 
+def foo(x::str,y::str):
+    pass
+
 foo("hi",2)
 

@@ -76,7 +76,7 @@ echo ">> Compiling..."
 make 1>/dev/null
 
 if [ $? != 0 ]; then
-  exit
+  exit 1
 fi
 
 # Run apyc
@@ -84,17 +84,29 @@ echo ">> Running apyc..."
 ./apyc --phase=$PHASE -o $FILE.ast $TESTDIR/$TEST
 
 if [ $? != 0 ]; then
-  exit
+  exit 1
 fi
 
 echo ">> Generated AST..."; echo
-output-cleaner -a $FILE.ast
+if [ $PHASE == 1 ]; then
+  cat $FILE.ast
+else
+  output-cleaner -a $FILE.ast
+fi
 
 # Unparse AST
 echo; echo ">> Unparsing AST..."; echo
 pyunparse -o $FILE $FILE.ast
+if [ $PHASE == 1 ]; then
+  cat $FILE
+else
+  output-cleaner -p $FILE
+fi
 
-output-cleaner -p $FILE
+
+if [ $? != 0 ]; then
+  exit 1
+fi
 
 # Save or remove files
 if $OUT || $SAVE; then

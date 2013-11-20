@@ -60,6 +60,7 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
+        cout << "  (Assign_AST) resolving types for " << as_string() << endl;
         // Perform type inference on children
         for_each_child_var (c, this) {
             c = c->resolveTypes(context, resolved, ambiguities, errors);
@@ -282,29 +283,39 @@ protected:
     }
 
     AST_Ptr _setupSelf(Decl* context, int& resolved,
-                          int& ambiguities,  bool& errors) {}
+                          int& ambiguities,  bool& errors) {
+        // return this;
+    }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
+        cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
         Decl* decl = getDecl();
         AST_Ptr me = this;
+        cout << "    - resolving formals..." << endl;
         // Resolve formal params
         for_each_child_var (c, me->child(1)) {
             c = c->resolveTypes(decl, resolved, ambiguities, errors);
         } end_for;
+        cout << "    - resolving block..." << endl;
         // Resolve function body
         for_each_child_var (c, me->child(3)) {
             c = c->resolveTypesOuter(decl);
         } end_for;
         Unwind_Stack unwind_stack;
         Type_Ptr functype = decl->getType();
+        cout << "    - unifying self..." << endl;
         // Unify self (if required)
         me = _setupSelf(context, resolved, ambiguities, errors);
         // Unify parameters with formals list
+        cout << "    - unifying params with formals..." << endl;
         for_each_child (c, me->child(1)) {
+            cout << "      - unifying " << c->getType()->as_string() <<
+                " with " << functype->paramType(c_i_)->as_string() << endl;
             c->getType()->unify(functype->paramType(c_i_), unwind_stack);
         } end_for;
         // Unify return type
+        cout << "    - unifying return type..." << endl;
         Type_Ptr returnType = functype->returnType();
         bool noReturn = returnType->binding() == returnType;
         if (noReturn) {
@@ -411,6 +422,7 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
+        cout << "  (Class_AST) resolving types for " << child(0)->as_string() << endl;
         Decl* decl = getDecl();
         for_each_child_var (c, this) {
             c = c->resolveTypes(decl, resolved, ambiguities, errors);

@@ -222,10 +222,10 @@ NODE_FACTORY (If_Expr_AST, IF_EXPR);
 /** The supertype of "callable" things, including ordinary calls,
  *  binary operators, unary operators, subscriptions, and slices. */
 
-class Callable : public AST_Tree {
+class Callable : public Typed_Expr {
 protected:
 
-    NODE_BASE_CONSTRUCTORS (Callable, AST_Tree);
+    NODE_BASE_CONSTRUCTORS (Callable, Typed_Expr);
 
     /** Returns the expression representing the quantity that is
      *  called to evaluate this expression. */
@@ -240,8 +240,17 @@ protected:
     /** Returns the list of parameters in this call. */
     virtual AST_Ptr paramsList () = 0;
 
-    // PUT COMMON CODE DEALING WITH TYPE-CHECKING or SCOPE RULES HERE.
-    // USE THE METHODS ABOVE TO ADAPT IT TO PARTICULAR TYPES OF NODE.
+    virtual void setActual (int k, AST_Ptr expr) = 0;
+
+    virtual void setCalledExpr (AST_Ptr expr) = 0;
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        setCalledExpr(calledExpr()->rewriteSimpleTypes(env));
+        for (int i = 0; i < numActuals(); i++) {
+            setActual(i, actualParam(i)->rewriteSimpleTypes(env));
+        }
+        return this;
+    }
 
     void collectDecls(Decl *enclosing) {
         // do nothing
@@ -256,6 +265,44 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
+        cout << "  (Callable) resolving types for " + child(0)->as_string();
+        for_each_child_var (c, this) {
+            // If the child is not an id node, resolve its type
+            if (c_i_ != 0) {
+                c = c->resolveTypes(context,resolved,ambiguities,errors);
+            }
+        } end_for;
+        Decl_Vector decls;
+        Unwind_Stack unwind_stack;
+        gcstring idname = child(0)->as_string();
+        if (idname.size() == 0) {
+            error(loc(), "you done fucked up.");
+        }
+        Type_Ptr functype;
+        bool success = true;
+        int success_count = 0;
+        Decl* success_decl;
+        context->getEnviron()->find(idname, decls);
+        for (int i = 0; i < decls.size(); i++) {
+            Decl* d = decls.at(i);
+            success = true;
+            functype = d->getType();
+            for_each_child (c, child(1)) {
+                success = success &&
+                    functype->paramType(c_i_)->unify(c->asType(), unwind_stack);
+            } end_for;
+            if (success) {
+                success_decl = d;
+                success_count++;
+            }
+        }
+        if (success_count == 0) {
+            error(loc(), "type error: invalid function call");
+        } // TODO else if > 1 handle ambiguous call error
+        else if (success_count == 1) {
+            setType(success_decl->getType()->returnType());
+        }
+        // Set type of this to the return type
         return this;
     }
 };
@@ -290,14 +337,6 @@ protected:
         replace(0, expr);
     }
 
-    AST_Ptr rewriteSimpleTypes (const Environ* env) {
-        setCalledExpr(calledExpr()->rewriteSimpleTypes(env));
-        for (int i = 0; i < numActuals(); i++) {
-            setActual(i, actualParam(i)->rewriteSimpleTypes(env));
-        }
-        return this;
-    }
-
     AST_Ptr rewriteAllocators (const Environ* env) {
         if (calledExpr()->asType() != NULL) {
             AST_Ptr id = make_token(ID, 8, "__init__");
@@ -310,7 +349,6 @@ protected:
         }
         return this;
     }
-
 };
 
 NODE_FACTORY (Call_AST, CALL);
@@ -339,6 +377,9 @@ class Binop_AST : public Callable {
     void setActual (int k, AST_Ptr expr) {
         replace (2*k, expr);
     }
+
+    // Should never change the called expression
+    void setCalledExpr (AST_Ptr expr) {}
 
 };
 
@@ -369,6 +410,8 @@ class Unop_AST : public Callable {
         replace (2*k + 1, expr);
     }
 
+    // Should never change the called expression
+    void setCalledExpr (AST_Ptr expr) {}
 };
 
 NODE_FACTORY (Unop_AST, UNOP);

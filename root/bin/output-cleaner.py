@@ -13,22 +13,18 @@ def outputCleanedAST(fname):
 	ast_out = raw[:decl_start]
 	decl_out = raw[decl_start+474:]
 	print ast_out[0]
-	print "          ."
-	print "          ."
-	print "          ."
-	print "    <<prelude AST>>"
-	print "          ."
-	print "          ."
-	print "          ."
+	print "          ..."
+	print "     ----------- "
+	print "     prelude AST "
+	print "     ----------- "
+	print "          ..."
 	for line in ast_out[1:]:
 		print line
-	print "          ."
-	print "          ."
-	print "          ."
-	print "   <<prelude Decls>>"
-	print "          ."
-	print "          ."
-	print "          ."
+	print "          ..."
+	print "     ------------- "
+	print "     prelude Decls "
+	print "     ------------- "
+	print "          ..."
 	for line in decl_out:
 		print line
 
@@ -36,13 +32,11 @@ def outputCleanedSource(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
 	raw = raw[157:]
-	print "          ."
-	print "          ."
-	print "          ."
-	print "  <<prelude source>>"
-	print "          ."
-	print "          ."
-	print "          ."
+	print "          ..."
+	print "     -------------- "
+	print "     prelude source "
+	print "     -------------- "
+	print "          ..."
 	for line in raw:
 		print line
 

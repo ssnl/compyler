@@ -67,6 +67,7 @@ protected:
             primitiveDecls[key] = outer_environ->find(key);
         }
         // 4. Perform type inference
+        cout << "(Module_AST) resolving outer types..." << endl;
         for_each_child_var (c, self) {
             //c = c->resolveTypesOuter(me);
         } end_for;
