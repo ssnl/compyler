@@ -88,13 +88,13 @@ if [ $? != 0 ]; then
 fi
 
 echo ">> Generated AST..."; echo
-tail -n +0 $FILE.ast
+output-cleaner -a $FILE.ast
 
 # Unparse AST
 echo; echo ">> Unparsing AST..."; echo
 pyunparse -o $FILE $FILE.ast
 
-cat $FILE;
+output-cleaner -p $FILE
 
 # Save or remove files
 if $OUT || $SAVE; then
