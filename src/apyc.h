@@ -99,11 +99,11 @@ public:
     /** Get the number of internal types. */
     virtual int getNumTypesInternal () const;
 
-    /** Set the Kth internal type to TYPE */
-    virtual void setTypeInternal (int k, Type_Ptr type);
-
     /** Remove the Kth internal type */
     virtual void removeTypeInternal(int k);
+
+    /** Add TYPE to the list of internal types */
+    virtual void addTypeInternal (Type_Ptr type);
 
     /** My associated AST, if any.  A Decl may be associated with a
      *  particular AST that corresponds to the declaration of the
@@ -238,6 +238,7 @@ extern void outputDecls ();
 
 typedef gcmap<gcstring, Decl *> Decl_Map;
 typedef gcvector<Decl*> Decl_Vector;
+typedef gcvector<Type_Ptr> Type_Ptr_Vector;
 
 /** Decls for built-in types. */
 extern Decl_Map primitiveDecls;

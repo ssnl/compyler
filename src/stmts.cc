@@ -284,7 +284,7 @@ protected:
 
     AST_Ptr _setupSelf(Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
-        // return this;
+        return this;
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,

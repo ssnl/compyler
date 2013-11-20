@@ -126,7 +126,7 @@ Decl::getNumTypesInternal () const {
 }
 
 void
-Decl::setTypeInternal (int k, Type_Ptr type) {}
+Decl::addTypeInternal (Type_Ptr type) {}
 
 void
 Decl::removeTypeInternal(int k) {}
@@ -261,6 +261,22 @@ public:
         _type = type;
     }
 
+    Type_Ptr getTypeInternal (int k) const {
+        return NULL;
+    }
+
+    int getNumTypesInternal () const {
+        return -1;
+    }
+
+    void addTypeInternal (Type_Ptr type) {
+
+    }
+
+    void removeTypeInternal(int k) {
+
+    }
+
 protected:
 
     void printType () const {
@@ -273,6 +289,7 @@ protected:
 
 private:
     Type_Ptr _type;
+    Type_Ptr_Vector _type_vector;
 };
 
 class VarDecl : public TypedDecl {
@@ -448,7 +465,7 @@ protected:
 
 private:
 
-    mutable Type_Ptr _selectedType;
+    // mutable Type_Ptr _selectedType;
 
 };
 
