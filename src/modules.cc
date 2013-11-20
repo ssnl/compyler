@@ -15,6 +15,7 @@ static GCINIT _gcdummy;
 
 const Environ* outer_environ;
 Environ* curr_environ;
+Unwind_Stack global_bindings;
 
 /*****   MODULE    *****/
 
@@ -67,10 +68,12 @@ protected:
             primitiveDecls[key] = outer_environ->find(key);
         }
         // 4. Perform type inference
-        //cout << "(Module_AST) resolving outer types..." << endl;
-        for_each_child_var (c, self) {
-            //c = c->resolveTypesOuter(me);
-        } end_for;
+        cout << "(Module_AST) resolving outer types..." << endl;
+        // HACKHACK: Using resolveTypeOuter this way may be problematic
+        // Same methodology for classes and methods that may need to be
+        // reverted.
+        self = self->resolveTypesOuter(me);
+
         // TODO: Print errors
 
         // 5. Final rewrites (TODO)

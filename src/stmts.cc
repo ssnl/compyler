@@ -18,7 +18,7 @@ protected:
 
     NODE_CONSTRUCTORS (Region_AST, AST_Tree);
 
-    /** By default, a Suite AST_Tree does not do anything
+    /** By default, a Region AST_Tree does not do anything
      *  collecting declarations. Will be overloaded by trees
      *  that will actually add appropriate declarations to
      *  ENCLOSING. */
@@ -26,12 +26,14 @@ protected:
         // do nothing
     }
 
-    /** Simple overloading that makes it easy to associate
-     *  Suite AST_Tree's with a corresponding declaration. */
+    /** Simple overriding that makes it easy to associate
+     *  Region AST_Tree's with a corresponding declaration. */
     Decl* getDecl(int k = 0) {
         return _me;
     }
 
+    /** Simple overriding to associate Region AST_Tree's with
+     *  a corresponding declaration. */
     void addDecl(Decl* decl) {
         _me = decl;
     }
@@ -60,11 +62,28 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
-        // cout << "  (Assign_AST) resolving types for " << as_string() << endl;
-        // // Perform type inference on children
-        // for_each_child_var (c, this) {
-        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
-        // } end_for;
+        cout << "  (Assign_AST) resolving types for " << as_string() << endl;
+        // Perform type inference on children
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        // Unification step
+        Type_Ptr_Vector left = child(0)->getDecl()->getTypesInternal();
+        Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
+        Type_Ptr_Vector result;
+        Type::unifies(left, right, result);
+        child(0)->getDecl()->replaceTypesInternal(result);
+
+        if (result.size() == 0) {
+            errors = true;
+            error(loc(), "type error: incompatible types");
+        } else if (result.size() == 1) {
+            resolved++;
+            child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+        } else {
+            ambiguities += result.size() - 1;
+        }
+
         // // Unification step
         // Unwind_Stack unwind_stack;
         // Type_Ptr left = child(0)->getType();

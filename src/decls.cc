@@ -115,22 +115,17 @@ Decl::getType () const
 void
 Decl::setType (Type_Ptr type) {}
 
-Type_Ptr
-Decl::getTypeInternal (int k) const {
-    return NULL;
-}
-
-int
-Decl::getNumTypesInternal () const {
-    return -1;
+Type_Ptr_Vector
+Decl::getTypesInternal () const {
+    return _type_vector;
 }
 
 void
-Decl::addTypeInternal (Type_Ptr type) {}
-
-void
-Decl::removeTypeInternal(int k) {}
-
+Decl::replaceTypesInternal (Type_Ptr_Vector vec) {
+    _type_vector.clear();
+    for (int i = 0; i < vec.size(); i++)
+        _type_vector.push_back(vec[i]);
+}
 
 int
 Decl::getPosition () const
@@ -261,22 +256,6 @@ public:
         _type = type;
     }
 
-    Type_Ptr getTypeInternal (int k) const {
-        return _type_vector[k];
-    }
-
-    int getNumTypesInternal () const {
-        return _type_vector.size();
-    }
-
-    void addTypeInternal (Type_Ptr type) {
-        return _type_vector.push_back(type);
-    }
-
-    void removeTypeInternal(int k) {
-        _type_vector.erase(_type_vector.begin() + k);
-    }
-
 protected:
 
     void printType () const {
@@ -289,7 +268,6 @@ protected:
 
 private:
     Type_Ptr _type;
-    Type_Ptr_Vector _type_vector;
 };
 
 class VarDecl : public TypedDecl {

@@ -97,6 +97,20 @@ Type::unifies (Type_Ptr type)
     return result;
 }
 
+void
+Type::unifies(Type_Ptr_Vector v1, Type_Ptr_Vector v2, Type_Ptr_Vector& result)
+{
+    for (int r = 0; r < v2.size(); r++) {
+        bool success = false;
+        for (int l = 0; l < v1.size(); l++) {
+            success = success ||
+                v1[l]->unifies(v2[r]);
+        }
+        if (success)
+            result.push_back(v2[r]);
+    }
+}
+
 bool
 Type::unify (Type_Ptr type, Unwind_Stack& bindings)
 {

@@ -53,6 +53,11 @@ protected:
         if (_type == NULL) {
             _type = computeType ();
         }
+        if (getDecl()->getTypesInternal().size() == 0) {
+            Type_Ptr_Vector temp;
+            temp.push_back(_type);
+            getDecl()->replaceTypesInternal(temp);
+        }
         return this;
     }
 
@@ -92,6 +97,10 @@ protected:
 
     Type_Ptr computeType () {
         return primitiveDecls[Int]->asType();
+    }
+
+    Decl* getDecl(int k = 0) {
+        return primitiveDecls[Int];
     }
 
     long value;
@@ -298,6 +307,10 @@ private:
 
     Type_Ptr computeType () {
         return primitiveDecls[Str]->asType();
+    }
+
+    Decl* getDecl(int k = 0) {
+        return primitiveDecls[Str];
     }
 
     TOKEN_CONSTRUCTORS(String_Token, Typed_Token);

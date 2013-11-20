@@ -1,4 +1,3 @@
 # misc: random tests
-class A of [$T]:
-  pass
-A of int()
+y = 3
+x = (1, y)

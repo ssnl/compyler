@@ -26,6 +26,7 @@ class Environ;
 
 typedef AST* AST_Ptr;
 typedef Type* Type_Ptr;
+typedef gcvector<Type_Ptr> Type_Ptr_Vector;
 YYDEFINE_LIST_TYPE(List_Ptr, AST_Ptr);
 
 typedef std::stack<Type_Ptr> Unwind_Stack;
@@ -330,6 +331,12 @@ public:
     /** True iff THIS would unify with TYPE.  Does not change
      *  bindings. */
     virtual bool unifies (Type_Ptr type);
+
+    /** Tests if any types in V1 that unifies properly with types in V2.
+     *  If any type in V1 unifies with a type in V2, the type in V2 is stored
+     *  in R. */
+    static void unifies(Type_Ptr_Vector v1, Type_Ptr_Vector v2,
+                        Type_Ptr_Vector& r);
 
     /** Return a copy of me with all unbound type variables replaced
      *  by fresh unbound variables. */

@@ -93,17 +93,11 @@ public:
     /** Sets the Kth type to TYPE. */
     virtual void setType (Type_Ptr type);
 
-    /** Get the Kth internal type */
-    virtual Type_Ptr getTypeInternal (int k) const;
+    /** Gets the internal types vector. */
+    virtual Type_Ptr_Vector getTypesInternal () const;
 
-    /** Get the number of internal types. */
-    virtual int getNumTypesInternal () const;
-
-    /** Remove the Kth internal type */
-    virtual void removeTypeInternal(int k);
-
-    /** Add TYPE to the list of internal types */
-    virtual void addTypeInternal (Type_Ptr type);
+    /** Replace the internal types vector with a new vector. */
+    virtual void replaceTypesInternal (Type_Ptr_Vector vec);
 
     /** My associated AST, if any.  A Decl may be associated with a
      *  particular AST that corresponds to the declaration of the
@@ -202,6 +196,7 @@ private:
     Decl* _container;
     Environ* _members;
     AST_Ptr _ast;
+    Type_Ptr_Vector _type_vector;
 };
 
 /** Declaration of local or module-level variable NAME, defined
@@ -238,7 +233,6 @@ extern void outputDecls ();
 
 typedef gcmap<gcstring, Decl *> Decl_Map;
 typedef gcvector<Decl*> Decl_Vector;
-typedef gcvector<Type_Ptr> Type_Ptr_Vector;
 
 /** Decls for built-in types. */
 extern Decl_Map primitiveDecls;
@@ -305,6 +299,9 @@ extern const Environ* outer_environ;
 
 /** The current enclosing environment */
 extern Environ* curr_environ;
+
+/** A global Unwind_Stack for unification */
+extern Unwind_Stack global_bindings;
 
 #endif
 

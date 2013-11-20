@@ -15,6 +15,40 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/*****   TYPED_EXPR *****/
+class Typed_Expr : public AST_Tree {
+protected:
+
+    NODE_BASE_CONSTRUCTORS (Typed_Expr, AST_Tree);
+
+    Decl* getDecl (int k = 0) {
+        return _decl;
+    }
+
+    /** Overrides addDecl to simply replace the decl associated
+     *  with this expression with DECLARATION. */
+    void addDecl (Decl* declaration) {
+        _decl = declaration;
+    }
+
+    void collectDecls(Decl *enclosing) {
+        int ar = arity();
+        stringstream ss;
+        ss << ar;
+        // Real hack to create decls
+        AST_Ptr dummy[1];
+        Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
+        addDecl(makeTypeVarDecl (result->as_string (), result));
+        // Recursively collect declarations
+        for_each_child (c, this) {
+            c->collectDecls(enclosing);
+        } end_for;
+    }
+
+private:
+    Decl* _decl;
+};
+
 /*****   TYPED_ID   *****/
 class Typed_Id_AST : public AST_Tree {
 protected:
@@ -63,26 +97,31 @@ protected:
 NODE_FACTORY (Expr_List_AST, EXPR_LIST);
 
 /*****   TUPLE   *****/
-class Tuple_AST : public AST_Tree {
+class Tuple_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (Tuple_AST, AST_Tree);
+    NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // int ar = arity();
-        // if (ar > 3) {
-        //     error (loc(), "type error: tuple too large");
-        // } else {
-        //     Type_Ptr *params = new Type_Ptr[ar];
-        //     for_each_child_var (c, this) {
-        //         params[c_i_] = c->getType();
-        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
-        //     } end_for;
-        //     stringstream ss;
-        //     ss << ar;
-        //     setType(primitiveDecls[Tuple.c_str() + ss.str()]->asType(ar, params));
-        // }
+        // Perform type inference on children
+        int ar = arity();
+        if (ar > 3) {
+            error (loc(), "type error: tuple too large");
+        } else {
+            stringstream ss;
+            ss << ar;
+            // Ignoring case when tuple contains functions
+            Type_Ptr *params = new Type_Ptr[ar];
+            for_each_child_var (c, this) {
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+                params[c_i_] = c->getDecl()->getTypesInternal()[0];
+            } end_for;
+            Type_Ptr_Vector result;
+            result.push_back(primitiveDecls[Tuple.c_str() + ss.str()]
+                ->asType(ar, params));
+            getDecl()->replaceTypesInternal(result);
+        }
         return this;
     }
 };
