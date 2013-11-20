@@ -31,14 +31,15 @@ protected:
         _decl = declaration;
     }
 
-    void collectDecls(Decl *enclosing) {
-        int ar = arity();
-        stringstream ss;
-        ss << ar;
-        // Real hack to create decls
+    /** Real hack to create decl for a typed expression. */
+    void createDecl() {
         AST_Ptr dummy[1];
         Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
         addDecl(makeTypeVarDecl (result->as_string (), result));
+    }
+
+    void collectDecls(Decl *enclosing) {
+        createDecl();
         // Recursively collect declarations
         for_each_child (c, this) {
             c->collectDecls(enclosing);
@@ -50,12 +51,12 @@ private:
 };
 
 /*****   TYPED_ID   *****/
-class Typed_Id_AST : public AST_Tree {
+class Typed_Id_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
+    NODE_CONSTRUCTORS (Typed_Id_AST, Typed_Expr);
 
-    /** Stop the recursion. */
+    /** Should never be called. */
     void collectDecls(Decl *enclosing) {}
 
     /** Specify that the identifier is a parameter and collect
@@ -68,15 +69,25 @@ protected:
     /** Only recurse down to the identifier since the type should
      *  not need a declaration. */
     void addTargetDecls(Decl* enclosing) {
-       child(0)->addTargetDecls(enclosing);
+        child(0)->addTargetDecls(enclosing);
+    }
+
+    Decl* getDecl(int k = 0) {
+        return child(0)->getDecl();
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                         int& ambiguities,  bool& errors) {
-        // Unwind_Stack unwind_stack;
-        // Type_Ptr type = child(1)->asType();
-        // child(0)->getType()->unify(type, unwind_stack);
-        // setType(type);
+        Type_Ptr type = child(1)->asType();
+        bool success = child(0)->getType()->unify(type, global_bindings);
+
+        if (success && getDecl()->getTypesInternal().size() == 0) {
+            Type_Ptr_Vector result;
+            result.push_back(type);
+            getDecl()->replaceTypesInternal(result);
+        } else if (!success) {
+            error (loc(), "type error: type mismatch");
+        }
         return this;
     }
 
@@ -102,6 +113,10 @@ protected:
 
     NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
 
+    gcstring as_string() const {
+        return Tuple;
+    }
+
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
         // Perform type inference on children
@@ -111,7 +126,7 @@ protected:
         } else {
             stringstream ss;
             ss << ar;
-            // Ignoring case when tuple contains functions
+            // HACKHACK: Ignoring case when tuple contains functions
             Type_Ptr *params = new Type_Ptr[ar];
             for_each_child_var (c, this) {
                 c = c->resolveTypes(context, resolved, ambiguities, errors);
@@ -129,28 +144,48 @@ protected:
 NODE_FACTORY (Tuple_AST, TUPLE);
 
 /*****   LIST_DISPLAY   *****/
-class List_Display_AST : public AST_Tree {
+class List_Display_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (List_Display_AST, AST_Tree);
+    NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
+
+    gcstring as_string() const {
+        return List;
+    }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // int ar = arity();
-        // if (ar == 0) {
-        //     setType(primitiveDecls[List]->asType(1, Type::makeVar()));
-        // } else {
-        //     Type_Ptr type;
-        //     Unwind_Stack unwind_stack;
-        //     for_each_child_var (c, this) {
-        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
-        //         if (c_i_ == 0)
-        //             type = c->getType();
-        //         else
-        //             type->unify(c->getType(), unwind_stack);
-        //     } end_for;
-        //     setType(primitiveDecls[List]->asType(1, type));
-        // }
+        int ar = arity();
+        Type_Ptr_Vector result;
+        if (ar == 0) {
+            result.push_back(primitiveDecls[List]->asType(1, Type::makeVar()));
+            getDecl()->replaceTypesInternal(result);
+        } else {
+            Type_Ptr type;
+            bool success = true;
+            // HACKHACK: Ignoring case when list contains functions
+            for_each_child_var (c, this) {
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+                if (c_i_ == 0) {
+                    type = c->getDecl()->getTypesInternal()[0];
+                } else {
+                    bool r = type->unify(c->getDecl()->getTypesInternal()[0],
+                        global_bindings);
+                    if (r) {
+                        resolved += 1;
+                    } else {
+                        success = false;
+                    }
+                }
+            } end_for;
+            if (!success) {
+                errors = true;
+                error(loc(), "type error: incompatible types");
+            }
+
+            result.push_back(primitiveDecls[List]->asType(1, type));
+            getDecl()->replaceTypesInternal(result);
+        }
         return this;
     }
 };

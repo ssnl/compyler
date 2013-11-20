@@ -24,6 +24,7 @@ const gcstring Dict = "dict";
 const gcstring Bool = "bool";
 const gcstring File = "file";
 const gcstring Range = "range";
+const gcstring Target_List = "target_list";
 
 /** This map is filled in with (name, declaration) pairs
  *  from the standard prelude. They are used to supply the types

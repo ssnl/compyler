@@ -250,6 +250,7 @@ extern const gcstring Dict;
 extern const gcstring Bool;
 extern const gcstring File;
 extern const gcstring Range;
+extern const gcstring Target_List;
 
 class Environ : public gc {
 public:

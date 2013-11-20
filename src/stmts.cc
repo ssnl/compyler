@@ -68,48 +68,81 @@ protected:
             c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
         // Unification step
-        Type_Ptr_Vector left = child(0)->getDecl()->getTypesInternal();
-        Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
-        Type_Ptr_Vector result;
-        Type::unifies(left, right, result);
-        child(0)->getDecl()->replaceTypesInternal(result);
+        if (child(0)->as_string() == Target_List) {
+            // Multiple targets
+            Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
+            Type_Ptr_Vector left;
+            Type_Ptr_Vector result;
+            if (child(1)->as_string() == List) {
+                // If right side is a list
+                // HACKHACK: Lists only have one type
+                Type_Ptr_Vector tmp;
+                tmp.push_back(right[0]->typeParam(0));
+                for_each_child (c, child(0)) {
+                    result.clear();
+                    left = c->getDecl()->getTypesInternal();
+                    Type::unifies(left, tmp, result);
 
-        if (result.size() == 0) {
-            errors = true;
-            error(loc(), "type error: incompatible types");
-        } else if (result.size() == 1) {
-            resolved++;
-            child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+                    if (result.size() == 0) {
+                        errors = true;
+                        error(loc(), "type error: incompatible types");
+                    } else if (result.size() == 1) {
+                        resolved++;
+                        c->getDecl()->getType()->unify(result[0], global_bindings);
+                    } else {
+                        ambiguities += result.size() - 1;
+                    }
+                } end_for;
+            } else if (child(1)->as_string() == Tuple) {
+                // If right side is a Tuple
+                if (child(0)->arity() != child(1)->arity()) {
+                    error(loc(), "type error: too many values to unpack");
+                } else {
+                    // HACKHACK: Tuples only have one type
+                    Type_Ptr_Vector tmp;
+                    for_each_child (c, child(0)) {
+                        tmp.clear();
+                        result.clear();
+                        tmp.push_back(right[0]->typeParam(c_i_));
+                        left = c->getDecl()->getTypesInternal();
+                        Type::unifies(left, tmp, result);
+                        c->getDecl()->replaceTypesInternal(result);
+
+                        if (result.size() == 0) {
+                            errors = true;
+                            error(loc(), "type error: incompatible types");
+                        } else if (result.size() == 1) {
+                            resolved++;
+                            c->getDecl()->getType()->unify(result[0], global_bindings);
+                        } else {
+                            ambiguities += result.size() - 1;
+                        }
+                    } end_for;
+                }
+            } else {
+                // Otherwise Error
+                errors = true;
+                error(loc(), "type error: '%s' object is not iterable",
+                    child(1)->as_string().c_str());
+            }
         } else {
-            ambiguities += result.size() - 1;
-        }
+            // Single target
+            Type_Ptr_Vector left = child(0)->getDecl()->getTypesInternal();
+            Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
+            Type_Ptr_Vector result;
+            Type::unifies(left, right, result);
+            child(0)->getDecl()->replaceTypesInternal(result);
 
-        // // Unification step
-        // Unwind_Stack unwind_stack;
-        // Type_Ptr left = child(0)->getType();
-        // Type_Ptr right = child(1)->getType();
-        // if (left != NULL) {
-        //     // Single target: unify
-        //     left->unify(right, unwind_stack);
-        // } else {
-        //     // Multiple targets: check if RHS is tuple or list
-        //     gcstring rightName = right->as_string();
-        //     if (rightName.substr(0, rightName.length() - 1) == Tuple) {
-        //         if (child(0)->arity() ==  right->numParams())
-        //             error(loc(), "type error: too many values to unpack");
-        //         for_each_child (c, child(0)) {
-        //             c->getType()->unify(right->typeParam(c_i_), unwind_stack);
-        //         } end_for;
-        //     } else if (rightName == List) {
-        //         Type_Ptr type = right->typeParam(0);
-        //         for_each_child (c, child(0)) {
-        //             c->getType()->unify(type, unwind_stack);
-        //         } end_for;
-        //     } else {
-        //         error(loc(), "type error: '%s' object is not iterable",
-        //             rightName.c_str());
-        //     }
-        // }
+            if (result.size() == 0) {
+                errors = true;
+                error(loc(), "type error: incompatible types");
+            } else if (result.size() == 1) {
+                resolved++;
+                child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+            } else {
+                ambiguities += result.size() - 1;
+            }
+        }
         return this;
     }
 };
@@ -142,6 +175,11 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
+
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes (context, resolved, ambiguities, errors);
+        // } end_for;
+        // child(0)->getDecl()->getType()->unify()
         // for_each_child_var (c, this) {
         //     c = c->resolveTypes (context, resolved, ambiguities, errors);
         // } end_for;
@@ -513,8 +551,8 @@ protected:
 
     NODE_CONSTRUCTORS (Target_List_AST, AST_Tree);
 
-    Type_Ptr getType() {
-        return NULL;
+    gcstring as_string () const {
+        return Target_List;
     }
 };
 
