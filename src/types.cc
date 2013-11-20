@@ -491,7 +491,6 @@ protected:
         child (0)->addDecl (decl);
     }
 
-
     int numTypeParams ()
     {
         return child(1)->arity();
