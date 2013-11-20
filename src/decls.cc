@@ -262,19 +262,19 @@ public:
     }
 
     Type_Ptr getTypeInternal (int k) const {
-        return NULL;
+        return _type_vector[k];
     }
 
     int getNumTypesInternal () const {
-        return -1;
+        return _type_vector.size();
     }
 
     void addTypeInternal (Type_Ptr type) {
-
+        return _type_vector.push_back(type);
     }
 
     void removeTypeInternal(int k) {
-
+        _type_vector.erase(_type_vector.begin() + k);
     }
 
 protected:
