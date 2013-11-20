@@ -1,3 +1,10 @@
 # misc: random tests
-def foo(x::int):
-  pass
+x = 3
+def f():
+  print x
+
+def f(x):
+  print x
+
+def f(x, y):
+  print x, y
