@@ -1,8 +1,4 @@
 # misc: random tests
-def foo():
+class A of [$T]:
   pass
-def foo(x):
-  pass
-
-x = foo
-x(3)
+A of int()

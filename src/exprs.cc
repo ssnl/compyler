@@ -324,6 +324,10 @@ protected:
             id->set_loc(loc());
             nu->set_loc(loc());
             call1->set_loc(loc());
+            // Fix the declaration for the __init__ id
+            gcstring name = calledExpr()->child(0)->as_token()->as_string();
+            Decl* decl = outer_environ->find(name);
+            id->resolveSimpleIds(decl->getEnviron());
             return call1;
         }
         return this;

@@ -2,6 +2,6 @@
 class A:
     def f(self,x):
         def g():
-            for y in (1,2):
+            for y in [1,2]:
                 if self:
                     pass
