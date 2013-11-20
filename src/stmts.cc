@@ -60,37 +60,37 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
-        cout << "  (Assign_AST) resolving types for " << as_string() << endl;
-        // Perform type inference on children
-        for_each_child_var (c, this) {
-            c = c->resolveTypes(context, resolved, ambiguities, errors);
-        } end_for;
-        // Unification step
-        Unwind_Stack unwind_stack;
-        Type_Ptr left = child(0)->getType();
-        Type_Ptr right = child(1)->getType();
-        if (left != NULL) {
-            // Single target: unify
-            left->unify(right, unwind_stack);
-        } else {
-            // Multiple targets: check if RHS is tuple or list
-            gcstring rightName = right->as_string();
-            if (rightName.substr(0, rightName.length() - 1) == Tuple) {
-                if (child(0)->arity() ==  right->numParams())
-                    error(loc(), "type error: too many values to unpack");
-                for_each_child (c, child(0)) {
-                    c->getType()->unify(right->typeParam(c_i_), unwind_stack);
-                } end_for;
-            } else if (rightName == List) {
-                Type_Ptr type = right->typeParam(0);
-                for_each_child (c, child(0)) {
-                    c->getType()->unify(type, unwind_stack);
-                } end_for;
-            } else {
-                error(loc(), "type error: '%s' object is not iterable",
-                    rightName.c_str());
-            }
-        }
+        // cout << "  (Assign_AST) resolving types for " << as_string() << endl;
+        // // Perform type inference on children
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
+        // } end_for;
+        // // Unification step
+        // Unwind_Stack unwind_stack;
+        // Type_Ptr left = child(0)->getType();
+        // Type_Ptr right = child(1)->getType();
+        // if (left != NULL) {
+        //     // Single target: unify
+        //     left->unify(right, unwind_stack);
+        // } else {
+        //     // Multiple targets: check if RHS is tuple or list
+        //     gcstring rightName = right->as_string();
+        //     if (rightName.substr(0, rightName.length() - 1) == Tuple) {
+        //         if (child(0)->arity() ==  right->numParams())
+        //             error(loc(), "type error: too many values to unpack");
+        //         for_each_child (c, child(0)) {
+        //             c->getType()->unify(right->typeParam(c_i_), unwind_stack);
+        //         } end_for;
+        //     } else if (rightName == List) {
+        //         Type_Ptr type = right->typeParam(0);
+        //         for_each_child (c, child(0)) {
+        //             c->getType()->unify(type, unwind_stack);
+        //         } end_for;
+        //     } else {
+        //         error(loc(), "type error: '%s' object is not iterable",
+        //             rightName.c_str());
+        //     }
+        // }
         return this;
     }
 };
@@ -123,14 +123,14 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        for_each_child_var (c, this) {
-            c = c->resolveTypes (context, resolved, ambiguities, errors);
-        } end_for;
-        Unwind_Stack unwind_stack;
-        if (!child(0)->isMissing()) {
-            child(0)->getType()->unify(primitiveDecls[File]->asType(),
-                unwind_stack);
-        }
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes (context, resolved, ambiguities, errors);
+        // } end_for;
+        // Unwind_Stack unwind_stack;
+        // if (!child(0)->isMissing()) {
+        //     child(0)->getType()->unify(primitiveDecls[File]->asType(),
+        //         unwind_stack);
+        // }
         return this;
     }
 };
@@ -176,33 +176,33 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        for_each_child_var (c, this) {
-            c = c->resolveTypes (context, resolved, ambiguities, errors);
-        } end_for;
-        bool success = false;
-        Unwind_Stack unwind_stack;
-        Type_Ptr left = child(0)->getType();
-        Type_Ptr right = child(1)->getType();
-        gcstring leftName = left->as_string();
-        gcstring rightName = right->as_string();
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes (context, resolved, ambiguities, errors);
+        // } end_for;
+        // bool success = false;
+        // Unwind_Stack unwind_stack;
+        // Type_Ptr left = child(0)->getType();
+        // Type_Ptr right = child(1)->getType();
+        // gcstring leftName = left->as_string();
+        // gcstring rightName = right->as_string();
 
-        if (rightName != List && rightName != Range && rightName != Str)
-            error(loc(),
-                "type error: '%s' object is not an iterable",
-                rightName.c_str());
-        if (rightName == List) {
-            success = left->unify(right->typeParam(0), unwind_stack);
-            if (!success)
-                error(loc(),
-                    "type error: type of '%s' does not match list type",
-                    leftName.c_str());
-        } else if (rightName == Range && leftName != Int) {
-            error(loc(), "type error: type of '%s' must be int",
-                leftName.c_str());
-        } else if (rightName == Str && leftName != Str) {
-            error(loc(), "type error: type of '%s' must be str",
-                leftName.c_str());
-        }
+        // if (rightName != List && rightName != Range && rightName != Str)
+        //     error(loc(),
+        //         "type error: '%s' object is not an iterable",
+        //         rightName.c_str());
+        // if (rightName == List) {
+        //     success = left->unify(right->typeParam(0), unwind_stack);
+        //     if (!success)
+        //         error(loc(),
+        //             "type error: type of '%s' does not match list type",
+        //             leftName.c_str());
+        // } else if (rightName == Range && leftName != Int) {
+        //     error(loc(), "type error: type of '%s' must be int",
+        //         leftName.c_str());
+        // } else if (rightName == Str && leftName != Str) {
+        //     error(loc(), "type error: type of '%s' must be str",
+        //         leftName.c_str());
+        // }
         return this;
     }
 };
@@ -289,52 +289,52 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
-        cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
-        Decl* decl = getDecl();
-        AST_Ptr me = this;
-        cout << "    - resolving formals..." << endl;
-        // Resolve formal params
-        for_each_child_var (c, me->child(1)) {
-            c = c->resolveTypes(decl, resolved, ambiguities, errors);
-        } end_for;
-        cout << "    - resolving block..." << endl;
-        // Resolve function body
-        for_each_child_var (c, me->child(3)) {
-            c = c->resolveTypesOuter(decl);
-        } end_for;
-        Unwind_Stack unwind_stack;
-        Type_Ptr functype = decl->getType();
-        cout << "    - unifying self..." << endl;
-        // Unify self (if required)
-        me = _setupSelf(context, resolved, ambiguities, errors);
-        // Unify parameters with formals list
-        cout << "    - unifying params with formals..." << endl;
-        for_each_child (c, me->child(1)) {
-            cout << "      - unifying " << c->getType()->as_string() <<
-                " with " << functype->paramType(c_i_)->as_string() << endl;
-            c->getType()->unify(functype->paramType(c_i_), unwind_stack);
-        } end_for;
-        // Unify return type
-        cout << "    - unifying return type..." << endl;
-        Type_Ptr returnType = functype->returnType();
-        bool noReturn = returnType->binding() == returnType;
-        if (noReturn) {
-            // If there is no function return parameter
-            if (me->child(2)->isMissing()) {
-                Decl* nonedecl = outer_environ->find("__None__");
-                Type_Ptr nonetype = nonedecl->getType()->returnType();
-                returnType->unify(nonetype,unwind_stack);
-            // Otherwise, there should be a return parameter
-            } else {
-                error(loc(), "type error: expected function %s to return a value",
-                    me->child(0)->as_token()->as_string().c_str());
-            }
-        } else {
-            // If there is a function return parameter
-            if (!me->child(2)->isMissing())
-                returnType->unify(me->child(2)->asType(), unwind_stack);
-        }
-        return me;
+        // cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
+        // Decl* decl = getDecl();
+        // AST_Ptr me = this;
+        // cout << "    - resolving formals..." << endl;
+        // // Resolve formal params
+        // for_each_child_var (c, me->child(1)) {
+        //     c = c->resolveTypes(decl, resolved, ambiguities, errors);
+        // } end_for;
+        // cout << "    - resolving block..." << endl;
+        // // Resolve function body
+        // for_each_child_var (c, me->child(3)) {
+        //     c = c->resolveTypesOuter(decl);
+        // } end_for;
+        // Unwind_Stack unwind_stack;
+        // Type_Ptr functype = decl->getType();
+        // cout << "    - unifying self..." << endl;
+        // // Unify self (if required)
+        // me = _setupSelf(context, resolved, ambiguities, errors);
+        // // Unify parameters with formals list
+        // cout << "    - unifying params with formals..." << endl;
+        // for_each_child (c, me->child(1)) {
+        //     cout << "      - unifying " << c->getType()->as_string() <<
+        //         " with " << functype->paramType(c_i_)->as_string() << endl;
+        //     c->getType()->unify(functype->paramType(c_i_), unwind_stack);
+        // } end_for;
+        // // Unify return type
+        // cout << "    - unifying return type..." << endl;
+        // Type_Ptr returnType = functype->returnType();
+        // bool noReturn = returnType->binding() == returnType;
+        // if (noReturn) {
+        //     // If there is no function return parameter
+        //     if (me->child(2)->isMissing()) {
+        //         Decl* nonedecl = outer_environ->find("__None__");
+        //         Type_Ptr nonetype = nonedecl->getType()->returnType();
+        //         returnType->unify(nonetype,unwind_stack);
+        //     // Otherwise, there should be a return parameter
+        //     } else {
+        //         error(loc(), "type error: expected function %s to return a value",
+        //             me->child(0)->as_token()->as_string().c_str());
+        //     }
+        // } else {
+        //     // If there is a function return parameter
+        //     if (!me->child(2)->isMissing())
+        //         returnType->unify(me->child(2)->asType(), unwind_stack);
+        // }
+        return this;
     }
 };
 
@@ -422,11 +422,11 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
-        cout << "  (Class_AST) resolving types for " << child(0)->as_string() << endl;
-        Decl* decl = getDecl();
-        for_each_child_var (c, this) {
-            c = c->resolveTypes(decl, resolved, ambiguities, errors);
-        } end_for;
+        // cout << "  (Class_AST) resolving types for " << child(0)->as_string() << endl;
+        // Decl* decl = getDecl();
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(decl, resolved, ambiguities, errors);
+        // } end_for;
         return this;
     }
 

@@ -113,9 +113,24 @@ Decl::getType () const
 }
 
 void
-Decl::setType (Type_Ptr type)
-{
+Decl::setType (Type_Ptr type) {}
+
+Type_Ptr
+Decl::getTypeInternal (int k) const {
+    return NULL;
 }
+
+int
+Decl::getNumTypesInternal () const {
+    return -1;
+}
+
+void
+Decl::setTypeInternal (int k, Type_Ptr type) {}
+
+void
+Decl::removeTypeInternal(int k) {}
+
 
 int
 Decl::getPosition () const

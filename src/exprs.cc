@@ -15,32 +15,11 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
-/*****   TYPED_EXPR *****/
-class Typed_Expr : public AST_Tree {
-protected:
-
-    NODE_BASE_CONSTRUCTORS (Typed_Expr, AST_Tree);
-
-    /** Sets the type of the expression. */
-    void setType(Type_Ptr type) {
-        _type = type;
-    }
-
-    /** Override AST::getType to return the type of the expression. Until
-     *  the expression is resolved the default is NULL. */
-    Type_Ptr getType() {
-        return _type;
-    }
-
-private:
-    Type_Ptr _type;
-};
-
 /*****   TYPED_ID   *****/
-class Typed_Id_AST : public Typed_Expr {
+class Typed_Id_AST : public AST_Tree {
 protected:
 
-    NODE_CONSTRUCTORS (Typed_Id_AST, Typed_Expr);
+    NODE_CONSTRUCTORS (Typed_Id_AST, AST_Tree);
 
     /** Stop the recursion. */
     void collectDecls(Decl *enclosing) {}
@@ -60,10 +39,10 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                         int& ambiguities,  bool& errors) {
-        Unwind_Stack unwind_stack;
-        Type_Ptr type = child(1)->asType();
-        child(0)->getType()->unify(type, unwind_stack);
-        setType(type);
+        // Unwind_Stack unwind_stack;
+        // Type_Ptr type = child(1)->asType();
+        // child(0)->getType()->unify(type, unwind_stack);
+        // setType(type);
         return this;
     }
 
@@ -84,26 +63,26 @@ protected:
 NODE_FACTORY (Expr_List_AST, EXPR_LIST);
 
 /*****   TUPLE   *****/
-class Tuple_AST : public Typed_Expr {
+class Tuple_AST : public AST_Tree {
 protected:
 
-    NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
+    NODE_CONSTRUCTORS (Tuple_AST, AST_Tree);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        int ar = arity();
-        if (ar > 3) {
-            error (loc(), "type error: tuple too large");
-        } else {
-            Type_Ptr *params = new Type_Ptr[ar];
-            for_each_child_var (c, this) {
-                params[c_i_] = c->getType();
-                c = c->resolveTypes(context, resolved, ambiguities, errors);
-            } end_for;
-            stringstream ss;
-            ss << ar;
-            setType(primitiveDecls[Tuple.c_str() + ss.str()]->asType(ar, params));
-        }
+        // int ar = arity();
+        // if (ar > 3) {
+        //     error (loc(), "type error: tuple too large");
+        // } else {
+        //     Type_Ptr *params = new Type_Ptr[ar];
+        //     for_each_child_var (c, this) {
+        //         params[c_i_] = c->getType();
+        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
+        //     } end_for;
+        //     stringstream ss;
+        //     ss << ar;
+        //     setType(primitiveDecls[Tuple.c_str() + ss.str()]->asType(ar, params));
+        // }
         return this;
     }
 };
@@ -111,28 +90,28 @@ protected:
 NODE_FACTORY (Tuple_AST, TUPLE);
 
 /*****   LIST_DISPLAY   *****/
-class List_Display_AST : public Typed_Expr {
+class List_Display_AST : public AST_Tree {
 protected:
 
-    NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
+    NODE_CONSTRUCTORS (List_Display_AST, AST_Tree);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        int ar = arity();
-        if (ar == 0) {
-            setType(primitiveDecls[List]->asType(1, Type::makeVar()));
-        } else {
-            Type_Ptr type;
-            Unwind_Stack unwind_stack;
-            for_each_child_var (c, this) {
-                c = c->resolveTypes(context, resolved, ambiguities, errors);
-                if (c_i_ == 0)
-                    type = c->getType();
-                else
-                    type->unify(c->getType(), unwind_stack);
-            } end_for;
-            setType(primitiveDecls[List]->asType(1, type));
-        }
+        // int ar = arity();
+        // if (ar == 0) {
+        //     setType(primitiveDecls[List]->asType(1, Type::makeVar()));
+        // } else {
+        //     Type_Ptr type;
+        //     Unwind_Stack unwind_stack;
+        //     for_each_child_var (c, this) {
+        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
+        //         if (c_i_ == 0)
+        //             type = c->getType();
+        //         else
+        //             type->unify(c->getType(), unwind_stack);
+        //     } end_for;
+        //     setType(primitiveDecls[List]->asType(1, type));
+        // }
         return this;
     }
 };
@@ -147,15 +126,15 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        if (!child(0)->isMissing()) {
-            for_each_child_var (c, this) {
-                c = c->resolveTypes(context, resolved, ambiguities, errors);
-            } end_for;
-            Unwind_Stack unwind_stack;
-            Type_Ptr functype = context->getType();
-            Type_Ptr ret_type = functype->returnType();
-            child(0)->getType()->unify(ret_type, unwind_stack);
-        }
+        // if (!child(0)->isMissing()) {
+        //     for_each_child_var (c, this) {
+        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
+        //     } end_for;
+        //     Unwind_Stack unwind_stack;
+        //     Type_Ptr functype = context->getType();
+        //     Type_Ptr ret_type = functype->returnType();
+        //     child(0)->getType()->unify(ret_type, unwind_stack);
+        // }
         return this;
     }
 };
@@ -163,19 +142,19 @@ protected:
 NODE_FACTORY (Return_AST, RETURN);
 
 /*****   LOGICAL EXPRESSIONS   *****/
-class Logical_AST : public Typed_Expr {
+class Logical_AST : public AST_Tree {
 protected:
 
-    NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
+    NODE_BASE_CONSTRUCTORS (Logical_AST, AST_Tree);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        for_each_child_var (c, this) {
-            c = c->resolveTypes(context, resolved, ambiguities, errors);
-        } end_for;
-        Unwind_Stack unwind_stack;
-        child(0)->getType()->unify(child(1)->getType(), unwind_stack);
-        setType(child(0)->getType());
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
+        // } end_for;
+        // Unwind_Stack unwind_stack;
+        // child(0)->getType()->unify(child(1)->getType(), unwind_stack);
+        // setType(child(0)->getType());
         return this;
     }
 };
@@ -196,21 +175,21 @@ protected:
 
 NODE_FACTORY (Or_AST, OR);
 
-class If_Expr_AST : public Typed_Expr {
+class If_Expr_AST : public AST_Tree {
 protected:
 
-    NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
+    NODE_CONSTRUCTORS (If_Expr_AST, AST_Tree);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        for_each_child_var (c, this) {
-            c = c->resolveTypes(context, resolved, ambiguities, errors);
-        } end_for;
-        Unwind_Stack unwind_stack;
-        Type_Ptr left = child(1)->getType();
-        Type_Ptr right = child(2)->getType();
-        left->unify(right, unwind_stack);
-        setType(left);
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
+        // } end_for;
+        // Unwind_Stack unwind_stack;
+        // Type_Ptr left = child(1)->getType();
+        // Type_Ptr right = child(2)->getType();
+        // left->unify(right, unwind_stack);
+        // setType(left);
         return this;
     }
 };
@@ -222,10 +201,10 @@ NODE_FACTORY (If_Expr_AST, IF_EXPR);
 /** The supertype of "callable" things, including ordinary calls,
  *  binary operators, unary operators, subscriptions, and slices. */
 
-class Callable : public Typed_Expr {
+class Callable : public AST_Tree {
 protected:
 
-    NODE_BASE_CONSTRUCTORS (Callable, Typed_Expr);
+    NODE_BASE_CONSTRUCTORS (Callable, AST_Tree);
 
     /** Returns the expression representing the quantity that is
      *  called to evaluate this expression. */
@@ -265,44 +244,44 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        cout << "  (Callable) resolving types for " + child(0)->as_string();
-        for_each_child_var (c, this) {
-            // If the child is not an id node, resolve its type
-            if (c_i_ != 0) {
-                c = c->resolveTypes(context,resolved,ambiguities,errors);
-            }
-        } end_for;
-        Decl_Vector decls;
-        Unwind_Stack unwind_stack;
-        gcstring idname = child(0)->as_string();
-        if (idname.size() == 0) {
-            error(loc(), "you done fucked up.");
-        }
-        Type_Ptr functype;
-        bool success = true;
-        int success_count = 0;
-        Decl* success_decl;
-        context->getEnviron()->find(idname, decls);
-        for (int i = 0; i < decls.size(); i++) {
-            Decl* d = decls.at(i);
-            success = true;
-            functype = d->getType();
-            for_each_child (c, child(1)) {
-                success = success &&
-                    functype->paramType(c_i_)->unify(c->asType(), unwind_stack);
-            } end_for;
-            if (success) {
-                success_decl = d;
-                success_count++;
-            }
-        }
-        if (success_count == 0) {
-            error(loc(), "type error: invalid function call");
-        } // TODO else if > 1 handle ambiguous call error
-        else if (success_count == 1) {
-            setType(success_decl->getType()->returnType());
-        }
-        // Set type of this to the return type
+        // cout << "  (Callable) resolving types for " + child(0)->as_string();
+        // for_each_child_var (c, this) {
+        //     // If the child is not an id node, resolve its type
+        //     if (c_i_ != 0) {
+        //         c = c->resolveTypes(context,resolved,ambiguities,errors);
+        //     }
+        // } end_for;
+        // Decl_Vector decls;
+        // Unwind_Stack unwind_stack;
+        // gcstring idname = child(0)->as_string();
+        // if (idname.size() == 0) {
+        //     error(loc(), "you done fucked up.");
+        // }
+        // Type_Ptr functype;
+        // bool success = true;
+        // int success_count = 0;
+        // Decl* success_decl;
+        // context->getEnviron()->find(idname, decls);
+        // for (int i = 0; i < decls.size(); i++) {
+        //     Decl* d = decls.at(i);
+        //     success = true;
+        //     functype = d->getType();
+        //     for_each_child (c, child(1)) {
+        //         success = success &&
+        //             functype->paramType(c_i_)->unify(c->asType(), unwind_stack);
+        //     } end_for;
+        //     if (success) {
+        //         success_decl = d;
+        //         success_count++;
+        //     }
+        // }
+        // if (success_count == 0) {
+        //     error(loc(), "type error: invalid function call");
+        // } // TODO else if > 1 handle ambiguous call error
+        // else if (success_count == 1) {
+        //     setType(success_decl->getType()->returnType());
+        // }
+        // // Set type of this to the return type
         return this;
     }
 };

@@ -90,8 +90,20 @@ public:
     /** Get the type of the entity I represent. */
     virtual Type_Ptr getType () const;
 
-    /** Set my type to TYPE. */
+    /** Sets the Kth type to TYPE. */
     virtual void setType (Type_Ptr type);
+
+    /** Get the Kth internal type */
+    virtual Type_Ptr getTypeInternal (int k) const;
+
+    /** Get the number of internal types. */
+    virtual int getNumTypesInternal () const;
+
+    /** Set the Kth internal type to TYPE */
+    virtual void setTypeInternal (int k, Type_Ptr type);
+
+    /** Remove the Kth internal type */
+    virtual void removeTypeInternal(int k);
 
     /** My associated AST, if any.  A Decl may be associated with a
      *  particular AST that corresponds to the declaration of the
