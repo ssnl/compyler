@@ -182,7 +182,6 @@ protected:
                 errors = true;
                 error(loc(), "type error: incompatible types");
             }
-
             result.push_back(primitiveDecls[List]->asType(1, type));
             getDecl()->replaceTypesInternal(result);
         }
@@ -191,6 +190,8 @@ protected:
 };
 
 NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
+
+
 
 /*****   RETURN    *****/
 class Return_AST : public AST_Tree {

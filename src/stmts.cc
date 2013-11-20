@@ -116,7 +116,6 @@ protected:
                         ambiguities += result.size() - 1;
                     }
                 } end_for;
-                _name = List;
             } else if (child(1)->as_string() == Tuple) {
                 // If right side is a Tuple
                 if (child(0)->arity() != child(1)->arity()) {
@@ -142,7 +141,6 @@ protected:
                             ambiguities += result.size() - 1;
                         }
                     } end_for;
-                    _name = Tuple;
                 }
             } else {
                 // Otherwise Error
@@ -155,20 +153,40 @@ protected:
             // Single target
             left = child(0)->getDecl()->getTypesInternal();
             right = child(1)->getDecl()->getTypesInternal();
-            Type::unifies(left, right, result);
-            child(0)->getDecl()->replaceTypesInternal(result);
+            if (child(1)->as_string() == List) {
+                // HACKHACK: Lists only have one type
+                Type::unifies(left, right, result);
 
-            if (result.size() == 0) {
-                errors = true;
-                error(loc(), "type error: incompatible types");
-            } else if (result.size() == 1) {
-                resolved++;
-                child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+                if (result.size() == 0) {
+                    errors = true;
+                    error(loc(), "type error: incompatible types");
+                } else if (result.size() == 1) {
+                    resolved++;
+                    child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+                } else {
+                    ambiguities += result.size() - 1;
+                }
+                getDecl()->replaceTypesInternal(result);
             } else {
-                ambiguities += result.size() - 1;
+                Type::unifies(left, right, result);
+                child(0)->getDecl()->replaceTypesInternal(result);
+
+                if (result.size() == 0) {
+                    errors = true;
+                    error(loc(), "type error: incompatible types");
+                } else if (result.size() == 1) {
+                    resolved++;
+                    child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+                } else {
+                    ambiguities += result.size() - 1;
+                }
+                getDecl()->replaceTypesInternal(result);
             }
-            getDecl()->replaceTypesInternal(result);
         }
+        if (child(1)->as_string() == List)
+            _name = List;
+        else if (child(1)->as_string() == Tuple)
+            _name = Tuple;
         return this;
     }
 
