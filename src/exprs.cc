@@ -119,6 +119,7 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
+        Type_Ptr_Vector result;
         // Perform type inference on children
         int ar = arity();
         if (ar > 3) {
@@ -132,11 +133,10 @@ protected:
                 c = c->resolveTypes(context, resolved, ambiguities, errors);
                 params[c_i_] = c->getDecl()->getTypesInternal()[0];
             } end_for;
-            Type_Ptr_Vector result;
             result.push_back(primitiveDecls[Tuple.c_str() + ss.str()]
                 ->asType(ar, params));
-            getDecl()->replaceTypesInternal(result);
         }
+        getDecl()->replaceTypesInternal(result);
         return this;
     }
 };
@@ -249,21 +249,33 @@ protected:
 
 NODE_FACTORY (Or_AST, OR);
 
-class If_Expr_AST : public AST_Tree {
+class If_Expr_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (If_Expr_AST, AST_Tree);
+    NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // for_each_child_var (c, this) {
-        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
-        // } end_for;
-        // Unwind_Stack unwind_stack;
-        // Type_Ptr left = child(1)->getType();
-        // Type_Ptr right = child(2)->getType();
-        // left->unify(right, unwind_stack);
-        // setType(left);
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        AST_Ptr e1 = child(1);
+        AST_Ptr e2 = child(2);
+        Type_Ptr_Vector vec1 = e1->getDecl()->getTypesInternal();
+        Type_Ptr_Vector vec2 = e2->getDecl()->getTypesInternal();
+        Type_Ptr_Vector result;
+        Type::unifies(vec1, vec2, result);
+        e1->getDecl()->replaceTypesInternal(result);
+        if (result.size() == 0) {
+            errors = true;
+            error(loc(), "type error: type mismatch");
+        } else if (result.size() == 1) {
+            resolved++;
+            e1->getType()->unify(result[0], global_bindings);
+        } else {
+            ambiguities += result.size() - 1;
+        }
+        getDecl()->replaceTypesInternal(result);
         return this;
     }
 };

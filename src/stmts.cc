@@ -47,9 +47,24 @@ private:
 class Assign_AST : public AST_Tree {
 protected:
 
+    /** Simple overriding that makes it easy to associate
+     *  Region AST_Tree's with a corresponding declaration. */
+    Decl* getDecl(int k = 0) {
+        return _decl;
+    }
+
+    /** Simple overriding to associate Region AST_Tree's with
+     *  a corresponding declaration. */
+    void addDecl(Decl* decl) {
+        _decl = decl;
+    }
+
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
+        AST_Ptr dummy[1];
+        Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
+        addDecl(makeTypeVarDecl (result->as_string (), result));
         // Specify that left hand side is a target
         child(0)->addTargetDecls(enclosing);
         // Recursively collect declarations from right hand side
@@ -60,6 +75,13 @@ protected:
         return child(1)->getType();
     }
 
+    gcstring as_string () const {
+        if (_name == "")
+            return "Assign";
+        return _name;
+    }
+
+
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         cout << "  (Assign_AST) resolving types for " << as_string() << endl;
@@ -67,12 +89,13 @@ protected:
         for_each_child_var (c, this) {
             c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
+        Type_Ptr_Vector right;
+        Type_Ptr_Vector left;
+        Type_Ptr_Vector result;
         // Unification step
         if (child(0)->as_string() == Target_List) {
             // Multiple targets
-            Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
-            Type_Ptr_Vector left;
-            Type_Ptr_Vector result;
+            right = child(1)->getDecl()->getTypesInternal();
             if (child(1)->as_string() == List) {
                 // If right side is a list
                 // HACKHACK: Lists only have one type
@@ -93,6 +116,7 @@ protected:
                         ambiguities += result.size() - 1;
                     }
                 } end_for;
+                _name = List;
             } else if (child(1)->as_string() == Tuple) {
                 // If right side is a Tuple
                 if (child(0)->arity() != child(1)->arity()) {
@@ -118,6 +142,7 @@ protected:
                             ambiguities += result.size() - 1;
                         }
                     } end_for;
+                    _name = Tuple;
                 }
             } else {
                 // Otherwise Error
@@ -125,11 +150,11 @@ protected:
                 error(loc(), "type error: '%s' object is not iterable",
                     child(1)->as_string().c_str());
             }
+            getDecl()->replaceTypesInternal(right);
         } else {
             // Single target
-            Type_Ptr_Vector left = child(0)->getDecl()->getTypesInternal();
-            Type_Ptr_Vector right = child(1)->getDecl()->getTypesInternal();
-            Type_Ptr_Vector result;
+            left = child(0)->getDecl()->getTypesInternal();
+            right = child(1)->getDecl()->getTypesInternal();
             Type::unifies(left, right, result);
             child(0)->getDecl()->replaceTypesInternal(result);
 
@@ -142,9 +167,15 @@ protected:
             } else {
                 ambiguities += result.size() - 1;
             }
+            getDecl()->replaceTypesInternal(result);
         }
         return this;
     }
+
+private:
+
+    Decl* _decl;
+    gcstring _name;
 };
 
 NODE_FACTORY (Assign_AST, ASSIGN);
@@ -176,9 +207,10 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
 
-        // for_each_child_var (c, this) {
-        //     c = c->resolveTypes (context, resolved, ambiguities, errors);
-        // } end_for;
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+        return this;
         // child(0)->getDecl()->getType()->unify()
         // for_each_child_var (c, this) {
         //     c = c->resolveTypes (context, resolved, ambiguities, errors);
@@ -188,7 +220,7 @@ protected:
         //     child(0)->getType()->unify(primitiveDecls[File]->asType(),
         //         unwind_stack);
         // }
-        return this;
+        // return this;
     }
 };
 
@@ -233,6 +265,33 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+        bool success = true;
+        AST_Ptr targets = child(0);
+        AST_Ptr expr = child(1);
+        // cout << "TargetDecl: " << targets->getDecl()->getName() << endl;
+        Type_Ptr targetType = targets->getDecl()->getType();
+        gcstring targetName = targetType->binding()->as_string().c_str();
+        Type_Ptr exprType = expr->getDecl()->getTypesInternal()[0];
+        gcstring exprTypeName = exprType->as_string().c_str();
+        // gcstring targetName = exprType->binding()->as_string().c_str();
+        // gcstring exprTypeName = expr->getType()->as_string();
+        cout << "target: " << targetName << "; expr: " << exprTypeName << endl;
+        cout << "exprTypeName: " << exprTypeName << endl;
+        if (exprTypeName == "list") {
+            for_each_child (c, child(1)) {
+                targetType->unify(c->getType(), global_bindings);
+            } end_for;
+        } else if (exprTypeName == "range") {
+
+        } else if (exprTypeName == "str") {
+            targetType->unify(primitiveDecls[Str]->asType(), global_bindings);
+        }
+        // cout << exprType << endl;
+        // cout << "ExprType: " << exprType->as_string() << endl;
+        return this;
         // for_each_child_var (c, this) {
         //     c = c->resolveTypes (context, resolved, ambiguities, errors);
         // } end_for;
@@ -260,11 +319,11 @@ protected:
         //     error(loc(), "type error: type of '%s' must be str",
         //         leftName.c_str());
         // }
-        return this;
     }
 };
 
 NODE_FACTORY (For_AST, FOR);
+
 
 /*****   DEF   *****/
 class Def_AST : public Region_AST {

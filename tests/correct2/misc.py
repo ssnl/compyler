@@ -1,2 +1,2 @@
 # misc: random tests
-print 5
+x, y = a, b = (1, "hi")
