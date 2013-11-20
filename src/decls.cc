@@ -462,11 +462,6 @@ protected:
     bool isMethod () const {
 	return true;
     }
-
-private:
-
-    // mutable Type_Ptr _selectedType;
-
 };
 
 Decl*
