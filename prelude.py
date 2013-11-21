@@ -27,9 +27,9 @@ class str:
 #     def __init__(self::file):
 #         native "__donotcall__"
 
-# class list of [$T]:
-#     def __init__(self::list of [$T]):
-#         native "__donotcall__"
+class list of [$T]:
+    def __init__(self::list of [$T]):
+        native "__donotcall__"
 
 # class dict of [$Key, $Value]:
 #     def __init__(self::dict of [$Key, $Value]):
@@ -53,8 +53,8 @@ class tuple3 of [$T1, $T2, $T3]:
 
 # # The value None.  References to None are converted to calls __None__().
 
-# def __None__():
-#     native "__None__"
+def __None__():
+    native "__None__"
 
 # # Type bool
 

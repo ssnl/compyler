@@ -5,4 +5,4 @@ def foo(x):
 def bar(x,y):
     return foo
 
-bar("hi", "bye")("hi")(3)
+a = bar("hi", "bye")("hi")(3)

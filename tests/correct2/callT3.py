@@ -2,4 +2,4 @@
 def foo(x):
     return foo
 
-foo(5)("hi")(4)
+a =foo(5)("hi")(4)

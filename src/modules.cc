@@ -69,14 +69,28 @@ protected:
         }
         // 4. Perform type inference
         cout << "(Module_AST) resolving outer types..." << endl;
-        // HACKHACK: Using resolveTypeOuter this way may be problematic
-        // Same methodology for classes and methods that may need to be
-        // reverted.
+
         self = self->resolveTypesOuter(me);
 
         // TODO: Print errors
 
         // 5. Final rewrites (TODO)
+        AST_Ptr r;
+        r = this;
+        int resolved0, ambiguities0, resolved, ambiguities;
+        bool errors;
+        resolved = ambiguities = -1;
+        do {
+            resolved0 = resolved;
+            ambiguities0 = ambiguities;
+            resolved = ambiguities = 0;
+            errors = false;
+            r = r->resolveTypes (me, resolved, ambiguities, errors);
+        } while (!errors && (resolved != resolved0 || ambiguities != ambiguities0));
+
+        if (ambiguities != 0) {
+            error(loc(), "type error: %d ambiguities", ambiguities);
+        }
 
         return self;
     }

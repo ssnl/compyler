@@ -185,9 +185,20 @@ protected:
         gcstring text = as_string();
         Decl_Vector decls;
         env->find(text, decls);
-        if (!decls.empty()) {
-            for (int i = decls.size() - 1; i >= 0; i--)
-                addDecl(decls.at(i));
+        cout << "Id: " << text << " has " << decls.size() << " decls" << endl;
+        if (decls.size() == 1) {
+            // Simple variable
+            addDecl(decls[0]);
+        } else if (decls.size() > 1) {
+            // Must be an overloaded function
+            // _type = Type::makeVar();
+            // AST_Ptr dummy[1];
+            // Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
+            // addDecl(makeTypeVarDecl (result->as_string (), result));
+            for (int i = 0; i < decls.size(); i++) {
+                addDecl(decls[i]);
+            }
+            cout << "-----> " << "Decl: " << getDecl()->getName() << endl;
         } else {
             error (loc(), "name error: name '%s' is not defined", text.c_str());
         }
@@ -213,6 +224,44 @@ protected:
         } else {
             error (loc(), "syntax error: duplicate argument '%s' in function definition",
                 text.c_str());
+        }
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        gcstring text = as_string();
+        Type_Ptr_Vector types = getDecl()->getTypesInternal();
+        cout << "       (Id_Token) resolving types for " << as_string() << endl;
+        cout << "           number of internal types: " << types.size() << endl;
+        cout << "           number of decls in me   : " << numDecls() << endl;
+        if (types.size() == 0) {
+            Type_Ptr_Vector temp;
+            for (int i = 0; i < numDecls(); i++) {
+                temp.push_back(getDecl(i)->getType());
+            }
+            getDecl()->replaceTypesInternal(temp);
+        } else if (types.size() == 1) {
+            cout << "           removing decls..." << endl;
+            Type_Ptr actualType = types[0];
+            cout << "           actualtype: " << actualType->paramType(1)->as_string() << endl;
+            gcvector<int> poppedIndices;
+            for (int i = 0; i < numDecls(); i++) {
+                if (!actualType->unifies(getDecl(i)->getType())) {
+                    poppedIndices.push_back(i);
+                }
+            }
+            for (int i = poppedIndices.size() - 1; i >= 0; i--) {
+                removeDecl(poppedIndices[i]);
+            }
+        }
+        cout << "           new # of internal types : " << getDecl()->getTypesInternal().size() << endl;
+        cout << "           number of decls in me   : " << numDecls() << endl;
+        return this;
+    }
+
+    void _errorIfType(Decl* decl) {
+        if (decl->isType()) {
+            error(loc(), "type error: cannot resolve class type");
         }
     }
 

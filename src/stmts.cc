@@ -43,161 +43,6 @@ private:
     Decl *_me;
 };
 
-/*****   ASSIGN   *****/
-class Assign_AST : public AST_Tree {
-protected:
-
-    /** Simple overriding that makes it easy to associate
-     *  Region AST_Tree's with a corresponding declaration. */
-    Decl* getDecl(int k = 0) {
-        return _decl;
-    }
-
-    /** Simple overriding to associate Region AST_Tree's with
-     *  a corresponding declaration. */
-    void addDecl(Decl* decl) {
-        _decl = decl;
-    }
-
-    NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
-
-    void collectDecls (Decl* enclosing) {
-        AST_Ptr dummy[1];
-        Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
-        addDecl(makeTypeVarDecl (result->as_string (), result));
-        // Specify that left hand side is a target
-        child(0)->addTargetDecls(enclosing);
-        // Recursively collect declarations from right hand side
-        child(1)->collectDecls(enclosing);
-    }
-
-    Type_Ptr getType() {
-        return child(1)->getType();
-    }
-
-    gcstring as_string () const {
-        if (_name == "")
-            return "Assign";
-        return _name;
-    }
-
-
-    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
-                          bool& errors) {
-        cout << "  (Assign_AST) resolving types for " << as_string() << endl;
-        // Perform type inference on children
-        for_each_child_var (c, this) {
-            c = c->resolveTypes(context, resolved, ambiguities, errors);
-        } end_for;
-        Type_Ptr_Vector right;
-        Type_Ptr_Vector left;
-        Type_Ptr_Vector result;
-        // Unification step
-        if (child(0)->as_string() == Target_List) {
-            // Multiple targets
-            right = child(1)->getDecl()->getTypesInternal();
-            if (child(1)->as_string() == List) {
-                // If right side is a list
-                // HACKHACK: Lists only have one type
-                Type_Ptr_Vector tmp;
-                tmp.push_back(right[0]->typeParam(0));
-                for_each_child (c, child(0)) {
-                    result.clear();
-                    left = c->getDecl()->getTypesInternal();
-                    Type::unifies(left, tmp, result);
-
-                    if (result.size() == 0) {
-                        errors = true;
-                        error(loc(), "type error: incompatible types");
-                    } else if (result.size() == 1) {
-                        resolved++;
-                        c->getDecl()->getType()->unify(result[0], global_bindings);
-                    } else {
-                        ambiguities += result.size() - 1;
-                    }
-                } end_for;
-            } else if (child(1)->as_string() == Tuple) {
-                // If right side is a Tuple
-                if (child(0)->arity() != child(1)->arity()) {
-                    error(loc(), "type error: too many values to unpack");
-                } else {
-                    // HACKHACK: Tuples only have one type
-                    Type_Ptr_Vector tmp;
-                    for_each_child (c, child(0)) {
-                        tmp.clear();
-                        result.clear();
-                        tmp.push_back(right[0]->typeParam(c_i_));
-                        left = c->getDecl()->getTypesInternal();
-                        Type::unifies(left, tmp, result);
-                        c->getDecl()->replaceTypesInternal(result);
-
-                        if (result.size() == 0) {
-                            errors = true;
-                            error(loc(), "type error: incompatible types");
-                        } else if (result.size() == 1) {
-                            resolved++;
-                            c->getDecl()->getType()->unify(result[0], global_bindings);
-                        } else {
-                            ambiguities += result.size() - 1;
-                        }
-                    } end_for;
-                }
-            } else {
-                // Otherwise Error
-                errors = true;
-                error(loc(), "type error: '%s' object is not iterable",
-                    child(1)->as_string().c_str());
-            }
-            getDecl()->replaceTypesInternal(right);
-        } else {
-            // Single target
-            left = child(0)->getDecl()->getTypesInternal();
-            right = child(1)->getDecl()->getTypesInternal();
-            if (child(1)->as_string() == List) {
-                // HACKHACK: Lists only have one type
-                Type::unifies(left, right, result);
-
-                if (result.size() == 0) {
-                    errors = true;
-                    error(loc(), "type error: incompatible types");
-                } else if (result.size() == 1) {
-                    resolved++;
-                    child(0)->getDecl()->getType()->unify(result[0], global_bindings);
-                } else {
-                    ambiguities += result.size() - 1;
-                }
-                getDecl()->replaceTypesInternal(result);
-            } else {
-                Type::unifies(left, right, result);
-                child(0)->getDecl()->replaceTypesInternal(result);
-
-                if (result.size() == 0) {
-                    errors = true;
-                    error(loc(), "type error: incompatible types");
-                } else if (result.size() == 1) {
-                    resolved++;
-                    child(0)->getDecl()->getType()->unify(result[0], global_bindings);
-                } else {
-                    ambiguities += result.size() - 1;
-                }
-                getDecl()->replaceTypesInternal(result);
-            }
-        }
-        if (child(1)->as_string() == List)
-            _name = List;
-        else if (child(1)->as_string() == Tuple)
-            _name = Tuple;
-        return this;
-    }
-
-private:
-
-    Decl* _decl;
-    gcstring _name;
-};
-
-NODE_FACTORY (Assign_AST, ASSIGN);
-
 /***** STMT_LIST *****/
 
 /** A list of statements. */
@@ -286,7 +131,6 @@ protected:
         for_each_child_var (c, this) {
             c = c->resolveTypes (context, resolved, ambiguities, errors);
         } end_for;
-        bool success = true;
         AST_Ptr targets = child(0);
         AST_Ptr expr = child(1);
         // cout << "TargetDecl: " << targets->getDecl()->getName() << endl;
@@ -403,7 +247,7 @@ protected:
     }
 
     void resolveSimpleIds (const Environ* env) {
-        child(0)->resolveSimpleIds(env);
+        child(0)->addDecl(getDecl());
     }
 
     AST_Ptr rewriteSimpleTypes (const Environ* unused) {
@@ -423,52 +267,78 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities,  bool& errors) {
-        // cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
-        // Decl* decl = getDecl();
-        // AST_Ptr me = this;
-        // cout << "    - resolving formals..." << endl;
-        // // Resolve formal params
-        // for_each_child_var (c, me->child(1)) {
-        //     c = c->resolveTypes(decl, resolved, ambiguities, errors);
-        // } end_for;
-        // cout << "    - resolving block..." << endl;
-        // // Resolve function body
-        // for_each_child_var (c, me->child(3)) {
-        //     c = c->resolveTypesOuter(decl);
-        // } end_for;
-        // Unwind_Stack unwind_stack;
-        // Type_Ptr functype = decl->getType();
-        // cout << "    - unifying self..." << endl;
-        // // Unify self (if required)
-        // me = _setupSelf(context, resolved, ambiguities, errors);
-        // // Unify parameters with formals list
-        // cout << "    - unifying params with formals..." << endl;
-        // for_each_child (c, me->child(1)) {
-        //     cout << "      - unifying " << c->getType()->as_string() <<
-        //         " with " << functype->paramType(c_i_)->as_string() << endl;
-        //     c->getType()->unify(functype->paramType(c_i_), unwind_stack);
-        // } end_for;
-        // // Unify return type
-        // cout << "    - unifying return type..." << endl;
-        // Type_Ptr returnType = functype->returnType();
-        // bool noReturn = returnType->binding() == returnType;
-        // if (noReturn) {
-        //     // If there is no function return parameter
-        //     if (me->child(2)->isMissing()) {
-        //         Decl* nonedecl = outer_environ->find("__None__");
-        //         Type_Ptr nonetype = nonedecl->getType()->returnType();
-        //         returnType->unify(nonetype,unwind_stack);
-        //     // Otherwise, there should be a return parameter
-        //     } else {
-        //         error(loc(), "type error: expected function %s to return a value",
-        //             me->child(0)->as_token()->as_string().c_str());
-        //     }
-        // } else {
-        //     // If there is a function return parameter
-        //     if (!me->child(2)->isMissing())
-        //         returnType->unify(me->child(2)->asType(), unwind_stack);
-        // }
+        cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
+        getDecl()->setFrozen(true);
+        // TODO: Assuming that definition can only have one type
+        Decl* curDecl = getDecl();
+        Type_Ptr funcType = curDecl->getType();
+
+        cout << "    - Resolving children..." << endl;
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(curDecl, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr returnType = funcType->returnType();
+        // No return specified: set to Nonetype
+        if (returnType->binding() == returnType) {
+            Decl* nonedecl = outer_environ->find("__None__");
+            Type_Ptr nonetype = nonedecl->getType()->returnType();
+            returnType->unify(nonetype,global_bindings);
+        }
+
+        cout << "    - Resolving parameters..." << endl;
+        bool success;
+        for_each_child_var (c, child(1))  {
+            cout << "\tbegin...(" << c->getDecl()->getName() << ")" << endl;
+            cout << "\t  typesize = " << c->getDecl()->getTypesInternal().size() << endl;
+
+            Type_Ptr paramType = c->getDecl()->getTypesInternal()[0];
+            success = paramType->unify(funcType->paramType(c_i_), global_bindings);
+            if (success) {
+                resolved++;
+
+            } else {
+                errors = true;
+                error(loc(), "type error: type mismatch");
+            }
+            cout << "\tend..." << endl;
+        } end_for;
+        getDecl()->setFrozen(false);
         return this;
+        // cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
+        // getDecl()->setFrozen(true);
+        // // TODO: Assuming that definition can only have one type
+        // Decl* curDecl = getDecl();
+        // Type_Ptr funcType = curDecl->getType();
+
+        // cout << "    - Resolving children..." << endl;
+        // for_each_child_var (c, this) {
+        //     c = c->resolveTypes(curDecl, resolved, ambiguities, errors);
+        // } end_for;
+
+        // Type_Ptr returnType = funcType->returnType();
+        // // No return specified: set to Nonetype
+        // if (returnType->binding() == returnType) {
+        //     Decl* nonedecl = outer_environ->find("__None__");
+        //     Type_Ptr nonetype = nonedecl->getType()->returnType();
+        //     returnType->unify(nonetype,global_bindings);
+        // }
+
+        // cout << "    - Resolving parameters..." << endl;
+        // bool success;
+        // for_each_child_var (c, child(1))  {
+        //     Type_Ptr paramType = c->getDecl()->getTypesInternal()[0];
+        //     success = paramType->unify(funcType->paramType(c_i_),
+        //         global_bindings);
+        //     if (success) {
+        //         resolved++;
+        //     } else {
+        //         errors = true;
+        //         error(loc(), "type error: type mismatch");
+        //     }
+        // } end_for;
+        // getDecl()->setFrozen(false);
+        // return this;
     }
 };
 
@@ -551,7 +421,7 @@ protected:
     }
 
     void resolveSimpleIds (const Environ* env) {
-        child(0)->resolveSimpleIds(env);
+        child(0)->addDecl(getDecl());
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,

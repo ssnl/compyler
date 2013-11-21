@@ -8,5 +8,5 @@ def foo(x::str,y):
 def foo(x::str,y::str):
     pass
 
-foo("hi",2)
+a = foo("hi",2)
 

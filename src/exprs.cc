@@ -15,6 +15,36 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/** Helper method to unify two the two AST's LEFT and RIGHT enclosed
+ *  in ENCLOSING. Also assumes that LEFT and RIGHT both have accessable types
+ *  via getType(). Updates RESOLVED, AMBIGUITIES, and ERROR accordingly. If
+ *  unification is successful, returns the resulting Type_Ptr_Vector (containing
+ *  one element). Otherwise, arbitrarily returns a Type_Ptr_Vector. */
+static Type_Ptr_Vector unify(AST_Ptr enclosing, AST_Ptr left, AST_Ptr right,
+                             int& resolved, int& ambiguities, bool& errors) {
+    Type_Ptr_Vector leftT = left->getDecl()->getTypesInternal();
+    Type_Ptr_Vector rightT = right->getDecl()->getTypesInternal();
+    Type_Ptr_Vector result1;
+    Type_Ptr_Vector result2;
+    Type::unifies(leftT, rightT, result1);
+    Type::unifies(rightT, leftT, result2);
+    left->getDecl()->replaceTypesInternal(result1);
+    right->getDecl()->replaceTypesInternal(result2);
+
+    if (result1.size() == 0 || result2.size() == 0) {
+        errors = true;
+        error(enclosing->loc(), "type error: incompatible types");
+    } else if (result1.size() == 1 && result2.size() == 1) {
+        resolved += 2;
+        left->getType()->unify(result1[0], global_bindings);
+        right->getType()->unify(result2[0], global_bindings);
+    } else {
+        ambiguities += result1.size() + result2.size() - 2;
+    }
+
+    return result1;
+}
+
 /*****   TYPED_EXPR *****/
 class Typed_Expr : public AST_Tree {
 protected:
@@ -25,13 +55,22 @@ protected:
         return _decl;
     }
 
+    /** Returns the type of a typed expression. */
+    Type_Ptr getType() {
+        if (_decl->getTypesInternal().size() == 1) {
+            return _decl->getTypesInternal()[0];
+        } else {
+            return NULL;
+        }
+    }
+
     /** Overrides addDecl to simply replace the decl associated
      *  with this expression with DECLARATION. */
     void addDecl (Decl* declaration) {
         _decl = declaration;
     }
 
-    /** Real hack to create decl for a typed expression. */
+    /** Clooge hack to create decl for a typed expression. */
     void createDecl() {
         AST_Ptr dummy[1];
         Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
@@ -95,6 +134,129 @@ protected:
 
 NODE_FACTORY (Typed_Id_AST, TYPED_ID);
 
+/*****   ASSIGN   *****/
+class Assign_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (Assign_AST, Typed_Expr);
+
+    void collectDecls (Decl* enclosing) {
+        AST_Ptr dummy[1];
+        Type_Ptr result = AST::make_tree (TYPE_VAR, dummy, dummy)->asType ();
+        addDecl(makeTypeVarDecl (result->as_string (), result));
+        // Specify that left hand side is a target
+        child(0)->addTargetDecls(enclosing);
+        // Recursively collect declarations from right hand side
+        child(1)->collectDecls(enclosing);
+    }
+
+    gcstring as_string () const {
+        if (_name == "")
+            return "Assign";
+        return _name;
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        cout << "  (Assign_AST) resolving types for " << as_string() << endl;
+        // Perform type inference on children
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        // Save helper variables
+        Type_Ptr_Vector right;
+        Type_Ptr_Vector left;
+        Type_Ptr_Vector result;
+        // Unification step
+        if (child(0)->as_string() == Target_List) {
+            // Multiple targets
+            right = child(1)->getDecl()->getTypesInternal();
+            if (child(1)->as_string() == List) {
+                // If right side is a list
+                // HACKHACK: Lists only have one type
+                Type_Ptr_Vector tmp;
+                tmp.push_back(right[0]->typeParam(0));
+                for_each_child (c, child(0)) {
+                    result.clear();
+                    left = c->getDecl()->getTypesInternal();
+                    Type::unifies(left, tmp, result);
+
+                    if (result.size() == 0) {
+                        errors = true;
+                        error(loc(), "type error: incompatible types");
+                    } else if (result.size() == 1) {
+                        resolved++;
+                        c->getDecl()->getType()->unify(result[0], global_bindings);
+                    } else {
+                        ambiguities += result.size() - 1;
+                    }
+                } end_for;
+            } else if (child(1)->as_string() == Tuple) {
+                // If right side is a Tuple
+                if (child(0)->arity() != child(1)->arity()) {
+                    error(loc(), "type error: too many values to unpack");
+                } else {
+                    // HACKHACK: Tuples only have one type
+                    Type_Ptr_Vector tmp;
+                    for_each_child (c, child(0)) {
+                        tmp.clear();
+                        result.clear();
+                        tmp.push_back(right[0]->typeParam(c_i_));
+                        left = c->getDecl()->getTypesInternal();
+                        Type::unifies(left, tmp, result);
+                        c->getDecl()->replaceTypesInternal(result);
+
+                        if (result.size() == 0) {
+                            errors = true;
+                            error(loc(), "type error: incompatible types");
+                        } else if (result.size() == 1) {
+                            resolved++;
+                            c->getDecl()->getType()->unify(result[0], global_bindings);
+                        } else {
+                            ambiguities += result.size() - 1;
+                        }
+                    } end_for;
+                }
+            } else {
+                // Otherwise Error
+                errors = true;
+                error(loc(), "type error: '%s' object is not iterable",
+                    child(1)->as_string().c_str());
+            }
+            getDecl()->replaceTypesInternal(right);
+        } else {
+            // Single target
+            left = child(0)->getDecl()->getTypesInternal();
+            right = child(1)->getDecl()->getTypesInternal();
+            Type::unifies(left, right, result);
+            child(0)->getDecl()->replaceTypesInternal(result);
+
+            if (result.size() == 0) {
+                errors = true;
+                error(loc(), "type error: incompatible types");
+            } else if (result.size() == 1) {
+                resolved++;
+                child(0)->getDecl()->getType()->unify(result[0], global_bindings);
+            } else {
+                ambiguities += result.size() - 1;
+            }
+            getDecl()->replaceTypesInternal(result);
+        }
+        // Change name of the node
+        if (child(1)->as_string() == List)
+            _name = List;
+        else if (child(1)->as_string() == Tuple)
+            _name = Tuple;
+        return this;
+    }
+
+private:
+
+    gcstring _name;
+};
+
+NODE_FACTORY (Assign_AST, ASSIGN);
+
 /*****   EXPR_LIST    *****/
 
 /** A list of expressions. */
@@ -157,12 +319,14 @@ protected:
                           int& ambiguities, bool& errors) {
         int ar = arity();
         Type_Ptr_Vector result;
-        if (ar == 0) {
+        if (ar == 0 && getDecl()->getTypesInternal().size()) {
             result.push_back(primitiveDecls[List]->asType(1, Type::makeVar()));
             getDecl()->replaceTypesInternal(result);
         } else {
             Type_Ptr type;
             bool success = true;
+
+
             // HACKHACK: Ignoring case when list contains functions
             for_each_child_var (c, this) {
                 c = c->resolveTypes(context, resolved, ambiguities, errors);
@@ -191,8 +355,6 @@ protected:
 
 NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
 
-
-
 /*****   RETURN    *****/
 class Return_AST : public AST_Tree {
 protected:
@@ -201,15 +363,27 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // if (!child(0)->isMissing()) {
-        //     for_each_child_var (c, this) {
-        //         c = c->resolveTypes(context, resolved, ambiguities, errors);
-        //     } end_for;
-        //     Unwind_Stack unwind_stack;
-        //     Type_Ptr functype = context->getType();
-        //     Type_Ptr ret_type = functype->returnType();
-        //     child(0)->getType()->unify(ret_type, unwind_stack);
-        // }
+        if (!child(0)->isMissing()) {
+            for_each_child_var (c, this) {
+                c = c->resolveTypes(context, resolved, ambiguities, errors);
+            } end_for;
+            Type_Ptr funcType = context->getType();
+            Type_Ptr returnType = funcType->returnType();
+            Type_Ptr_Vector typeVec = child(0)->getDecl()->getTypesInternal();
+            // TODO handle multiple function return types
+            Type_Ptr_Vector returnVec;
+            returnVec.push_back(returnType);
+            Type_Ptr_Vector result;
+            Type::unifies(returnVec, typeVec, result);
+            if (result.size() >= 1) {
+                returnType->unify(result[0], global_bindings);
+                resolved++;
+                ambiguities += (result.size() - 1);
+            } else if (result.size() == 0) {
+                errors = true;
+                error(loc(), "type error: type mismatch");
+            }
+        }
         return this;
     }
 };
@@ -217,19 +391,27 @@ protected:
 NODE_FACTORY (Return_AST, RETURN);
 
 /*****   LOGICAL EXPRESSIONS   *****/
-class Logical_AST : public AST_Tree {
+class Logical_AST : public Typed_Expr {
 protected:
 
-    NODE_BASE_CONSTRUCTORS (Logical_AST, AST_Tree);
+    NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
+
+    gcstring as_string () const {
+        return "Logical";
+    }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // for_each_child_var (c, this) {
-        //     c = c->resolveTypes(context, resolved, ambiguities, errors);
-        // } end_for;
-        // Unwind_Stack unwind_stack;
-        // child(0)->getType()->unify(child(1)->getType(), unwind_stack);
-        // setType(child(0)->getType());
+        cout << "  (Logical_AST) resolving types for " << as_string() << endl;
+        // Resolution
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        // Unification
+        Type_Ptr_Vector result =
+            unify(this, child(0), child(1), resolved, ambiguities, errors);
+        // Set my own internal type
+        getDecl()->replaceTypesInternal(result);
         return this;
     }
 };
@@ -257,25 +439,13 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
+        // Resolve children
         for_each_child_var (c, this) {
             c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
-        AST_Ptr e1 = child(1);
-        AST_Ptr e2 = child(2);
-        Type_Ptr_Vector vec1 = e1->getDecl()->getTypesInternal();
-        Type_Ptr_Vector vec2 = e2->getDecl()->getTypesInternal();
-        Type_Ptr_Vector result;
-        Type::unifies(vec1, vec2, result);
-        e1->getDecl()->replaceTypesInternal(result);
-        if (result.size() == 0) {
-            errors = true;
-            error(loc(), "type error: type mismatch");
-        } else if (result.size() == 1) {
-            resolved++;
-            e1->getType()->unify(result[0], global_bindings);
-        } else {
-            ambiguities += result.size() - 1;
-        }
+        // Unification
+        Type_Ptr_Vector result =
+            unify(this, child(1), child(2), resolved, ambiguities, errors);
         getDecl()->replaceTypesInternal(result);
         return this;
     }
@@ -288,10 +458,10 @@ NODE_FACTORY (If_Expr_AST, IF_EXPR);
 /** The supertype of "callable" things, including ordinary calls,
  *  binary operators, unary operators, subscriptions, and slices. */
 
-class Callable : public AST_Tree {
+class Callable : public Typed_Expr {
 protected:
 
-    NODE_BASE_CONSTRUCTORS (Callable, AST_Tree);
+    NODE_BASE_CONSTRUCTORS (Callable, Typed_Expr);
 
     /** Returns the expression representing the quantity that is
      *  called to evaluate this expression. */
@@ -319,7 +489,7 @@ protected:
     }
 
     void collectDecls(Decl *enclosing) {
-        // do nothing
+        createDecl();
     }
 
     void resolveSimpleIds(const Environ* env) {
@@ -331,44 +501,74 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
-        // cout << "  (Callable) resolving types for " + child(0)->as_string();
-        // for_each_child_var (c, this) {
-        //     // If the child is not an id node, resolve its type
-        //     if (c_i_ != 0) {
-        //         c = c->resolveTypes(context,resolved,ambiguities,errors);
-        //     }
-        // } end_for;
-        // Decl_Vector decls;
-        // Unwind_Stack unwind_stack;
-        // gcstring idname = child(0)->as_string();
-        // if (idname.size() == 0) {
-        //     error(loc(), "you done fucked up.");
-        // }
-        // Type_Ptr functype;
-        // bool success = true;
-        // int success_count = 0;
-        // Decl* success_decl;
-        // context->getEnviron()->find(idname, decls);
-        // for (int i = 0; i < decls.size(); i++) {
-        //     Decl* d = decls.at(i);
-        //     success = true;
-        //     functype = d->getType();
-        //     for_each_child (c, child(1)) {
-        //         success = success &&
-        //             functype->paramType(c_i_)->unify(c->asType(), unwind_stack);
-        //     } end_for;
-        //     if (success) {
-        //         success_decl = d;
-        //         success_count++;
-        //     }
-        // }
-        // if (success_count == 0) {
-        //     error(loc(), "type error: invalid function call");
-        // } // TODO else if > 1 handle ambiguous call error
-        // else if (success_count == 1) {
-        //     setType(success_decl->getType()->returnType());
-        // }
-        // // Set type of this to the return type
+        cout << "  (Callable_AST) resolving types for " << as_string() << endl;
+        // Resolve children
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+        cout << "      Finished resolving children..." << endl;
+        // Unify
+        Type_Ptr_Vector funcTypes = calledExpr()->getDecl()->getTypesInternal();
+        Type_Ptr funcType;
+        Type_Ptr_Vector paramType;
+        Type_Ptr_Vector result;
+        Type_Ptr_Vector resolutions;
+        bool success;
+        for (int i = 0; i < funcTypes.size(); i++) {
+            funcType = funcTypes[i]->freshen();
+            success = true;
+            if (funcType->numParams() == numActuals()) {
+                for (int j = 0; j < funcType->numParams(); j++) {
+                    paramType.clear();
+                    result.clear();
+                    paramType.push_back(funcType->paramType(j));
+                    Type::unifies(actualParam(j)->getDecl()->getTypesInternal(),
+                        paramType, result);
+                    if (result.size() == 0) {
+                        success = false;
+                        break;
+                    }
+                }
+                if (success) {
+                    resolutions.push_back(funcType);
+                }
+            }
+        }
+        cout << "      Finished finding function resolution..." << endl;
+        cout << "      Found " << resolutions.size() << " resolutions..." << endl;
+
+        if (resolutions.size() == 0) {
+            errors = true;
+            error (loc(), "type error: no suitable function found");
+        } else {
+            if (resolutions.size() > 1) {
+                ambiguities += resolutions.size() - 1;
+            } else {
+                resolved += 1;
+                // Unify parameters
+                funcType = resolutions[0];
+                for (int i = 0; i < funcType->numParams(); i++) {
+                    paramType.clear();
+                    result.clear();
+                    paramType.push_back(funcType->paramType(i));
+                    Type::unifies(paramType,
+                        actualParam(i)->getDecl()->getTypesInternal(), result);
+                    actualParam(i)->getDecl()->replaceTypesInternal(result);
+                    if (result.size() == 1) {
+                        resolved += 1;
+                        ambiguities += result.size() - 1;
+                    }
+                }
+            }
+        }
+
+        Type_Ptr_Vector tmp;
+        for (int i = 0; i < resolutions.size(); i++) {
+            tmp.push_back(resolutions[i]->returnType());
+        }
+        getDecl()->replaceTypesInternal(tmp);
+        calledExpr()->getDecl()->replaceTypesInternal(resolutions);
+
         return this;
     }
 };
