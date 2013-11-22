@@ -1,13 +1,9 @@
 # misc: random tests
-3
-x = foo
-y = x
-y(3)
+def foo(x::int, y::int):
+  pass
 
-child(0)->getDecl()->getTypesInternal()
+def foo(x::str, y):
+  pass
 
-x = foo
-class A:
-  x = bar
-  def ():
-    y = x
+def foo(x::str, y::str):
+  pass

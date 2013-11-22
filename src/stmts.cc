@@ -303,7 +303,10 @@ protected:
             }
             cout << "\tend..." << endl;
         } end_for;
-        getDecl()->setFrozen(false);
+        // getDecl()->setFrozen(false);
+        // Type_Ptr_Vector temp;
+        // temp.push_back(funcType);
+        // curDecl->replaceTypesInternal(temp);
         return this;
         // cout << "  (Def_AST) resolving types for " << child(0)->as_string() << endl;
         // getDecl()->setFrozen(true);

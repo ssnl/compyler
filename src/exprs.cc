@@ -502,13 +502,14 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
         cout << "  (Callable_AST) resolving types for " << as_string() << endl;
+        cout << "8)      num of func types: " << calledExpr()->getDecl()->getTypesInternal().size() << endl;
         // Resolve children
         for_each_child_var (c, this) {
             c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
-        cout << "      Finished resolving children..." << endl;
         // Unify
         Type_Ptr_Vector funcTypes = calledExpr()->getDecl()->getTypesInternal();
+        cout << "8)      num of func types: " << funcTypes.size() << endl;
         Type_Ptr funcType;
         Type_Ptr_Vector paramType;
         Type_Ptr_Vector result;
@@ -534,8 +535,6 @@ protected:
                 }
             }
         }
-        cout << "      Finished finding function resolution..." << endl;
-        cout << "      Found " << resolutions.size() << " resolutions..." << endl;
 
         if (resolutions.size() == 0) {
             errors = true;

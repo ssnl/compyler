@@ -185,7 +185,6 @@ protected:
         gcstring text = as_string();
         Decl_Vector decls;
         env->find(text, decls);
-        cout << "Id: " << text << " has " << decls.size() << " decls" << endl;
         if (decls.size() == 1) {
             // Simple variable
             addDecl(decls[0]);
@@ -198,7 +197,6 @@ protected:
             for (int i = 0; i < decls.size(); i++) {
                 addDecl(decls[i]);
             }
-            cout << "-----> " << "Decl: " << getDecl()->getName() << endl;
         } else {
             error (loc(), "name error: name '%s' is not defined", text.c_str());
         }
@@ -243,7 +241,6 @@ protected:
         } else if (types.size() == 1) {
             cout << "           removing decls..." << endl;
             Type_Ptr actualType = types[0];
-            cout << "           actualtype: " << actualType->paramType(1)->as_string() << endl;
             gcvector<int> poppedIndices;
             for (int i = 0; i < numDecls(); i++) {
                 if (!actualType->unifies(getDecl(i)->getType())) {
