@@ -385,6 +385,38 @@ class Binop_AST : public Callable {
 
 NODE_FACTORY (Binop_AST, BINOP);
 
+/** A binary operator. */
+class Compare_AST : public Callable {
+
+    NODE_CONSTRUCTORS (Compare_AST, Callable);
+
+    AST_Ptr calledExpr () {
+        return child (3);
+    }
+
+    int numActuals () {
+        return 2;
+    }
+
+    AST_Ptr actualParam (int k) {
+        return child(2*k);
+    }
+
+    AST_Ptr paramsList () {
+        return NULL;
+    }
+
+    void setActual (int k, AST_Ptr expr) {
+        replace (2*k, expr);
+    }
+
+    // Should never change the called expression
+    void setCalledExpr (AST_Ptr expr) {}
+
+};
+
+NODE_FACTORY (Compare_AST, COMPARE);
+
 /** A unary operator. */
 class Unop_AST : public Callable {
 

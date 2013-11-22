@@ -158,6 +158,7 @@ protected:
 
     AST_Ptr rewriteSimpleTypes (const Environ* env) {
         gcstring text = as_string();
+        cout << "Attempting to find text: " << text << endl;
         Decl* decl = env->find(text);
         if (decl == NULL) {
             error (loc(), "name error: name '%s' is not defined",
