@@ -306,6 +306,25 @@ Type::resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambigui
     }
 }
 
+int
+Type::checkAmbiguity(Type_Ptr type, AST_Ptr token) {
+    Decl* decl;
+    int unifyCount = 0;
+    for (int i = 0; i < token->numDecls(); i++) {
+        decl = token->getDecl(i);
+        if (type->unifies(decl->getType())) {
+            unifyCount++;
+        }
+    }
+
+    if (unifyCount == 1)
+        return 1;
+    else if (unifyCount > 1)
+        return 0;
+    else
+        return -1;
+}
+
 Type_Ptr
 Type::replaceBindings ()
 {

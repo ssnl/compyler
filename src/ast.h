@@ -363,10 +363,17 @@ public:
      *  can unify with TYPE, then increment AMBIGUITIES by the appropriate
      *  amount and return false, without changing binding of TYPE . Else if none
      *  of the types in TOKEN unify with TYPE, then throws an error, set ERRORS
-     *  to True, and return false.
-    */
+     *  to True, and return false. */
     static bool resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved,
                                  int& ambiguities, bool& errors);
+
+
+    /** Checking if the ambiguous types of TOKEN can be resolved via TYPE.
+     *  Return 1 if ambiguity is resolved (exactly one type in TOKEN unify
+     *  with TYPE). Return 0 if ambiguity remains (more than one types in TOKEN
+     *  unify with TYPE). And return -1 if none of the types in TOKEN unify with
+     *  TYPE. */
+    static int checkAmbiguity(Type_Ptr type, AST_Ptr token);
 
     /** Returns the name of the id node associated with the type. */
     virtual gcstring as_string() const;
