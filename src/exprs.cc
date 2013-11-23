@@ -263,48 +263,24 @@ protected:
 
     NODE_CONSTRUCTORS (Return_AST, AST_Tree);
 
-    Type_Ptr computeType () {
-        return Type::makeVar();
-    }
-
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
             c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
-        Type_Ptr actualType, childType;
-        bool done = false, success;
-        for_each_child (c, this) {
-            actualType = getType()->typeParam(c_i_);
-            childType = c->getType();
-            if (childType == AMBIGUOUS) {
-                done &= Type::resolveAmbiguity(actualType, c, resolved,
-                    ambiguities, errors);
-            } else {
-                success = actualType->unify(childType, global_bindings);
-                done &= success;
-                if (!success) {
-                    error(loc(), "type error: cannot resolve %s",
-                        Tuple.c_str());
-                    errors = true;
-                }
-            }
-        } end_for;
-
         // Check if return statement unifies with parent function's return type
-        if (done) {
-            Type_Ptr functionType = context->getType();
-            Type_Ptr returnType = functionType->returnType();
-            success = actualType->unify(returnType, global_bindings);
-            if (success) {
-                resolved += 1;
-            } else {
-                error(loc(),
-                    "type error: return statement does not match return type of "
-                    "function %s", functionType->as_string().c_str());
-                error = true;
-            }
+        Type_Ptr childType = child(0)->getType();
+        Type_Ptr functionType = context->getType();
+        Type_Ptr returnType = functionType->returnType();
+        bool success = childType->unify(returnType, global_bindings);
+        if (success) {
+            resolved += 1;
+        } else {
+            error(loc(),
+                "type error: return statement does not match return type of "
+                "function %s", functionType->as_string().c_str());
+            error = true;
         }
         return this;
     }
@@ -501,8 +477,7 @@ protected:
     virtual void setCalledExpr (AST_Ptr expr) = 0;
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
     }
 
     AST_Ptr rewriteSimpleTypes (const Environ* env) {
@@ -522,6 +497,17 @@ protected:
         for (int i = 0; i < numActuals(); i++) {
             actualParam(i)->resolveSimpleIds(env);
         }
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        calledExpr()->resolveTypes(context, resolved, ambiguities, errors);
+        for (int i = 0; i < numActuals(); i++) {
+            actualParam(i)->resolveTypes(context, resolved, ambiguities, errors);
+        }
+
+        Typepointer actualType = getType();
+        return this;
     }
 };
 
