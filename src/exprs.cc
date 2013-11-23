@@ -296,45 +296,50 @@ protected:
 
         Type_Ptr actualType = getType()->binding();
         gcstring actualTypeName = actualType->as_string();
+        bool done = true, success;
 
         if (actualTypeName == List) {
-            // TODO lists of overloaded functions?
             Type_Ptr listType = actualType->typeParam(0);
             // Unify each child on the left with the right type
             for_each_child_var (c, this) {
-                c->getType()->unify(listType, global_bindings);
+                success &= c->getType()->unify(listType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve assignment");
+                    errors = true;
+                }
             } end_for;
-
         } else if (actualTypeName == Tuple0 || actualTypeName == Tuple1 ||
                     actualTypeName == Tuple2 || actualTypeName == Tuple3) {
-            int k;
-            if (actualTypeName == Tuple0) {
-                k = 0;
-            } else if (actualTypeName == Tuple1) {
-                k = 1;
-            } else if (actualTypeName == Tuple2) {
-                k = 2;
-            } else if (actualTypeName == Tuple3) {
-                k = 3;
-            } else {
-                k = -1;
-            }
+            int k = actualType->numTypeParams();
             if (arity() == k) {
                 for_each_child_var (c, this) {
-                    c->getType()->unify(actualType->typeParam(c_i_), global_bindings);
+                    success &=c->getType()->unify(actualType->typeParam(c_i_),
+                                                  global_bindings);
+                    done &= success;
+                    if (!success) {
+                        error(loc(), "type error: cannot resolve assignment");
+                        done = false;
+                        errors = true;
+                    }
                 } end_for;
             } else {
+                done = false;
                 errors = true;
                 error(loc(), "value error: length mismatch, can't unpack values");
             }
 
         } else if (getType() == actualType) {
-            // Bindings are the same
-
+            done = false;
         } else {
+            done = false;
             errors = true;
             error(loc(), "type error: multiple assignment from non-iterable");
         }
+
+        if (done)
+            resolved += 1;
+
         return this;
     }
 };
