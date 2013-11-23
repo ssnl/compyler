@@ -5,4 +5,4 @@ def foo(x):
     return bar
 
 a = foo(1)
-b = a(2)
+b = a(3)

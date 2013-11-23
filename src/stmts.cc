@@ -322,6 +322,7 @@ protected:
         if (!errors)
             resolved++;
         decl->setFrozen(false);
+
         return this;
     }
 

@@ -179,8 +179,9 @@ protected:
         Decl_Vector decls;
         env->find(text, decls);
         if (!decls.empty()) {
-            for (int i = decls.size() - 1; i >= 0; i--)
+            for (int i = decls.size() - 1; i >= 0; i--) {
                 addDecl(decls.at(i));
+            }
         } else {
             error (loc(), "name error: name '%s' is not defined", text.c_str());
         }

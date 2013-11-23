@@ -2,7 +2,8 @@
 class A:
   def foo(self):
     pass
-  def foo(self, x):
+  def bar(self):
     pass
-x = A.foo
-x(A(), 3)
+  def gru(self, x):
+    pass
+x = A.bar

@@ -116,29 +116,102 @@ protected:
         child(0)->resolveSimpleIds(env);
     }
 
-    AST_Ptr resolveStaticSelections (const Environ* environ) {
-        // Check if attribute of a class
+    gcstring as_string () const {
+        return "attributeref";
+    }
+
+    /** Helper method to check if the attribute reference is an instance of a
+     *  class or not. If it is, the attribute will be determined to be an
+     *  instance variable or method. If it is a variable, the type will be
+     *  unified and NULL will be returned. Otherwise, a rewritten AST_Ptr will be
+     *  returned. */
+    AST_Ptr resolveClass (Decl* context, int& resolved,
+                           int& ambiguities, bool& errors) {
         Type_Ptr classType = child(0)->asType();
         gcstring attrName = child(1)->as_string();
 
         if (classType != NULL) {
-            Decl* classDecl = environ->find(classType->as_string());
+            Decl* classDecl = classType->getDecl();
             const Environ* members = classDecl->getEnviron();
-            Decl* member = members->find(attrName);
+            Decl_Vector memberDecls;
+            members->find_immediate(attrName, memberDecls);
 
-            if (member != NULL && member->isMethod()) {
+            if (memberDecls.size() == 0) {
+                errors = true;
+                error(loc(), "syntax error: cannot find '%s' in class '%s'",
+                    attrName.c_str(), classType->as_string().c_str());
+            } else if (memberDecls[0]->isMethod()) {
                 char *str = new char[attrName.size()];
                 attrName.copy(str, attrName.size(), 0);
                 AST_Ptr id = make_token(ID, attrName.size(), str);
-                id->addDecl(member);
+                for (int i = 0; i < memberDecls.size(); i++)
+                    id->addDecl(memberDecls[i]);
                 id->set_loc(loc());
+                resolved += 1;
                 return id;
             } else {
-                error(loc(), "Cannot find method '%s' in class '%s'",
-                    attrName.c_str(), classType->as_string().c_str());
+                Type_Ptr memberType = memberDecls[0]->getType();
+                bool success = getType()->unify(memberType, global_bindings);
+                if (child(1)->numDecls() == 0)
+                    child(1)->addDecl(memberDecls[0]);
+                if (success) {
+                    resolved += 1;
+                } else {
+                    errors = true;
+                    error(loc(), "type error: cannot resolve class variable");
+                }
             }
+        } else {
+            ambiguities += 1;
         }
 
+        return NULL;
+    }
+
+    /** Helper method to check if the attribute reference is an instance of a
+     *  class or not. If it is, the attribute will be determined to be an
+     *  instance variable or method. If it is a variable, the type will be
+     *  unified and NULL will be returned. Otherwise, a rewritten AST_Ptr will be
+     *  returned. */
+    AST_Ptr resolveInstance (Decl* context, int& resolved,
+                             int& ambiguities, bool& errors) {
+        if (child(0)->asType() != NULL) {
+            return NULL;
+        }
+
+        Type_Ptr classType = child(0)->getType()->binding();
+        gcstring attrName = child(1)->as_string();
+
+        if (classType->asType() != NULL) {
+            const Environ* members = classType->asType()->getDecl()
+                ->getEnviron();
+            Decl_Vector memberDecls;
+            members->find_immediate(attrName, memberDecls);
+
+            if (memberDecls.size() == 0) {
+                errors = true;
+                error(loc(), "type error: cannot find '%s' in instance '%s'",
+                    attrName.c_str(), classType->as_string().c_str());
+            } else if (memberDecls[0]->isMethod()) {
+                errors = true;
+                error(loc(),
+                    "type error: instance method %s not immediately called.",
+                    attrName.c_str());
+            } else {
+                Type_Ptr memberType = memberDecls[0]->getType();
+                bool success = getType()->unify(memberType, global_bindings);
+                if (child(1)->numDecls() == 0)
+                    child(1)->addDecl(memberDecls[0]);
+                if (success) {
+                    resolved += 1;
+                } else {
+                    errors = true;
+                    error(loc(), "type error: cannot resolve class variable");
+                }
+            }
+        } else {
+            ambiguities += 1;
+        }
         return NULL;
     }
 
@@ -148,13 +221,15 @@ protected:
                           bool& errors) {
         replace(0, child(0)->
             resolveTypes(context, resolved, ambiguities, errors));
+        AST_Ptr result = resolveClass(context, resolved, ambiguities, errors);
+        if (result != NULL)
+            return result;
 
-        AST_Ptr self = resolveStaticSelections(outer_environ);
-        if (self == NULL) {
-            self = this;
-        }
+        result = resolveInstance(context, resolved, ambiguities, errors);
+        if (result != NULL)
+            return result;
 
-        return self;
+        return this;
     }
 };
 
@@ -569,6 +644,7 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
+        cout << "Resolving call " << calledExpr()->as_string() << endl;
         setCalledExpr(calledExpr()->resolveTypes(context, resolved, ambiguities,
             errors));
         for (int i = 0; i < numActuals(); i++) {
@@ -576,22 +652,24 @@ protected:
                 resolveTypes(context, resolved, ambiguities, errors));
         }
 
-        Type_Ptr functionType = calledExpr()->getType();
+        Type_Ptr functionType = calledExpr()->getType()->binding();
         Type_Ptr actualType, paramType, matching = NULL;
         bool done = false, success;
 
         if (functionType == AMBIGUOUS) {
+            cout << "    Is ambiguous" << endl;
             for (int i = 0; i < calledExpr()->numDecls(); i++) {
                 success = true;
-                functionType = calledExpr()->getDecl(i)->getType()->freshen();
+                functionType = calledExpr()->getDecl(i)->getType()
+                                           ->binding()->freshen();
                 if (functionType->numParams() != numActuals()) {
                     if (calledExpr()->numDecls() > 1)
-                        calledExpr()->removeDecl(i);
+                        calledExpr()->removeDecl(i--);
                     continue;
                 }
                 for (int j = 0; j < numActuals(); j++) {
-                    paramType = functionType->paramType(j);
-                    actualType = actualParam(j)->getType();
+                    paramType = functionType->paramType(j)->binding();
+                    actualType = actualParam(j)->getType()->binding();
 
                     if (actualType == AMBIGUOUS) {
                         success &= Type::checkAmbiguity(paramType, actualParam(j));
@@ -607,6 +685,8 @@ protected:
                 }
             }
 
+        } else if (functionType->isTypeVariable()) {
+            return this;
         } else {
             if (functionType->numParams() == numActuals()) {
                 matching = functionType->freshen();
@@ -619,8 +699,8 @@ protected:
         } else if (done) {
             success = true;
             for (int i = 0; i < numActuals(); i++) {
-                paramType = matching->paramType(i);
-                actualType = actualParam(i)->getType();
+                paramType = matching->paramType(i)->binding();
+                actualType = actualParam(i)->getType()->binding();
 
                 if (actualType == AMBIGUOUS) {
                     success &= Type::resolveAmbiguity(paramType, actualParam(i),
@@ -674,7 +754,14 @@ protected:
         replace(0, expr);
     }
 
+    gcstring as_string() const {
+        return "call";
+    }
+
     AST_Ptr rewriteAllocators (const Environ* env) {
+        for_each_child_var (c, child(1)) {
+            c = c->rewriteAllocators (env);
+        } end_for;
         if (calledExpr()->asType() != NULL) {
             AST_Ptr id = make_token(ID, 8, "__init__");
             AST_Ptr nu = consTree(NEW, calledExpr());
@@ -688,10 +775,41 @@ protected:
         return this;
     }
 
-    // AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
-    //                       bool& errors) {
-    //     return Callable::resolveTypes(context, resolved, ambiguities, errors);
-    // }
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        if (child(0)->as_string() == "attributeref") {
+            AST_Ptr attrref = child(0);
+            if (attrref->child(0)->asType() == NULL) {
+                Type_Ptr classType = attrref->child(0)->getType()->binding();
+                gcstring attrName = attrref->child(1)->as_string();
+                if (classType->asType() != NULL) {
+                    const Environ* members = classType->asType()
+                        ->getDecl()->getEnviron();
+                    Decl_Vector memberDecls;
+                    members->find_immediate(attrName, memberDecls);
+
+                    if (memberDecls.size() == 0) {
+                        errors = true;
+                        error(loc(), "Cannot find '%s' in instance '%s'", attrName.c_str(),
+                            classType->as_string().c_str());
+                    } else if (memberDecls[0]->isMethod()) {
+                        char *str = new char[attrName.size()];
+                        attrName.copy(str, attrName.size(), 0);
+                        AST_Ptr id = make_token(ID, attrName.size(), str);
+                        for (int i = 0; i < memberDecls.size(); i++)
+                            id->addDecl(memberDecls[i]);
+                        replace(0, id);
+                        child(1)->insert(0, attrref->child(0));
+                        id->set_loc(loc());
+                        resolved += 1;
+                        return this;
+                    }
+                }
+            }
+        }
+        AST_Ptr temp = Callable::resolveTypes(context, resolved, ambiguities, errors);
+        return temp;
+    }
 };
 
 NODE_FACTORY (Call_AST, CALL);
@@ -719,7 +837,7 @@ protected:
     }
 
     void setActual (int k, AST_Ptr expr) {
-        child (1)->replace (k + 1, expr);
+        child (1)->replace (k, expr);
     }
 
     void setCalledExpr (AST_Ptr expr) {
