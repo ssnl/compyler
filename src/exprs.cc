@@ -468,11 +468,16 @@ protected:
     virtual AST_Ptr actualParam (int k) = 0;
 
     /** Returns the list of parameters in this call. */
+
     virtual AST_Ptr paramsList () = 0;
 
     virtual void setActual (int k, AST_Ptr expr) = 0;
 
     virtual void setCalledExpr (AST_Ptr expr) = 0;
+
+    virtual Type_Ptr _getReturnType(Type_Ptr matching, bool& errors) {
+        return matching->returnType();
+    }
 
     Type_Ptr computeType () {
         return Type::makeVar();
@@ -532,11 +537,11 @@ protected:
                 }
             }
         } else {
-            if (functionType->numParams() == numActuals())
+            if (functionType->numParams() == numActuals()) {
                 matching = functionType->freshen();
+            }
             done = true;
         }
-
         if (matching == NULL) {
             error(loc(), "type error: cannot resolve function call");
             errors = true;
@@ -554,7 +559,8 @@ protected:
                 }
             }
 
-            success &= getType()->unify(matching->returnType(), global_bindings);
+            success &= getType()->unify(this->_getReturnType(matching, errors),
+                    global_bindings);
 
             if (success) {
                 resolved += 1;
@@ -621,40 +627,42 @@ protected:
     NODE_CONSTRUCTORS (Call1_AST, Callable);
 
     AST_Ptr calledExpr () {
-        // FIXME
         return child (0);
     }
 
     int numActuals () {
-        // FIXME
-        return child (1)->arity ();
+        return child (1)->arity () ;
     }
 
     AST_Ptr actualParam (int k) {
-        // FIXME
         return child (1)->child (k);
     }
 
     AST_Ptr paramsList () {
-        // FIXME
         return child (1);
     }
 
     void setActual (int k, AST_Ptr expr) {
-        // FIXME
-        child (1)->replace (k, expr);
+        child (1)->replace (k + 1, expr);
     }
 
     void setCalledExpr (AST_Ptr expr) {
-        // FIXME
         replace(0, expr);
     }
 
-    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
-                          bool& errors) {
-        // FIXME
-        return this;
+    Type_Ptr _getReturnType(Type_Ptr matching, bool& errors) {
+        Type_Ptr type =  child(1)->child(0)->getType();
+        if (type->as_string() == Dict) {
+            gcstring keyName = type->typeParam(0)->as_string();
+            if (keyName != Int && keyName != Str && keyName != Bool) {
+                errors = true;
+                error(loc(), "type error: the key of dict must be int, str,"
+                    "or bool");
+            }
+        }
+        return type;
     }
+
 };
 
 NODE_FACTORY (Call1_AST, CALL1);
@@ -755,3 +763,31 @@ class Unop_AST : public Callable {
 NODE_FACTORY (Unop_AST, UNOP);
 
 
+class New_AST: public Typed_Expr {
+protected:
+    NODE_CONSTRUCTORS (New_AST, Typed_Expr);
+
+    Type_Ptr computeType() {
+        Type_Ptr classType = child(0)->asType();
+
+        int ar = classType->numTypeParams();
+        Type_Ptr* params = new Type_Ptr[ar];
+        for (int i = 0; i < ar; i++) {
+            if (!classType->typeParam(i)->isTypeVariable())
+                params[i] = classType->typeParam(i);
+            else
+                params[i] = Type::makeVar();
+        }
+
+        return classType->getDecl()->asType(ar, params);
+    }
+
+    // Do nothing
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        return this;
+    }
+
+};
+
+NODE_FACTORY (New_AST, NEW);
