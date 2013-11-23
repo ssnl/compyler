@@ -296,7 +296,8 @@ protected:
             }
         } end_for;
 
-        resolved++;
+        if (!errors)
+            resolved++;
         decl->setFrozen(false);
         return this;
     }
@@ -401,7 +402,7 @@ protected:
         for_each_child_var (c, this) {
             c = c->resolveTypes (decl, resolved, ambiguities, errors);
         } end_for;
-
+        resolved++;
         return this;
     }
 };
