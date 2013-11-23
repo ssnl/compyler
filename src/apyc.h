@@ -243,6 +243,7 @@ extern const gcstring Dict;
 extern const gcstring Bool;
 extern const gcstring File;
 extern const gcstring Range;
+extern const gcstring Logical;
 
 class Environ : public gc {
 public:

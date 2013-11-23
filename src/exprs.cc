@@ -40,10 +40,10 @@ private:
 
 
 /********************   ASSIGN   ********************/
-class Assign_AST : public AST_Tree {
+class Assign_AST : public Typed_Expr {
 protected:
 
-    NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
+    NODE_CONSTRUCTORS (Assign_AST, Typed_Expr);
 
     Type_Ptr computeType () {
         // FIXME
@@ -134,8 +134,38 @@ protected:
     NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr actualType = getType();
+        Type_Ptr childType;
+        bool done = true, success;
+        for_each_child (c, this) {
+            childType = c->getType();
+            if (childType == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(actualType, c, resolved,
+                    ambiguities, errors);
+            } else {
+                success = actualType->unify(childType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve %s",
+                        Logical.c_str());
+                    errors = true;
+                }
+            }
+        } end_for;
+
+        if (done)
+            resolved += 1;
+
+        return this;
     }
 };
 
@@ -143,11 +173,6 @@ class And_AST : public Logical_AST {
 protected:
 
     NODE_CONSTRUCTORS (And_AST, Logical_AST);
-
-    Type_Ptr computeType () {
-        // FIXME
-        return NULL;
-    }
 };
 
 NODE_FACTORY (And_AST, AND);
@@ -156,11 +181,6 @@ class Or_AST : public Logical_AST {
 protected:
 
     NODE_CONSTRUCTORS (Or_AST, Logical_AST);
-
-    Type_Ptr computeType () {
-        // FIXME
-        return NULL;
-    }
 };
 
 NODE_FACTORY (Or_AST, OR);

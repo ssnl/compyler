@@ -1,4 +1,4 @@
-# basic multiple nested logical: tests nested logical statements
+# basic multiple nested logical type: tests nested logical statements
 x = 1
 y = 2
 u = x or 3 or y or 4
