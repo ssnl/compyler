@@ -113,8 +113,40 @@ protected:
     NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr actualType = getType();
+        Type_Ptr childType;
+        bool done = true, success;
+        for_each_child (c, this) {
+            if (c_i_ != 0) {
+                childType = c->getType();
+                if (childType == AMBIGUOUS) {
+                    done &= Type::resolveAmbiguity(actualType, c, resolved,
+                        ambiguities, errors);
+                } else {
+                    success = actualType->unify(childType, global_bindings);
+                    done &= success;
+                    if (!success) {
+                        error(loc(), "type error: cannot resolve %s",
+                            List.c_str());
+                        errors = true;
+                    }
+                }
+            }
+        } end_for;
+
+        if (done)
+            resolved += 1;
+
+        return this;
     }
 };
 
@@ -232,8 +264,49 @@ protected:
     NODE_CONSTRUCTORS (Return_AST, AST_Tree);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr actualType, childType;
+        bool done = false, success;
+        for_each_child (c, this) {
+            actualType = getType()->typeParam(c_i_);
+            childType = c->getType();
+            if (childType == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(actualType, c, resolved,
+                    ambiguities, errors);
+            } else {
+                success = actualType->unify(childType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve %s",
+                        Tuple.c_str());
+                    errors = true;
+                }
+            }
+        } end_for;
+
+        // Check if return statement unifies with parent function's return type
+        if (done) {
+            Type_Ptr functionType = context->getType();
+            Type_Ptr returnType = functionType->returnType();
+            success = actualType->unify(returnType, global_bindings);
+            if (success) {
+                resolved += 1;
+            } else {
+                error(loc(),
+                    "type error: return statement does not match return type of "
+                    "function %s", functionType->as_string().c_str());
+                error = true;
+            }
+        }
+        return this;
     }
 };
 
