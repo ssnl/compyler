@@ -2,7 +2,7 @@
 
 /* types.cc: AST subclasses related to types. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include "apyc.h"

@@ -50,9 +50,12 @@ protected:
         return NULL;
     }
 
+    /** Overrides AST::collectDecls() to specify that the left hand
+     *  side of an assignment expression is a target. Also implements
+     *  a kludge fix so that nested assignments work. */
     void collectDecls (Decl* enclosing) {
+        child(1)->collectDecls(enclosing);
         child(1)->resolveSimpleIds(curr_environ);
-        // Specify that left hand side is a target
         child(0)->addTargetDecls(enclosing);
     }
 
