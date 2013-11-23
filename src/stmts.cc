@@ -139,7 +139,7 @@ protected:
         gcstring exprName = exprType->binding()->as_string().c_str();
 
         if (exprName == List) {
-            Type_Ptr elementType = exprType->paramType(0);
+            Type_Ptr elementType = exprType->binding()->typeParam(0);
             if (!targetType->unify(elementType, global_bindings)) {
                 errors = true;
                 error(loc(), "type error: type of %s does not match list type",
