@@ -344,8 +344,8 @@ protected:
             return true;
         else
             return b->hasFreeVariables ();
-    }
 
+}
     /* Each TypeVarDecl contains a pointer to a "canonical
      *  TypeVar_AST" for its type variable.  Binding and freshening
      *  work on this canonical AST. */

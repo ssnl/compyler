@@ -287,6 +287,7 @@ protected:
             id->set_loc(loc());
             nu->set_loc(loc());
             call1->set_loc(loc());
+            id->resolveSimpleIds(calledExpr()->getDecl()->getEnviron());
             return call1;
         }
         return this;
