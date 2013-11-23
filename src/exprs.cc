@@ -273,14 +273,14 @@ protected:
         Type_Ptr childType = child(0)->getType();
         Type_Ptr functionType = context->getType();
         Type_Ptr returnType = functionType->returnType();
-        bool success = childType->unify(returnType, global_bindings);
+        bool success = returnType->unify(childType, global_bindings);
         if (success) {
             resolved += 1;
         } else {
             error(loc(),
                 "type error: return statement does not match return type of "
                 "function %s", functionType->as_string().c_str());
-            error = true;
+            errors = true;
         }
         return this;
     }
@@ -508,14 +508,14 @@ protected:
 
         Type_Ptr actualType = getType();
         Type_Ptr functionType = calledExpr()->getType();
-        Type_Ptr paramType, childType, matching;
+        Type_Ptr paramType, matching = NULL;
         bool done = false, success;
 
         if (functionType == AMBIGUOUS) {
             for (int i = 0; i < calledExpr()->numDecls(); i++) {
                 success = true;
-                functionType = calledExpr()->getDecl(i)->getType;
-                if (functionType->numParams() != numActuals()
+                functionType = calledExpr()->getDecl(i)->getType()->freshen();
+                if (functionType->numParams() != numActuals())
                     continue;
                 for (int j = 0; j < numActuals(); j++) {
                     paramType = functionType->paramType(j);
@@ -535,7 +535,7 @@ protected:
                 }
             }
         } else {
-            matching = functionType;
+            matching = functionType->freshen();
             done = true;
         }
 
@@ -549,7 +549,7 @@ protected:
                 actualType = actualParam(i)->getType();
 
                 if (actualType == AMBIGUOUS) {
-                    success &= Type::resolveAmbiguity(paramType, actualParam(j),
+                    success &= Type::resolveAmbiguity(paramType, actualParam(i),
                         resolved, ambiguities, errors);
                 } else  {
                     success &= paramType->unifies(actualType);
