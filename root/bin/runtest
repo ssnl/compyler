@@ -6,6 +6,7 @@ cd $HOME
 function runtest-usage {
   echo "Usage: runtest [-vs] [-d TESTDIR] [-o FILE] [-p PHASE] TEST"
   echo "  -v          : Verbose output                        [Default: false]"
+  echo "  -r          : Does not output                       [Default: false]"
   echo "  -s          : Saves output.                         [Default: false]"
   echo "  -d TESTDIR  : Looks in TESTDIR for the TEST.        [Default: tests/correct2]"
   echo "  -o FILE     : Saves output in FILE.ast and FILE.    [Default: out (Overrides SAVE)]"
@@ -27,13 +28,17 @@ VERBOSE=false
 SAVE=false
 LIST=false
 COLLECT=false
+RAW=false
 
 # Reset getopts
 OPTIND=1
-while getopts "vsokao:d:p:h" O; do
+while getopts "vrsokao:d:p:h" O; do
   case $O in
     v)
       VERBOSE=true
+      ;;
+    r)
+      RAW=true
       ;;
     s)
       SAVE=true
@@ -88,7 +93,7 @@ if [ $? != 0 ]; then
 fi
 
 echo ">> Generated AST..."; echo
-if [ $PHASE == 1 ]; then
+if [ $PHASE == 1 ] || $RAW; then
   cat $FILE.ast
 else
   output-cleaner -a $FILE.ast
@@ -96,8 +101,14 @@ fi
 
 # Unparse AST
 echo; echo ">> Unparsing AST..."; echo
-pyunparse -o $FILE $FILE.ast
-if [ $PHASE == 1 ]; then
+
+PARAMS=
+if [ $PHASE != 1 ]; then
+  PARAMS="--remove-extensions --alpha"
+fi
+pyunparse $PARAMS -o $FILE $FILE.ast
+
+if [ $PHASE == 1 ] || $RAW; then
   cat $FILE
 else
   output-cleaner -p $FILE
