@@ -64,6 +64,7 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
             int& ambiguities, bool& errors) {
+
         // cout << "(Assign_AST) resolveTypes: " << child(0)->as_string() << ", " << child(1)->as_string() << endl;
 
         for_each_child_var (c, this) {
@@ -72,18 +73,32 @@ protected:
 
         AST_Ptr leftAST = child(0);
         AST_Ptr rightAST = child(1);
-
-        // int leftArity = leftAST->arity();
-        // int rightArity = rightAST->arity();
-
         Type_Ptr leftType = leftAST->getType();
         Type_Ptr rightType = rightAST->getType();
-        leftType->unify(rightType, global_bindings);
 
-        // Unify the assign node with the type of the right side
-        // Deals with chained assigns
-        getType()->unify(child(1)->getType(), global_bindings);
+        bool done;
 
+        if (rightType == AMBIGUOUS) {
+            done = Type::resolveAmbiguity(rightType, leftAST, resolved,
+                ambiguities, errors);
+            if (!done) {
+                return this;
+            }
+        } else {
+            done = leftType->unify(rightType, global_bindings);
+        }
+
+        if (!done) {
+            errors = true;
+            error(loc(), "type error: assignment to mismatched type");
+        }
+
+        if (!errors) {
+            // Unify the assign node with the type of the right side
+            // Deals with chained assigns
+            resolved += 1;
+            getType()->unify(child(1)->getType(), global_bindings);
+        }
         return this;
     }
 };
@@ -240,11 +255,9 @@ protected:
         Type_Ptr rightType = getType()->binding();
         gcstring rightTypeName = rightType->as_string();
 
-        cout << "YES THIS IS " << rightTypeName << endl;
-
         if (rightTypeName == List) {
+            // TODO lists of overloaded functions?
             Type_Ptr listType = rightType->typeParam(0);
-            cout << "WWHATATJSFSLFKLFKWFE" << endl;
             // Unify each child on the left with the right type
             for_each_child_var (c, this) {
                 c->getType()->unify(listType, global_bindings);
@@ -252,22 +265,34 @@ protected:
 
         } else if (rightTypeName == Tuple0 || rightTypeName == Tuple1 ||
                     rightTypeName == Tuple2 || rightTypeName == Tuple3) {
-
-            if (arity() == rightType->numParams()) {
+            int k;
+            if (rightTypeName == Tuple0) {
+                k = 0;
+            } else if (rightTypeName == Tuple1) {
+                k = 1;
+            } else if (rightTypeName == Tuple2) {
+                k = 2;
+            } else if (rightTypeName == Tuple3) {
+                k = 3;
+            } else {
+                k = -1;
+            }
+            if (arity() == k) {
                 for_each_child_var (c, this) {
                     c->getType()->unify(rightType->typeParam(c_i_), global_bindings);
                 } end_for;
             } else {
-                // Error
+                errors = true;
+                error(loc(), "value error: length mismatch, can't unpack values");
             }
 
         } else if (getType() == rightType) {
             // Bindings are the same
 
         } else {
-            // Error
+            errors = true;
+            error(loc(), "type error: multiple assignment from non-iterable");
         }
-
         return this;
     }
 };
