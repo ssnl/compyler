@@ -247,6 +247,59 @@ protected:
         } end_for;
         return this;
     }
+
+    void _setupSelf(Decl* context) {
+        return this;
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        Decl* decl = getDecl();
+        decl->setFrozen(true);
+        _setupSelf(context);
+
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (decl, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr funcType = decl->getType();
+        Type_Ptr returnType = funcType->returnType();
+        Type_Ptr rType;
+
+        if (!child(2)->isMissing())
+            rType = child(2)->getType();
+        else
+            rType = NULL;
+
+        // No return statement in function body
+        if (returnType->binding() == returnType) {
+            if (rType != NULL) {
+                returnType->unify(rType, global_bindings);
+            } else {
+                Type_Ptr noneType = outer_environ->find("__None__")->getType()
+                    ->returnType();
+                returnType->unify(noneType, global_bindings);
+            }
+        } else if (rType != NULL && !returnType->unify(rType, global_bindings)){
+            errors = true;
+            error(loc(), "type error: type of return object does not match "
+                "the return type of the function");
+        }
+
+        Type_Ptr paramType;
+
+        for_each_child_var (c, child(1)) {
+            paramType = c->getType();
+            if (!paramType->unify(funcType->paramType(c_i_), global_bindings)) {
+                errors = true;
+                error(loc(), "type error: type mismatch");
+            }
+        } end_for;
+
+        resolved++;
+        decl->setFrozen(false);
+        return this;
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -263,11 +316,9 @@ protected:
         return new Environ(curr_environ->get_enclosure());
     }
 
-    AST_Ptr _setupSelf(Decl* context, int& resolved,
-                          int& ambiguities,  bool& errors) {
-        Unwind_Stack unwind_stack;
+    void _setupSelf(Decl* context) {
         Type_Ptr classType = context->getType();
-        child(0)->getType()->unify(classType, unwind_stack);
+        child(1)->child(0)->getType()->unify(classType, global_bindings);
         return this;
     }
 };
@@ -341,6 +392,16 @@ protected:
                 c = c->rewriteSimpleTypes(env);
             }
         } end_for;
+        return this;
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        Decl* decl = getDecl();
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (decl, resolved, ambiguities, errors);
+        } end_for;
+
         return this;
     }
 };
