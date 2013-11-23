@@ -8,10 +8,12 @@ the cleaned AST.
 def outputCleanedAST(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
-	raw = raw[:1] + raw[1282:]
+	mod_end = 1 + indexOf(raw,"(string_literal 265 \"__isnot__\"))))")
+	raw = raw[:1] + raw[mod_end:]
 	decl_start = indexOf(raw,"(moduledecl 0 __main__")
+	decl_end = 5 + indexOf(raw,"(funcdecl 549 __isnot__ 0  (function_type 0")
 	ast_out = raw[:decl_start]
-	decl_out = raw[decl_start+474:]
+	decl_out = raw[decl_end:]
 	print ast_out[0]
 	print "          ..."
 	print "     ----------- "
@@ -31,7 +33,8 @@ def outputCleanedAST(fname):
 def outputCleanedSource(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
-	raw = raw[157:]
+	start = indexOf(raw,"return __isnot__(")
+	raw = raw[start:]
 	print "          ..."
 	print "     -------------- "
 	print "     prelude source "
