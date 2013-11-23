@@ -62,43 +62,33 @@ protected:
         child(0)->resolveSimpleIds(env);
     }
 
-    AST_Ptr resolveTypes (Decl* context, int& resolved,
-            int& ambiguities, bool& errors) {
-
-        // cout << "(Assign_AST) resolveTypes: " << child(0)->as_string() << ", " << child(1)->as_string() << endl;
-
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
         for_each_child_var (c, this) {
-            c = c->resolveTypes (context, resolved, ambiguities, errors);
+            c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
-        AST_Ptr leftAST = child(0);
-        AST_Ptr rightAST = child(1);
-        Type_Ptr leftType = leftAST->getType();
-        Type_Ptr rightType = rightAST->getType();
-
-        bool done;
-
-        if (rightType == AMBIGUOUS) {
-            done = Type::resolveAmbiguity(rightType, leftAST, resolved,
-                ambiguities, errors);
-            if (!done) {
-                return this;
+        Type_Ptr actualType = getType();
+        Type_Ptr childType;
+        bool done = true, success;
+        for_each_child (c, this) {
+            childType = c->getType();
+            if (childType == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(actualType, c, resolved,
+                    ambiguities, errors);
+            } else {
+                success = actualType->unify(childType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve assignment");
+                    errors = true;
+                }
             }
-        } else {
-            done = leftType->unify(rightType, global_bindings);
-        }
+        } end_for;
 
-        if (!done) {
-            errors = true;
-            error(loc(), "type error: assignment to mismatched type");
-        }
-
-        if (!errors) {
-            // Unify the assign node with the type of the right side
-            // Deals with chained assigns
+        if (done)
             resolved += 1;
-            getType()->unify(child(1)->getType(), global_bindings);
-        }
+
         return this;
     }
 };
@@ -270,18 +260,21 @@ protected:
         } end_for;
 
         // Check if return statement unifies with parent function's return type
-        Type_Ptr childType = child(0)->getType();
-        Type_Ptr functionType = context->getType();
-        Type_Ptr returnType = functionType->returnType();
-        bool success = returnType->unify(childType, global_bindings);
-        if (success) {
-            resolved += 1;
-        } else {
-            error(loc(),
-                "type error: return statement does not match return type of "
-                "function %s", functionType->as_string().c_str());
-            errors = true;
+        if (!child(0)->isMissing()) {
+            Type_Ptr childType = child(0)->getType();
+            Type_Ptr functionType = context->getType();
+            Type_Ptr returnType = functionType->returnType();
+            bool success = returnType->unify(childType, global_bindings);
+            if (success) {
+                resolved += 1;
+            } else {
+                error(loc(),
+                    "type error: return statement does not match return type of "
+                    "function %s", functionType->as_string().c_str());
+                errors = true;
+            }
         }
+
         return this;
     }
 };
@@ -301,41 +294,41 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved,
             int& ambiguities, bool& errors) {
 
-        Type_Ptr rightType = getType()->binding();
-        gcstring rightTypeName = rightType->as_string();
+        Type_Ptr actualType = getType()->binding();
+        gcstring actualTypeName = actualType->as_string();
 
-        if (rightTypeName == List) {
+        if (actualTypeName == List) {
             // TODO lists of overloaded functions?
-            Type_Ptr listType = rightType->typeParam(0);
+            Type_Ptr listType = actualType->typeParam(0);
             // Unify each child on the left with the right type
             for_each_child_var (c, this) {
                 c->getType()->unify(listType, global_bindings);
             } end_for;
 
-        } else if (rightTypeName == Tuple0 || rightTypeName == Tuple1 ||
-                    rightTypeName == Tuple2 || rightTypeName == Tuple3) {
+        } else if (actualTypeName == Tuple0 || actualTypeName == Tuple1 ||
+                    actualTypeName == Tuple2 || actualTypeName == Tuple3) {
             int k;
-            if (rightTypeName == Tuple0) {
+            if (actualTypeName == Tuple0) {
                 k = 0;
-            } else if (rightTypeName == Tuple1) {
+            } else if (actualTypeName == Tuple1) {
                 k = 1;
-            } else if (rightTypeName == Tuple2) {
+            } else if (actualTypeName == Tuple2) {
                 k = 2;
-            } else if (rightTypeName == Tuple3) {
+            } else if (actualTypeName == Tuple3) {
                 k = 3;
             } else {
                 k = -1;
             }
             if (arity() == k) {
                 for_each_child_var (c, this) {
-                    c->getType()->unify(rightType->typeParam(c_i_), global_bindings);
+                    c->getType()->unify(actualType->typeParam(c_i_), global_bindings);
                 } end_for;
             } else {
                 errors = true;
                 error(loc(), "value error: length mismatch, can't unpack values");
             }
 
-        } else if (getType() == rightType) {
+        } else if (getType() == actualType) {
             // Bindings are the same
 
         } else {
@@ -506,9 +499,8 @@ protected:
             actualParam(i)->resolveTypes(context, resolved, ambiguities, errors);
         }
 
-        Type_Ptr actualType = getType();
         Type_Ptr functionType = calledExpr()->getType();
-        Type_Ptr paramType, matching = NULL;
+        Type_Ptr actualType, paramType, matching = NULL;
         bool done = false, success;
 
         if (functionType == AMBIGUOUS) {
@@ -552,9 +544,11 @@ protected:
                     success &= Type::resolveAmbiguity(paramType, actualParam(i),
                         resolved, ambiguities, errors);
                 } else  {
-                    success &= paramType->unifies(actualType);
+                    success &= paramType->unify(actualType, global_bindings);
                 }
             }
+
+            success &= getType()->unify(matching->returnType(), global_bindings);
 
             if (success) {
                 resolved += 1;
@@ -611,6 +605,51 @@ protected:
 };
 
 NODE_FACTORY (Call_AST, CALL);
+
+/** A allocator call */
+class Call1_AST : public Callable {
+protected:
+
+    NODE_CONSTRUCTORS (Call1_AST, Callable);
+
+    AST_Ptr calledExpr () {
+        // FIXME
+        return child (0);
+    }
+
+    int numActuals () {
+        // FIXME
+        return child (1)->arity ();
+    }
+
+    AST_Ptr actualParam (int k) {
+        // FIXME
+        return child (1)->child (k);
+    }
+
+    AST_Ptr paramsList () {
+        // FIXME
+        return child (1);
+    }
+
+    void setActual (int k, AST_Ptr expr) {
+        // FIXME
+        child (1)->replace (k, expr);
+    }
+
+    void setCalledExpr (AST_Ptr expr) {
+        // FIXME
+        replace(0, expr);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        // FIXME
+        return this;
+    }
+};
+
+NODE_FACTORY (Call1_AST, CALL1);
 
 /** A binary operator. */
 class Binop_AST : public Callable {

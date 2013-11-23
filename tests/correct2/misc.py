@@ -1,2 +1,4 @@
 # misc: random tests
-return 3
+def f(x):
+  y = "hi"
+  y = x

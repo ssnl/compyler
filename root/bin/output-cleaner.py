@@ -8,10 +8,10 @@ the cleaned AST.
 def outputCleanedAST(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
-	mod_end = 1 + indexOf(raw,"(string_literal 265 \"__isnot__\"))))")
+	mod_end = 1 + indexOf(raw,["(string_literal","\"__isnot__\"))))"])
 	raw = raw[:1] + raw[mod_end:]
-	decl_start = indexOf(raw,"(moduledecl 0 __main__")
-	decl_end = 5 + indexOf(raw,"(funcdecl 549 __isnot__ 0  (function_type 0")
+	decl_start = indexOf(raw,["(moduledecl 0 __main__"])
+	decl_end = 7 + indexOf(raw,["(funcdecl","__isnot__ 0  (function_type 0"])
 	ast_out = raw[:decl_start]
 	decl_out = raw[decl_end:]
 	print ast_out[0]
@@ -33,7 +33,7 @@ def outputCleanedAST(fname):
 def outputCleanedSource(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
-	start = indexOf(raw,"return __isnot__(")
+	start = 1+indexOf(raw,["return __isnot__("])
 	raw = raw[start:]
 	print "          ..."
 	print "     -------------- "
@@ -43,9 +43,10 @@ def outputCleanedSource(fname):
 	for line in raw:
 		print line
 
-def indexOf(lines,s):
+def indexOf(lines,phrases):
+	c = len(phrases)
 	for k,line in enumerate(lines):
-		if s in line:
+		if sum([(s in line) for s in phrases]) == c:
 			return k
 	return -1
 
