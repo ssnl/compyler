@@ -1,6 +1,6 @@
 /* Implementations of declaration and type-related classes */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 /* From a skeleton by Paul N. Hilfinger */
 
 #include <stdexcept>

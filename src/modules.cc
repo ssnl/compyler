@@ -2,7 +2,7 @@
 
 /* modules.cc: Describes programs or libraries.  Contains top-level routines. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include "apyc.h"

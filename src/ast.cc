@@ -2,7 +2,7 @@
 
 /* ast.cc: Basic AST subclasses. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include "apyc.h"

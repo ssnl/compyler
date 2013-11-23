@@ -2,7 +2,7 @@
 
 /* stmts.cc: AST subclasses related to statements and modules. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include "apyc.h"

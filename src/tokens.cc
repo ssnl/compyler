@@ -2,7 +2,7 @@
 
 /* tokens.cc: Definitions related to AST_Token and its subclasses. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include <cerrno>

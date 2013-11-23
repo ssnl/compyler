@@ -2,7 +2,7 @@
 
 /* exprs.cc: AST subclasses related to expressions. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <iostream>
 #include <string>

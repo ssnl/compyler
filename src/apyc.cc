@@ -2,7 +2,7 @@
 
 /* apyc: A PYthon Compiler. */
 
-/* Authors:  YOUR NAMES HERE */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #include <cstdio>
 #include <cstdlib>

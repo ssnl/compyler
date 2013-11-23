@@ -2,7 +2,7 @@
 
 /* ast.h: Top-level definitions for abstract syntax trees. */
 
-/* Authors: */
+/* Authors: Kevin Wu, Wenson Hsieh, Leo Kam */
 
 #ifndef _AST_H_
 #define _AST_H_
