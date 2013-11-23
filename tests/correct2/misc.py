@@ -1,3 +1,2 @@
 # misc: random tests
-def foo():
-  pass
+return 3
