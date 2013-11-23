@@ -31,8 +31,8 @@ protected:
     /** Top-level semantic processing for the program. */
     AST_Ptr doOuterSemantics () {
         AST_Ptr self = this;
-        Decl* me = makeModuleDecl("__main__");
-        outer_environ = me->getEnviron();
+        Decl* moduleDecl = makeModuleDecl("__main__");
+        outer_environ = moduleDecl->getEnviron();
         curr_environ = new Environ(NULL);
 
         /** The steps for processing a module should be, in this
@@ -49,7 +49,7 @@ protected:
         self = self->rewriteNone();
         // 2/3. Collect/Resolve declarations
         for_each_child_var (c, self) {
-            c->collectDecls(me);
+            c->collectDecls(moduleDecl);
             c->resolveSimpleIds(curr_environ);
             c = c->doInnerSemantics();
         } end_for;
@@ -59,21 +59,17 @@ protected:
             c = c->rewriteSimpleTypes(outer_environ);
             c = c->rewriteAllocators(outer_environ);
         } end_for;
-        // 4. Fill in types for primitives
+        // 3. Fill in types for primitives
         gcstring key;
         for (Decl_Map::iterator i = primitiveDecls.begin();
             i != primitiveDecls.end(); i++) {
             key = i->first;
             primitiveDecls[key] = outer_environ->find(key);
         }
-        // 4. Perform type inference
-        // cout << "(Module_AST) resolving outer types..." << endl;
-        // for_each_child_var (c, self) {
-        //     c = c->resolveTypesOuter(me);
-        // } end_for;
-        // TODO: Print errors
+        // 4. TODO: Perform type inference
 
-        // 5. Final rewrites (TODO)
+        // 5. TODO: Print errors?
+        // 6. TODO: Final rewrites?
 
         return self;
     }
