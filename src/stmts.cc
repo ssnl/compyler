@@ -270,15 +270,16 @@ protected:
         return this;
     }
 
-    virtual void _setupSelf(Decl* context) {
-        // Do Nothing
+    virtual bool _setupSelf(Decl* context) {
+        return true;
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
         Decl* decl = getDecl();
         decl->setFrozen(true);
-        _setupSelf(context);
+        if(!_setupSelf(context))
+            errors = true;
 
         for_each_child_var (c, this) {
             c = c->resolveTypes (decl, resolved, ambiguities, errors);
@@ -345,7 +346,12 @@ protected:
         return new Environ(curr_environ->get_enclosure());
     }
 
-    void _setupSelf(Decl* context) {
+    bool _setupSelf(Decl* context) {
+        if (getType()->numParams() == 0) {
+            error(loc(), "instance methods must have at least one argument");
+            return false;
+        }
+
         int ar = context->getTypeArity();
         Type_Ptr* params = new Type_Ptr[ar];
         for (int i = 0; i < ar; i++) {
@@ -354,6 +360,7 @@ protected:
 
         Type_Ptr classType = context->asType(ar, params);
         getType()->paramType(0)->unify(classType, global_bindings);
+        return true;
     }
 };
 

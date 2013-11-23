@@ -1,4 +1,5 @@
 # misc: random tests
-for x in [[1, 2], [3, 4]]:
-  print x
-
+class A:
+  def foo(self):
+    pass
+x = (a()).foo()

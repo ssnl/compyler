@@ -211,9 +211,10 @@ protected:
     }
 
     void checkResolved () {
-        if (numDecls() > 1)
+        if (numDecls() > 1) {
             error (loc(), "type error: cannot resolve ambiguous function %s",
                 as_string().c_str());
+        }
     }
 
 private:

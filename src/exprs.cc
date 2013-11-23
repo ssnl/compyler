@@ -65,7 +65,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         Type_Ptr actualType = getType();
@@ -96,6 +96,71 @@ protected:
 NODE_FACTORY (Assign_AST, ASSIGN);
 
 
+/********************   ATTRIBUTE REFERENCE   ********************/
+class Attr_Ref_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (Attr_Ref_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        return Type::makeVar();
+    }
+
+    AST_Ptr rewriteSimpleTypes (const Environ* env) {
+        AST_Ptr child0 = child(0)->rewriteSimpleTypes(env);
+        replace(0, child0);
+        return this;
+    }
+
+    void resolveSimpleIds (const Environ* env) {
+        child(0)->resolveSimpleIds(env);
+    }
+
+    AST_Ptr resolveStaticSelections (const Environ* environ) {
+        // Check if attribute of a class
+        Type_Ptr classType = child(0)->asType();
+        gcstring attrName = child(1)->as_string();
+
+        if (classType != NULL) {
+            Decl* classDecl = environ->find(classType->as_string());
+            const Environ* members = classDecl->getEnviron();
+            Decl* member = members->find(attrName);
+
+            if (member != NULL && member->isMethod()) {
+                char *str = new char[attrName.size()];
+                attrName.copy(str, attrName.size(), 0);
+                AST_Ptr id = make_token(ID, attrName.size(), str);
+                id->addDecl(member);
+                id->set_loc(loc());
+                return id;
+            } else {
+                error(loc(), "Cannot find method '%s' in class '%s'",
+                    attrName.c_str(), classType->as_string().c_str());
+            }
+        }
+
+        return NULL;
+    }
+
+    /** Until types are fully resolved, cannot resolve the attribute reference,
+     *  so simply resolve the left hand side. */
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        replace(0, child(0)->
+            resolveTypes(context, resolved, ambiguities, errors));
+
+        AST_Ptr self = resolveStaticSelections(outer_environ);
+        if (self == NULL) {
+            self = this;
+        }
+
+        return self;
+    }
+};
+
+NODE_FACTORY (Attr_Ref_AST, ATTRIBUTEREF);
+
+
 /********************   IF EXPRESSION   ********************/
 class If_Expr_AST : public Typed_Expr {
 protected:
@@ -109,7 +174,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         Type_Ptr actualType = getType();
@@ -156,7 +221,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         Type_Ptr actualType = getType()->typeParam(0);
@@ -201,7 +266,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         Type_Ptr actualType = getType();
@@ -256,7 +321,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         // Check if return statement unifies with parent function's return type
@@ -371,7 +436,7 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
         for_each_child_var (c, this) {
-            c->resolveTypes(context, resolved, ambiguities, errors);
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
         } end_for;
 
         // Skip everything if tuple is malformed.
@@ -504,9 +569,11 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
-        calledExpr()->resolveTypes(context, resolved, ambiguities, errors);
+        setCalledExpr(calledExpr()->resolveTypes(context, resolved, ambiguities,
+            errors));
         for (int i = 0; i < numActuals(); i++) {
-            actualParam(i)->resolveTypes(context, resolved, ambiguities, errors);
+            setActual(i, actualParam(i)->
+                resolveTypes(context, resolved, ambiguities, errors));
         }
 
         Type_Ptr functionType = calledExpr()->getType();
@@ -517,8 +584,11 @@ protected:
             for (int i = 0; i < calledExpr()->numDecls(); i++) {
                 success = true;
                 functionType = calledExpr()->getDecl(i)->getType()->freshen();
-                if (functionType->numParams() != numActuals())
+                if (functionType->numParams() != numActuals()) {
+                    if (calledExpr()->numDecls() > 1)
+                        calledExpr()->removeDecl(i);
                     continue;
+                }
                 for (int j = 0; j < numActuals(); j++) {
                     paramType = functionType->paramType(j);
                     actualType = actualParam(j)->getType();
@@ -536,6 +606,7 @@ protected:
                     done = false;
                 }
             }
+
         } else {
             if (functionType->numParams() == numActuals()) {
                 matching = functionType->freshen();
@@ -616,6 +687,11 @@ protected:
         }
         return this;
     }
+
+    // AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+    //                       bool& errors) {
+    //     return Callable::resolveTypes(context, resolved, ambiguities, errors);
+    // }
 };
 
 NODE_FACTORY (Call_AST, CALL);

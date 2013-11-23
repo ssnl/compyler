@@ -72,7 +72,7 @@ protected:
         }
         // 4. Perform type inference
         for_each_child_var (c, self) {
-            c->resolveTypesOuter(moduleDecl);
+            c = c->resolveTypesOuter(moduleDecl);
         } end_for;
 
         // 5. Report unresolved overloaded methods as errors
