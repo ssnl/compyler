@@ -21,8 +21,8 @@ protected:
 
     NODE_BASE_CONSTRUCTORS (Typed_Expr, AST_Tree);
 
-    /** Override AST::getType to return the type of the expression. If
-     *  if the type is null, computes the type first before returning it. */
+    /** Override AST::getType to return the type of the expression. If the type
+     *  is null, computes the type first before returning it. */
     Type_Ptr getType() {
         if (_type != NULL) {
             return _type;
@@ -30,8 +30,8 @@ protected:
         return computeType();
     }
 
-    /** Computes the type of the expression. This should be overrided by
-     *  each specific typed expression. */
+    /** Computes the type of the expression. This should be overrided by each
+     * specific typed expression. */
     virtual Type_Ptr computeType () = 0;
 
 private:

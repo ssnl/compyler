@@ -11,7 +11,8 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
-/** Names of built-int constants used to fill in the primitive map below. */
+/** Names of built-int constants used to fill in the primitive map
+ *  below. */
 const gcstring Int = "int";
 const gcstring List = "list";
 const gcstring Tuple = "tuple";
