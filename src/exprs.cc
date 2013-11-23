@@ -46,8 +46,7 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
     }
 
     /** Overrides AST::collectDecls() to specify that the left hand
@@ -61,6 +60,31 @@ protected:
 
     void resolveSimpleIds (const Environ* env) {
         child(0)->resolveSimpleIds(env);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+            int& ambiguities, bool& errors) {
+        // cout << "(Assign_AST) resolveTypes: " << child(0)->as_string() << ", " << child(1)->as_string() << endl;
+
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+
+        AST_Ptr leftAST = child(0);
+        AST_Ptr rightAST = child(1);
+
+        // int leftArity = leftAST->arity();
+        // int rightArity = rightAST->arity();
+
+        Type_Ptr leftType = leftAST->getType();
+        Type_Ptr rightType = rightAST->getType();
+        leftType->unify(rightType, global_bindings);
+
+        // Unify the assign node with the type of the right side
+        // Deals with chained assigns
+        getType()->unify(child(1)->getType(), global_bindings);
+
+        return this;
     }
 };
 
@@ -201,6 +225,55 @@ protected:
 NODE_FACTORY (Return_AST, RETURN);
 
 
+class Target_List_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (Target_List_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        return Type::makeVar();
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+            int& ambiguities, bool& errors) {
+
+        Type_Ptr rightType = getType()->binding();
+        gcstring rightTypeName = rightType->as_string();
+
+        cout << "YES THIS IS " << rightTypeName << endl;
+
+        if (rightTypeName == List) {
+            Type_Ptr listType = rightType->typeParam(0);
+            cout << "WWHATATJSFSLFKLFKWFE" << endl;
+            // Unify each child on the left with the right type
+            for_each_child_var (c, this) {
+                c->getType()->unify(listType, global_bindings);
+            } end_for;
+
+        } else if (rightTypeName == Tuple0 || rightTypeName == Tuple1 ||
+                    rightTypeName == Tuple2 || rightTypeName == Tuple3) {
+
+            if (arity() == rightType->numParams()) {
+                for_each_child_var (c, this) {
+                    c->getType()->unify(rightType->typeParam(c_i_), global_bindings);
+                } end_for;
+            } else {
+                // Error
+            }
+
+        } else if (getType() == rightType) {
+            // Bindings are the same
+
+        } else {
+            // Error
+        }
+
+        return this;
+    }
+};
+
+NODE_FACTORY (Target_List_AST, TARGET_LIST);
+
 /********************   TUPLE   ********************/
 class Tuple_AST : public Typed_Expr {
 protected:
@@ -272,8 +345,7 @@ protected:
     NODE_CONSTRUCTORS (Typed_Id_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return Type::makeVar();
     }
 
     /** Stop the recursion. */
@@ -290,6 +362,13 @@ protected:
      *  not need a declaration. */
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+            int& ambiguities, bool& errors) {
+        // cout << "(Typed_Id_AST) resolveTypes: " << child(0)->as_string() << endl;
+        child(0)->getType()->unify(child(1)->asType(), global_bindings);
+        return this;
     }
 };
 

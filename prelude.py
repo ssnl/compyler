@@ -67,8 +67,8 @@ def truth(x)::bool:
 def __not__(x)::bool:
     native "__not__"
 
-True::bool = truth(1)
-False::bool = truth(0)
+# True::bool = truth(1)
+# False::bool = truth(0)
 
 # Type range
 
@@ -206,14 +206,14 @@ def read(f::file)::str:
 # (We fake this with an instance of a class, using instance variables instead
 # of module members.)
 
-class __sys__:
-    stdin::file = __standard_file__(0)
-    stdout::file = __standard_file__(1)
-    stderr::file = __standard_file__(2)
+# class __sys__:
+#     stdin::file = __standard_file__(0)
+#     stdout::file = __standard_file__(1)
+#     stderr::file = __standard_file__(2)
 
-    argv::list of str = __argv__()
+#     argv::list of str = __argv__()
 
-sys::__sys__ = __sys__()
+# sys::__sys__ = __sys__()
 
 # Type dict
 

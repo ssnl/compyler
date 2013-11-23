@@ -41,24 +41,22 @@ class Typed_Token : public AST_Token {
 public:
 
     Type_Ptr getType () {
-        if (_type == NULL)
+        if (_type == NULL) {
             _type = computeType ();
+        }
         return _type;
     }
 
 protected:
 
-    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
-                          bool& errors) {
-        if (_type == NULL) {
-            _type = computeType ();
-        }
-        return this;
-    }
+    // AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+    //                       bool& errors) {
+    //     return this;
+    // }
 
     /** Computes my type, which is then cached by getType(). */
     virtual Type_Ptr computeType () {
-        return NULL;
+        return Type::makeVar();
     }
 
     Type_Ptr _type;

@@ -332,13 +332,3 @@ protected:
 };
 
 NODE_FACTORY (Class_Block_AST, CLASS_BLOCK);
-
-
-/********************   TARGET_LIST   ********************/
-class Target_List_AST : public AST_Tree {
-protected:
-
-    NODE_CONSTRUCTORS (Target_List_AST, AST_Tree);
-};
-
-NODE_FACTORY (Target_List_AST, TARGET_LIST);
