@@ -3,3 +3,7 @@ def f():
 	pass
 def g():
 	return
+
+print f() is g()
+print g() is None
+print f() is None

@@ -5,4 +5,9 @@ def foo(x):
     return bar
 
 a = foo(1)
+<<<<<<< HEAD
 b = a(3)
+=======
+b = a(2)
+print a,b
+>>>>>>> a9a860e... tests!

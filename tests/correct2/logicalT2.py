@@ -2,3 +2,4 @@
 x::str = "hi"
 y = "bye"
 z = x or y
+print x,y,z

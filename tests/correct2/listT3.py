@@ -3,4 +3,4 @@ def foo():
   pass
 def bar():
   pass
-[foo, bar]
+print len([foo, bar])

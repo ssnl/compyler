@@ -3,4 +3,5 @@ def foo(x, y):
   pass
 def bar(x, y):
   pass
-[foo, bar]
+t = [foo, bar]
+print t[0]() is None

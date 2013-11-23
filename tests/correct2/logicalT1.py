@@ -2,3 +2,4 @@
 x::int = 1
 y = 2
 z = x and y
+print x,y,z

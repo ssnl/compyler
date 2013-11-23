@@ -7,4 +7,4 @@ def foo(x::int):
 def bar(x::int):
     return 2
 
-bar(10)
+print bar(10)

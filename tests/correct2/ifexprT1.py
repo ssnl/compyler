@@ -1,3 +1,3 @@
 # basic ifexpr type: tests if if-expressions resolve types properly
-z = 2
-x = 1 if "true" else z
+z = "hi" if False else "bye"
+print z

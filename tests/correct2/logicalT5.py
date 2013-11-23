@@ -3,5 +3,5 @@ def foo(x):
   pass
 def bar(y):
   pass
-foo or bar
-foo and bar
+print foo or bar
+print foo and bar

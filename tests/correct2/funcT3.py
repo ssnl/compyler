@@ -2,3 +2,6 @@
 def foo(x):
   def bar():
     y::int = x
+    print y
+
+print foo(5)()

@@ -8,5 +8,4 @@ def foo(x::str,y):
 def foo(x::str,y::str):
     pass
 
-foo("hi",2)
-
+print foo("hi",2)

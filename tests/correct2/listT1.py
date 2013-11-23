@@ -1,2 +1,2 @@
 # basic list type: check if lists resolve properly
-[1, 2, 3]
+print [1, 2, 3]

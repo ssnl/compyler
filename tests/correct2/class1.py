@@ -4,3 +4,5 @@ class Foo:
 	x = 5
 	def __init__(self):
 		print x
+
+f = Foo()
