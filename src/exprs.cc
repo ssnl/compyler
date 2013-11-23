@@ -506,7 +506,61 @@ protected:
             actualParam(i)->resolveTypes(context, resolved, ambiguities, errors);
         }
 
-        Typepointer actualType = getType();
+        Type_Ptr actualType = getType();
+        Type_Ptr functionType = calledExpr()->getType();
+        Type_Ptr paramType, childType, matching;
+        bool done = false, success;
+
+        if (functionType == AMBIGUOUS) {
+            for (int i = 0; i < calledExpr()->numDecls(); i++) {
+                success = true;
+                functionType = calledExpr()->getDecl(i)->getType;
+                if (functionType->numParams() != numActuals()
+                    continue;
+                for (int j = 0; j < numActuals(); j++) {
+                    paramType = functionType->paramType(j);
+                    actualType = actualParam(j)->getType();
+
+                    if (actualType == AMBIGUOUS) {
+                        success &= Type::checkAmbiguity(paramType, actualParam(j));
+                    } else  {
+                        success &= paramType->unifies(actualType);
+                    }
+                }
+                if (success && matching == NULL) {
+                    matching = functionType;
+                    done = true;
+                } else {
+                    done = false;
+                }
+            }
+        } else {
+            matching = functionType;
+            done = true;
+        }
+
+        if (matching == NULL) {
+            error(loc(), "type error: cannot resolve function call");
+            errors = true;
+        } else if (done) {
+            success = true;
+            for (int i = 0; i < numActuals(); i++) {
+                paramType = matching->paramType(i);
+                actualType = actualParam(i)->getType();
+
+                if (actualType == AMBIGUOUS) {
+                    success &= Type::resolveAmbiguity(paramType, actualParam(j),
+                        resolved, ambiguities, errors);
+                } else  {
+                    success &= paramType->unifies(actualType);
+                }
+            }
+
+            if (success) {
+                resolved += 1;
+            }
+        }
+
         return this;
     }
 };
