@@ -133,9 +133,15 @@ protected:
         _me.erase (_me.begin () + k);
     }
 
+    Type_Ptr getType() {
+        return computeType();
+    }
+
     Type_Ptr computeType () {
         if (numDecls() > 1) {
             return AMBIGUOUS;
+        } else if (numDecls() == 0) {
+            error(loc(), "type error: type mismatch");
         }
         return getDecl()->getType();
     }

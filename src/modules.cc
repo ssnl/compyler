@@ -73,7 +73,7 @@ protected:
         // 4. TODO: Perform type inference
         for_each_child_var (c, self) {
             c->resolveTypesOuter(moduleDecl);
-        }
+        } end_for;
         // 5. TODO: Print errors?
         // 6. TODO: Final rewrites?
 
