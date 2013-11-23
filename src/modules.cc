@@ -16,8 +16,8 @@ static GCINIT _gcdummy;
 /** Initializing global variables. */
 const Environ* outer_environ;
 Environ* curr_environ;
-Type* ambiguous_type;
 Unwind_Stack global_bindings;
+Type_Ptr AMBIGUOUS;
 
 /*****   MODULE    *****/
 

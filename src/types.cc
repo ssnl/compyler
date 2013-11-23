@@ -276,6 +276,35 @@ Type::replaceBindings (Type_Ptr type)
     return type->replaceBindings ();
 }
 
+bool
+resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambiguities,
+                                  bool& errors)
+{
+    Decl* decl;
+    int count = 0;
+    while (count < token->numDecls()) {
+        decl = token->getDecl(count);
+        if (!type->unifies(decl->getType())) {
+            token->removeDecl(count);
+        } else {
+            count++;
+        }
+    }
+
+    count = token->numDecls();
+    if (count == 1) {
+        type->unify(token->getDecl()->getType(), global_bindings);
+        return true;
+    } else if (count > 1) {
+        ambiguities += count - 1;
+        return false;
+    } else {
+        error(token->loc(), "type error: unresolvable type");
+        errors = true;
+        return false;
+    }
+}
+
 Type_Ptr
 Type::replaceBindings ()
 {

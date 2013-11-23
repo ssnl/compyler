@@ -356,6 +356,18 @@ public:
     /** A type is already rewritten, so do nothing by default. */
     virtual AST_Ptr rewriteSimpleTypes (const Environ* env);
 
+    /** Try to resolve the ambiguous types of TOKEN via TYPE. Remove the decls in
+     *  TOKEN that fail to unify with TYPE. If ambiguity is resolved (exactly one
+     *  type in TOKEN unify with TYPE), actually unify that type with TYPE,
+     *  increment RESOLVED by 1, and return true. If more than one type in TOKEN
+     *  can unify with TYPE, then increment AMBIGUITIES by the appropriate amount
+     *  and return false, without changing binding of TYPE . Else if none of the
+     *  types in TOKEN unify with TYPE, then throws an error, set ERRORS to True
+     *  and return false.
+    */
+    static bool resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambiguities,
+                                  bool& errors);
+
     /** Returns the name of the id node associated with the type. */
     virtual gcstring as_string() const;
 
@@ -397,7 +409,7 @@ private:
 };
 
 /** Global type representing a ambiguous type pointer. */
-extern Type* ambiguous_type;
+extern Type_Ptr AMBIGUOUS;
 
 /** Control structure:
  *      For each child, VAR, of AST_Node* NODE, ...
