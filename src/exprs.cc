@@ -296,13 +296,13 @@ protected:
 
         Type_Ptr actualType = getType()->binding();
         gcstring actualTypeName = actualType->as_string();
-        bool done = true, success;
+        bool done = true, success = false;
 
         if (actualTypeName == List) {
             Type_Ptr listType = actualType->typeParam(0);
             // Unify each child on the left with the right type
             for_each_child_var (c, this) {
-                success &= c->getType()->unify(listType, global_bindings);
+                success = c->getType()->unify(listType, global_bindings);
                 done &= success;
                 if (!success) {
                     error(loc(), "type error: cannot resolve assignment");
@@ -314,7 +314,7 @@ protected:
             int k = actualType->numTypeParams();
             if (arity() == k) {
                 for_each_child_var (c, this) {
-                    success &=c->getType()->unify(actualType->typeParam(c_i_),
+                    success = c->getType()->unify(actualType->typeParam(c_i_),
                                                   global_bindings);
                     done &= success;
                     if (!success) {
@@ -438,8 +438,8 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
             int& ambiguities, bool& errors) {
-        // cout << "(Typed_Id_AST) resolveTypes: " << child(0)->as_string() << endl;
         child(0)->getType()->unify(child(1)->asType(), global_bindings);
+        getType()->unify(child(1)->asType(), global_bindings);
         return this;
     }
 };

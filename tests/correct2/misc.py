@@ -1,4 +1,4 @@
 # misc: random tests
-def f(x):
-  y = "hi"
-  y = x
+for x in [[1, 2], [3, 4]]:
+  print x
+

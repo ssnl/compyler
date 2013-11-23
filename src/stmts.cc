@@ -36,8 +36,20 @@ protected:
         _me = decl;
     }
 
+    Type_Ptr getType() {
+        if (_type == NULL) {
+            _type = computeType();
+        }
+        return _type;
+    }
+
+    Type_Ptr computeType () {
+        return getDecl()->getType();
+    }
+
 private:
 
+    Type_Ptr _type;
     Decl *_me;
 };
 
@@ -131,8 +143,13 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved,
                           int& ambiguities, bool& errors) {
         for_each_child_var (c, this) {
-            c = c->resolveTypes (context, resolved, ambiguities, errors);
+            if (c_i_ < 2)
+                c = c->resolveTypes (context, resolved, ambiguities, errors);
         } end_for;
+        if (child(0)->arity() > 1) {
+            errors = true;
+            error(loc(), "type error: cannot unpack");
+        }
         Type_Ptr targetType = child(0)->getType();
         gcstring targetName = targetType->binding()->as_string().c_str();
         Type_Ptr exprType = child(1)->getType();
@@ -148,7 +165,8 @@ protected:
                 resolved++;
             }
         } else if (exprName == Range) {
-            if (targetName != Int) {
+            if (!targetType->unify(primitiveDecls[Int]->asType(),
+                        global_bindings)) {
                 errors = true;
                 error(loc(), "type error: type of %s must be int",
                     child(0)->as_string().c_str());
@@ -156,7 +174,8 @@ protected:
                 resolved++;
             }
         } else if (exprName == Str) {
-            if (targetName != Str) {
+            if (!targetType->unify(primitiveDecls[Str]->asType(),
+                        global_bindings)){
                 errors = true;
                 error(loc(), "type error: type of %s must be str",
                     child(0)->as_string().c_str());
@@ -165,9 +184,12 @@ protected:
             }
         } else {
             errors = true;
-            error(loc(), "type error: '%s' object is not iterable",
-                exprName.c_str());
+            error(loc(), "type error: object is not iterable");
         }
+        for_each_child_var (c, this) {
+            if (c_i_ >= 2)
+                c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
         return this;
     }
 };
@@ -248,8 +270,8 @@ protected:
         return this;
     }
 
-    void _setupSelf(Decl* context) {
-        return this;
+    virtual void _setupSelf(Decl* context) {
+        // Do Nothing
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
@@ -267,7 +289,7 @@ protected:
         Type_Ptr rType;
 
         if (!child(2)->isMissing())
-            rType = child(2)->getType();
+            rType = child(2)->asType();
         else
             rType = NULL;
 
@@ -290,7 +312,7 @@ protected:
 
         for_each_child_var (c, child(1)) {
             paramType = c->getType();
-            if (!paramType->unify(funcType->paramType(c_i_), global_bindings)) {
+            if (!funcType->paramType(c_i_)->unify(paramType, global_bindings)) {
                 errors = true;
                 error(loc(), "type error: type mismatch");
             }
@@ -318,9 +340,14 @@ protected:
     }
 
     void _setupSelf(Decl* context) {
-        Type_Ptr classType = context->getType();
-        child(1)->child(0)->getType()->unify(classType, global_bindings);
-        return this;
+        int ar = context->getTypeArity();
+        Type_Ptr* params = new Type_Ptr[ar];
+        for (int i = 0; i < ar; i++) {
+            params[i] = Type::makeVar();
+        }
+
+        Type_Ptr classType = context->asType(ar, params);
+        getType()->paramType(0)->unify(classType, global_bindings);
     }
 };
 
@@ -332,6 +359,10 @@ class Class_AST : public Region_AST {
 protected:
 
     NODE_CONSTRUCTORS (Class_AST, Region_AST);
+
+    Type_Ptr computeType() {
+        return getDecl()->asType();
+    }
 
     AST_Ptr doInnerSemantics () {
         Decl* decl = getDecl();
