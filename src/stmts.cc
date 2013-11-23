@@ -48,14 +48,17 @@ protected:
     NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
 
     void collectDecls (Decl* enclosing) {
+        child(1)->resolveSimpleIds(curr_environ);
         // Specify that left hand side is a target
         child(0)->addTargetDecls(enclosing);
-        // Recursively collect declarations from right hand side
-        child(1)->collectDecls(enclosing);
     }
 
     Type_Ptr getType() {
         return child(1)->getType();
+    }
+    
+    void resolveSimpleIds (const Environ* env) {
+        child(0)->resolveSimpleIds(env);
     }
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
