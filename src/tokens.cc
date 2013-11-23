@@ -135,7 +135,7 @@ protected:
 
     Type_Ptr computeType () {
         if (numDecls() > 1) {
-            return ambiguous_type;
+            return AMBIGUOUS;
         }
         return getDecl()->getType();
     }
@@ -200,8 +200,8 @@ protected:
             enclosing->addMember(decl);
             curr_environ->define(decl);
         } else {
-            error (loc(), "syntax error: duplicate argument '%s' in function
-                definition",
+            error (loc(),
+                "syntax error: duplicate argument '%s' in function definition",
                 text.c_str());
         }
     }

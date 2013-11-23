@@ -35,9 +35,9 @@ protected:
     AST_Ptr doOuterSemantics () {
         AST_Ptr self = this;
         Decl* moduleDecl = makeModuleDecl("__main__");
-        ambiguous_type = Type::makeVar();
         outer_environ = moduleDecl->getEnviron();
         curr_environ = new Environ(NULL);
+        AMBIGUOUS = Type::makeVar();
 
         /** The steps for processing a module should be, in this
          *  general order:
