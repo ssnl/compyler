@@ -24,10 +24,10 @@ protected:
     /** Override AST::getType to return the type of the expression. If the type
      *  is null, computes the type first before returning it. */
     Type_Ptr getType() {
-        if (_type != NULL) {
-            return _type;
+        if (_type == NULL) {
+            _type = computeType();
         }
-        return computeType();
+        return _type;
     }
 
     /** Computes the type of the expression. This should be overrided by each
@@ -89,8 +89,38 @@ protected:
     NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        return primitiveDecls[List]->asType(1, Type::makeVar());
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr actualType = getType()->typeParam(0);
+        Type_Ptr childType;
+        bool done = true, success;
+        for_each_child (c, this) {
+            childType = c->getType();
+            if (childType == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(actualType, c, resolved,
+                    ambiguities, errors);
+            } else {
+                success = actualType->unify(childType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve %s",
+                        List.c_str());
+                    errors = true;
+                }
+            }
+        } end_for;
+
+        if (done)
+            resolved += 1;
+
+        return this;
     }
 };
 
@@ -158,8 +188,57 @@ protected:
     NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
 
     Type_Ptr computeType () {
-        // FIXME
-        return NULL;
+        if (arity() <= 3) {
+            stringstream ss;
+            ss << arity();
+            Type_Ptr *params = new Type_Ptr[arity()];
+            for (int i = 0; i < arity(); i++) {
+                params[i] = Type::makeVar();
+            }
+            return primitiveDecls[Tuple.c_str() + ss.str()]->asType(arity(),
+                params);
+        }
+
+        // Arbitrary return if tuple is malformed
+        return Type::makeVar();
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        // Skip everything if tuple is malformed.
+        if (arity() > 3) {
+            error(loc(), "syntax error: tuple cannot have a size of '%d'",
+                arity());
+            errors = true;
+            return this;
+        }
+
+        Type_Ptr actualType, childType;
+        bool done = false, success;
+        for_each_child (c, this) {
+            actualType = getType()->typeParam(c_i_);
+            childType = c->getType();
+            if (childType == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(actualType, c, resolved,
+                    ambiguities, errors);
+            } else {
+                success = actualType->unify(childType, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: cannot resolve %s",
+                        Tuple.c_str());
+                    errors = true;
+                }
+            }
+        } end_for;
+
+        if (done)
+            resolved += 1;
+        return this;
     }
 };
 

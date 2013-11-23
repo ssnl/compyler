@@ -277,7 +277,7 @@ Type::replaceBindings (Type_Ptr type)
 }
 
 bool
-resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambiguities,
+Type::resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambiguities,
                                   bool& errors)
 {
     Decl* decl;
@@ -299,7 +299,8 @@ resolveAmbiguity(Type_Ptr type, AST_Ptr token, int& resolved, int& ambiguities,
         ambiguities += count - 1;
         return false;
     } else {
-        error(token->loc(), "type error: unresolvable type");
+        error(token->loc(), "type mismatch: cannot resolve %s",
+            token->as_string().c_str());
         errors = true;
         return false;
     }
