@@ -134,11 +134,10 @@ protected:
     }
 
     Type_Ptr computeType () {
-        Decl* decl = getDecl();
-        if (decl != NULL) {
-            return decl->getType();
+        if (numDecls() > 1) {
+            return ambiguous_type;
         }
-        return NULL;
+        return getDecl()->getType();
     }
 
     AST_Ptr rewriteNone () {

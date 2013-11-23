@@ -29,6 +29,7 @@ typedef Type* Type_Ptr;
 YYDEFINE_LIST_TYPE(List_Ptr, AST_Ptr);
 
 typedef std::stack<Type_Ptr> Unwind_Stack;
+extern Unwind_Stack global_bindings;
 
 /* General Design Note:  We have only a few base types defined in .h
  * files.  Concrete types are typically defined in .cc files because
@@ -394,6 +395,9 @@ private:
     Type_Ptr _binding;
     Type_Ptr _forward;
 };
+
+/** Global type representing a ambiguous type pointer. */
+extern Type* ambiguous_type;
 
 /** Control structure:
  *      For each child, VAR, of AST_Node* NODE, ...

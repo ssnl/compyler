@@ -18,7 +18,7 @@ protected:
 
     NODE_CONSTRUCTORS (Region_AST, AST_Tree);
 
-    /** By default, a Suite AST_Tree does not do anything
+    /** By default, a Suite AST_Tree does not do anything when
      *  collecting declarations. Will be overloaded by trees
      *  that will actually add appropriate declarations to
      *  ENCLOSING. */
@@ -41,26 +41,8 @@ private:
     Decl *_me;
 };
 
-/*****   ASSIGN   *****/
-class Assign_AST : public AST_Tree {
-protected:
 
-    NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
-
-    void collectDecls (Decl* enclosing) {
-        child(1)->resolveSimpleIds(curr_environ);
-        // Specify that left hand side is a target
-        child(0)->addTargetDecls(enclosing);
-    }
-
-    void resolveSimpleIds (const Environ* env) {
-        child(0)->resolveSimpleIds(env);
-    }
-};
-
-NODE_FACTORY (Assign_AST, ASSIGN);
-
-/***** STMT_LIST *****/
+/********************   STMT_LIST   ********************/
 
 /** A list of statements. */
 class StmtList_AST : public AST_Tree {
@@ -78,7 +60,8 @@ protected:
 
 NODE_FACTORY (StmtList_AST, STMT_LIST);
 
-/*****   PRINTING   *****/
+
+/********************   PRINTING   ********************/
 class Printing_AST : public AST_Tree {
 protected:
 
@@ -86,7 +69,8 @@ protected:
 
 };
 
-/*****   PRINT   *****/
+
+/********************   PRINT   ********************/
 /** A print statement with trailing comma. */
 class Print_AST : public Printing_AST {
 protected:
@@ -96,7 +80,8 @@ protected:
 
 NODE_FACTORY (Print_AST, PRINT);
 
-/*****   PRINTLN   *****/
+
+/********************   PRINTLN   ********************/
 /** A print statement without trailing comma. */
 class Println_AST : public Printing_AST {
 protected:
@@ -110,7 +95,8 @@ protected:
 
 NODE_FACTORY (Println_AST, PRINTLN);
 
-/*****   FOR   *****/
+
+/********************   FOR   ********************/
 class For_AST : public AST_Tree {
 protected:
 
@@ -128,7 +114,8 @@ protected:
 
 NODE_FACTORY (For_AST, FOR);
 
-/*****   DEF   *****/
+
+/********************   DEF   ********************/
 class Def_AST : public Region_AST {
 protected:
 
@@ -204,7 +191,8 @@ protected:
 
 NODE_FACTORY (Def_AST, DEF);
 
-/*****   METHOD   *****/
+
+/********************   METHOD   ********************/
 
 class Method_AST : public Def_AST {
 protected:
@@ -227,7 +215,7 @@ protected:
 NODE_FACTORY (Method_AST, METHOD);
 
 
-/*****   CLASS   *****/
+/********************   CLASS   ********************/
 class Class_AST : public Region_AST {
 protected:
 
@@ -248,12 +236,14 @@ protected:
         // Recursively do inner semantic analysis on class body
         child(2)->doInnerSemantics();
         // Add an __init__ method if required
-        _rewriteInit();
+        rewriteInit();
         curr_environ = prev_environ;
         return this;
     }
 
-    void _rewriteInit () {
+    /** Helper method to add an init method to a class if it does not
+     *  exist */
+    void rewriteInit () {
         Decl* decl = getDecl();
         Decl* init = decl->getEnviron()->find_immediate("__init__");
         if (init == NULL) {
@@ -297,14 +287,16 @@ protected:
 
 NODE_FACTORY (Class_AST, CLASS);
 
-/*****   FORMALS_LIST   *****/
+
+/********************   FORMALS_LIST   ********************/
 class Formal_List_AST : public AST_Tree {
 protected:
 
     NODE_CONSTRUCTORS (Formal_List_AST, AST_Tree);
 
+    /** Override AST::collectDecls to specify that children are
+     *  parameters. */
     void collectDecls (Decl* enclosing) {
-        // Specify that children are parameters
         for_each_child (c, this) {
             c->addParamDecls(enclosing, c_i_);
         } end_for;
@@ -313,14 +305,14 @@ protected:
 
 NODE_FACTORY (Formal_List_AST, FORMALS_LIST);
 
-/*****   BLOCK   *****/
 
-/** A list of statements. */
+/********************   BLOCK  ********************/
 class Block_AST : public AST_Tree {
 protected:
 
     NODE_CONSTRUCTORS (Block_AST, AST_Tree);
 
+    /** By default, recursively call doInnerSemantics on each child. */
     AST_Ptr doInnerSemantics () {
         for_each_child_var (c, this) {
             c = c->doInnerSemantics ();
@@ -331,9 +323,8 @@ protected:
 
 NODE_FACTORY (Block_AST, BLOCK);
 
-/*****   CLASS_BLOCK   *****/
 
-/** A list of statements. */
+/********************   CLASS_BLOCK   ********************/
 class Class_Block_AST : public Block_AST {
 protected:
 
@@ -342,15 +333,12 @@ protected:
 
 NODE_FACTORY (Class_Block_AST, CLASS_BLOCK);
 
-/*****   TARGET_LIST   *****/
+
+/********************   TARGET_LIST   ********************/
 class Target_List_AST : public AST_Tree {
 protected:
 
     NODE_CONSTRUCTORS (Target_List_AST, AST_Tree);
-
-    Type_Ptr getType() {
-        return NULL;
-    }
 };
 
 NODE_FACTORY (Target_List_AST, TARGET_LIST);

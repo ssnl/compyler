@@ -15,32 +15,164 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
-/*****   TYPED_EXPR *****/
+/********************   TYPED_EXPR   ********************/
 class Typed_Expr : public AST_Tree {
 protected:
 
     NODE_BASE_CONSTRUCTORS (Typed_Expr, AST_Tree);
 
-    /** Sets the type of the expression. */
-    void setType(Type_Ptr type) {
-        _type = type;
+    /** Override AST::getType to return the type of the expression. If
+     *  if the type is null, computes the type first before returning it. */
+    Type_Ptr getType() {
+        if (_type != NULL) {
+            return _type;
+        }
+        return computeType();
     }
 
-    /** Override AST::getType to return the type of the expression. Until
-     *  the expression is resolved the default is NULL. */
-    Type_Ptr getType() {
-        return _type;
-    }
+    /** Computes the type of the expression. This should be overrided by
+     *  each specific typed expression. */
+    virtual Type_Ptr computeType () = 0;
 
 private:
     Type_Ptr _type;
 };
 
-/*****   TYPED_ID   *****/
+
+/********************   ASSIGN   ********************/
+class Assign_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Assign_AST, AST_Tree);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+
+    void collectDecls (Decl* enclosing) {
+        child(1)->resolveSimpleIds(curr_environ);
+        // Specify that left hand side is a target
+        child(0)->addTargetDecls(enclosing);
+    }
+
+    void resolveSimpleIds (const Environ* env) {
+        child(0)->resolveSimpleIds(env);
+    }
+};
+
+NODE_FACTORY (Assign_AST, ASSIGN);
+
+
+/********************   IF EXPRESSION   ********************/
+class If_Expr_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (If_Expr_AST, IF_EXPR);
+
+
+/********************   LIST_DISPLAY   ********************/
+class List_Display_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
+
+
+/********************   LOGICAL EXPRESSIONS   ********************/
+class Logical_AST : public Typed_Expr {
+protected:
+
+    NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+class And_AST : public Logical_AST {
+protected:
+
+    NODE_CONSTRUCTORS (And_AST, Logical_AST);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (And_AST, AND);
+
+class Or_AST : public Logical_AST {
+protected:
+
+    NODE_CONSTRUCTORS (Or_AST, Logical_AST);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (Or_AST, OR);
+
+
+/********************   RETURN    ********************/
+class Return_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Return_AST, AST_Tree);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (Return_AST, RETURN);
+
+
+/********************   TUPLE   ********************/
+class Tuple_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
+};
+
+NODE_FACTORY (Tuple_AST, TUPLE);
+
+
+/********************   TYPED_ID   ********************/
 class Typed_Id_AST : public Typed_Expr {
 protected:
 
     NODE_CONSTRUCTORS (Typed_Id_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
 
     /** Stop the recursion. */
     void collectDecls(Decl *enclosing) {}
@@ -57,91 +189,12 @@ protected:
     void addTargetDecls(Decl* enclosing) {
        child(0)->addTargetDecls(enclosing);
     }
-
 };
 
 NODE_FACTORY (Typed_Id_AST, TYPED_ID);
 
-/*****   EXPR_LIST    *****/
 
-/** A list of expressions. */
-class Expr_List_AST : public AST_Tree {
-protected:
-
-    NODE_CONSTRUCTORS (Expr_List_AST, AST_Tree);
-
-};
-
-NODE_FACTORY (Expr_List_AST, EXPR_LIST);
-
-/*****   TUPLE   *****/
-class Tuple_AST : public Typed_Expr {
-protected:
-
-    NODE_CONSTRUCTORS (Tuple_AST, Typed_Expr);
-
-    AST_Ptr resolveTypes (Decl* context, int& resolved,
-                          int& ambiguities, bool& errors) {
-        return this;
-    }
-};
-
-NODE_FACTORY (Tuple_AST, TUPLE);
-
-/*****   LIST_DISPLAY   *****/
-class List_Display_AST : public Typed_Expr {
-protected:
-
-    NODE_CONSTRUCTORS (List_Display_AST, Typed_Expr);
-
-};
-
-NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
-
-/*****   RETURN    *****/
-class Return_AST : public AST_Tree {
-protected:
-
-    NODE_CONSTRUCTORS (Return_AST, AST_Tree);
-
-};
-
-NODE_FACTORY (Return_AST, RETURN);
-
-/*****   LOGICAL EXPRESSIONS   *****/
-class Logical_AST : public Typed_Expr {
-protected:
-
-    NODE_BASE_CONSTRUCTORS (Logical_AST, Typed_Expr);
-
-};
-
-class And_AST : public Logical_AST {
-protected:
-
-    NODE_CONSTRUCTORS (And_AST, Logical_AST);
-};
-
-NODE_FACTORY (And_AST, AND);
-
-class Or_AST : public Logical_AST {
-protected:
-
-    NODE_CONSTRUCTORS (Or_AST, Logical_AST);
-};
-
-NODE_FACTORY (Or_AST, OR);
-
-class If_Expr_AST : public Typed_Expr {
-protected:
-
-    NODE_CONSTRUCTORS (If_Expr_AST, Typed_Expr);
-
-};
-
-NODE_FACTORY (If_Expr_AST, IF_EXPR);
-
-/*****   CALLS    *****/
+/********************   CALLS   ********************/
 
 /** The supertype of "callable" things, including ordinary calls,
  *  binary operators, unary operators, subscriptions, and slices. */
@@ -167,6 +220,11 @@ protected:
     virtual void setActual (int k, AST_Ptr expr) = 0;
 
     virtual void setCalledExpr (AST_Ptr expr) = 0;
+
+    Type_Ptr computeType () {
+        // FIXME
+        return NULL;
+    }
 
     AST_Ptr rewriteSimpleTypes (const Environ* env) {
         setCalledExpr(calledExpr()->rewriteSimpleTypes(env));

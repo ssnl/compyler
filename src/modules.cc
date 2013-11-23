@@ -13,8 +13,11 @@ using namespace std;
 
 static GCINIT _gcdummy;
 
+/** Initializing global variables. */
 const Environ* outer_environ;
 Environ* curr_environ;
+Type* ambiguous_type;
+Unwind_Stack global_bindings;
 
 /*****   MODULE    *****/
 
@@ -32,6 +35,7 @@ protected:
     AST_Ptr doOuterSemantics () {
         AST_Ptr self = this;
         Decl* moduleDecl = makeModuleDecl("__main__");
+        ambiguous_type = Type::makeVar();
         outer_environ = moduleDecl->getEnviron();
         curr_environ = new Environ(NULL);
 

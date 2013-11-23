@@ -287,10 +287,10 @@ private:
     const Environ* enclosure;
 };
 
-/** The current outer (__main__) environment */
+/** The current outer (__main__) environment. */
 extern const Environ* outer_environ;
 
-/** The current enclosing environment */
+/** The current enclosing environment. */
 extern Environ* curr_environ;
 
 #endif

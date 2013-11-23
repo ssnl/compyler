@@ -1,2 +1,8 @@
 # misc: random tests
-cowbunga
+def foo():
+  pass
+
+def foo(x):
+  pass
+
+x = foo
