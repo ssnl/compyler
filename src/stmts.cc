@@ -323,6 +323,12 @@ protected:
         decl->setFrozen(false);
         return this;
     }
+
+    /** Override AST::checkResolved() to only recurse down the body of the
+     *  function */
+    void checkResolved () {
+        child(3)->checkResolved();
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);

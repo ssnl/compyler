@@ -532,7 +532,8 @@ protected:
                 }
             }
         } else {
-            matching = functionType->freshen();
+            if (functionType->numParams() == numActuals())
+                matching = functionType->freshen();
             done = true;
         }
 
@@ -557,6 +558,8 @@ protected:
 
             if (success) {
                 resolved += 1;
+            } else {
+                error(loc(), "type error: cannot resolve function call");
             }
         }
 

@@ -70,11 +70,14 @@ protected:
             key = i->first;
             primitiveDecls[key] = outer_environ->find(key);
         }
-        // 4. TODO: Perform type inference
+        // 4. Perform type inference
         for_each_child_var (c, self) {
             c->resolveTypesOuter(moduleDecl);
         } end_for;
-        // 5. TODO: Print errors?
+
+        // 5. Report unresolved overloaded methods as errors
+        checkResolved();
+
         // 6. TODO: Final rewrites?
 
         return self;
