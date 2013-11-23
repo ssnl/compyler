@@ -12,21 +12,21 @@ using namespace std;
 static GCINIT _gcdummy;
 
 Environ::Environ (const Environ* enclosing)
-    : enclosure (enclosing) 
+    : enclosure (enclosing)
 {
 }
 
-Environ::Environ (const Environ* environ0, const Environ* enclosing) 
+Environ::Environ (const Environ* environ0, const Environ* enclosing)
     : members (environ0->members), enclosure (enclosing)
 {
 }
 
-Decl* 
+Decl*
 Environ::find_immediate (const gcstring& name) const
 {
-    for (Decl_Vector::const_iterator i = members.begin (); 
-	 i != members.end (); 
-	 i++) 
+    for (Decl_Vector::const_iterator i = members.begin ();
+	 i != members.end ();
+	 i++)
     {
 	if (name == (*i)->getName ())
 	    return *i;
@@ -38,15 +38,15 @@ void
 Environ::find_immediate (const gcstring& name, Decl_Vector& defns) const
 {
     defns.clear ();
-    for (Decl_Vector::const_iterator i = members.begin (); 
-	 i != members.end (); 
-	 i++) 
+    for (Decl_Vector::const_iterator i = members.begin ();
+	 i != members.end ();
+	 i++)
     {
 	if (name == (*i)->getName ())
 	    defns.push_back (*i);
     }
 }
-    
+
 
 Decl*
 Environ::find (const gcstring& name) const
@@ -69,13 +69,13 @@ Environ::find(const gcstring& name, Decl_Vector& defns) const
     enclosure->find(name, defns);
 }
 
-void 
+void
 Environ::define (Decl* decl)
 {
     members.push_back (decl);
 }
 
-const Environ* 
+const Environ*
 Environ::get_enclosure () const
 {
     return enclosure;

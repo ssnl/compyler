@@ -67,6 +67,23 @@ protected:
 
     NODE_BASE_CONSTRUCTORS (Printing_AST, AST_Tree);
 
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+
+        // If printing to something, check it is a file.
+        if (!child(0)->isMissing() && !child(0)->getType()->unify(
+                primitiveDecls[File]->asType(), global_bindings)) {
+            errors = true;
+            error(loc(), "type error: can only print to a file");
+        } else {
+            resolved++;
+        }
+        return this;
+    }
+
 };
 
 
@@ -109,6 +126,49 @@ protected:
         child(1)->collectDecls(enclosing);
         child(2)->collectDecls(enclosing);
         child(3)->collectDecls(enclosing);
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved,
+                          int& ambiguities, bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes (context, resolved, ambiguities, errors);
+        } end_for;
+        Type_Ptr targetType = child(0)->getType();
+        gcstring targetName = targetType->binding()->as_string().c_str();
+        Type_Ptr exprType = child(1)->getType();
+        gcstring exprName = exprType->binding()->as_string().c_str();
+
+        if (exprName == List) {
+            Type_Ptr elementType = exprType->paramType(0);
+            if (!targetType->unify(elementType, global_bindings)) {
+                errors = true;
+                error(loc(), "type error: type of %s does not match list type",
+                    child(0)->as_string().c_str());
+            } else {
+                resolved++;
+            }
+        } else if (exprName == Range) {
+            if (targetName != Int) {
+                errors = true;
+                error(loc(), "type error: type of %s must be int",
+                    child(0)->as_string().c_str());
+            } else {
+                resolved++;
+            }
+        } else if (exprName == Str) {
+            if (targetName != Str) {
+                errors = true;
+                error(loc(), "type error: type of %s must be str",
+                    child(0)->as_string().c_str());
+            } else {
+                resolved++;
+            }
+        } else {
+            errors = true;
+            error(loc(), "type error: '%s' object is not iterable",
+                exprName.c_str());
+        }
+        return this;
     }
 };
 
