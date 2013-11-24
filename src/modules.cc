@@ -75,9 +75,8 @@ protected:
         for_each_child_var (c, self) {
             c = c->resolveTypesOuter(moduleDecl);
             c->checkResolved();
+            c->checkNoBoundMethodValues();
         } end_for;
-
-        // 6. TODO: Final rewrites?
 
         return self;
     }

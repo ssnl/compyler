@@ -3,3 +3,4 @@ def foo(x::int, y::str):
   return 1
 
 print foo(1,"hi")
+

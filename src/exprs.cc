@@ -144,7 +144,7 @@ protected:
                 char *str = new char[attrName.size()];
                 attrName.copy(str, attrName.size(), 0);
                 AST_Ptr id = make_token(ID, attrName.size(), str);
-                for (int i = 0; i < memberDecls.size(); i++)
+                for (int i = 0; i < (int) memberDecls.size(); i++)
                     id->addDecl(memberDecls[i]);
                 id->set_loc(loc());
                 resolved += 1;
@@ -182,7 +182,8 @@ protected:
         Type_Ptr classType = child(0)->getType()->binding();
         gcstring attrName = child(1)->as_string();
 
-        if (classType->asType() != NULL) {
+        if (classType->asType() != NULL
+            && !classType->asType()->isTypeVariable()) {
             const Environ* members = classType->asType()->getDecl()
                 ->getEnviron();
             Decl_Vector memberDecls;
@@ -193,10 +194,7 @@ protected:
                 error(loc(), "type error: cannot find '%s' in instance '%s'",
                     attrName.c_str(), classType->as_string().c_str());
             } else if (memberDecls[0]->isMethod()) {
-                errors = true;
-                error(loc(),
-                    "type error: instance method %s not immediately called.",
-                    attrName.c_str());
+                // Do nothing
             } else {
                 Type_Ptr memberType = memberDecls[0]->getType();
                 bool success = getType()->unify(memberType, global_bindings);
@@ -230,6 +228,25 @@ protected:
             return result;
 
         return this;
+    }
+
+    void checkNoBoundMethodValues() {
+        if (child(0)->asType() == NULL) {
+            Type_Ptr classType = child(0)->getType()->binding();
+            gcstring attrName = child(1)->as_string();
+            if (classType->asType() != NULL
+                || !classType->asType()->isTypeVariable()) {
+                const Environ* members = classType->asType()->getDecl()
+                ->getEnviron();
+                Decl_Vector memberDecls;
+                members->find_immediate(attrName, memberDecls);
+
+                if (memberDecls[0]->isMethod()) {
+                    error (loc(), "syntax error: uncalled bound instance method");
+                    exit(1);
+                }
+            }
+        }
     }
 };
 
@@ -326,6 +343,79 @@ protected:
 };
 
 NODE_FACTORY (List_Display_AST, LIST_DISPLAY);
+
+
+/********************   DICT_DISPLAY   ********************/
+class Dict_Display_AST : public Typed_Expr {
+protected:
+
+    NODE_CONSTRUCTORS (Dict_Display_AST, Typed_Expr);
+
+    Type_Ptr computeType () {
+        return primitiveDecls[Dict]->asType(2, Type::makeVar(), Type::makeVar());
+    }
+
+    AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
+                          bool& errors) {
+        for_each_child_var (c, this) {
+            c = c->resolveTypes(context, resolved, ambiguities, errors);
+        } end_for;
+
+        Type_Ptr key = getType()->typeParam(0);
+        Type_Ptr value = getType()->typeParam(1);
+        Type_Ptr childKey, childValue;
+
+        bool done = true, success = false;
+        for_each_child (c, this) {
+            childKey = c->child(0)->getType();
+            childValue = c->child(1)->getType();
+
+            if (childKey == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(key, c->child(0), resolved,
+                    ambiguities, errors);
+            } else {
+                success = key->unify(childKey, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: key type mismatch for dict display");
+                    exit(1);
+                }
+            }
+
+            if (childValue == AMBIGUOUS) {
+                done &= Type::resolveAmbiguity(value, c->child(1), resolved,
+                    ambiguities, errors);
+            } else {
+                success = value->unify(childValue, global_bindings);
+                done &= success;
+                if (!success) {
+                    error(loc(), "type error: value type mismatch for dict display");
+                    exit(1);
+                }
+            }
+        } end_for;
+
+        Type_Ptr _int = primitiveDecls[Int]->asType();
+        Type_Ptr _str = primitiveDecls[Str]->asType();
+        Type_Ptr _bool = primitiveDecls[Bool]->asType();
+
+        // Key type for dict display must be either int, bool, or str.
+        if(!key->unifies(_int) && !key->unifies(_str) && !key->unifies(_bool)) {
+            error(loc(), "type error: key for dict display must be int, bool, "
+                "or str");
+            exit(1);
+        }
+
+        if (done) {
+            resolved += 1;
+        }
+
+        return this;
+    }
+};
+
+NODE_FACTORY (Dict_Display_AST, DICT_DISPLAY);
+
 
 
 /********************   LOGICAL EXPRESSIONS   ********************/
@@ -431,6 +521,10 @@ protected:
         return Type::makeVar();
     }
 
+    gcstring as_string() const {
+        return "target_list";
+    }
+
     AST_Ptr resolveTypes (Decl* context, int& resolved,
             int& ambiguities, bool& errors) {
 
@@ -452,7 +546,7 @@ protected:
         } else if (actualTypeName == Tuple0 || actualTypeName == Tuple1 ||
                     actualTypeName == Tuple2 || actualTypeName == Tuple3) {
             int k = actualType->numTypeParams();
-            if (arity() == k) {
+            if ((int) arity() == k) {
                 for_each_child_var (c, this) {
                     success = c->getType()->unify(actualType->typeParam(c_i_),
                                                   global_bindings);
@@ -497,7 +591,7 @@ protected:
             stringstream ss;
             ss << arity();
             Type_Ptr *params = new Type_Ptr[arity()];
-            for (int i = 0; i < arity(); i++) {
+            for (int i = 0; i < (int) arity(); i++) {
                 params[i] = Type::makeVar();
             }
             return primitiveDecls[Tuple.c_str() + ss.str()]->asType(arity(),
@@ -578,8 +672,14 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved,
             int& ambiguities, bool& errors) {
-        child(0)->getType()->unify(child(1)->asType(), global_bindings);
-        getType()->unify(child(1)->asType(), global_bindings);
+        bool success = true;
+        success = child(0)->getType()->unify(child(1)->asType(), global_bindings)
+            && getType()->unify(child(1)->asType(), global_bindings);
+        if (success) {
+            resolved += 1;
+        } else {
+            error(loc(), "type mismatch: cannot resolve typed ids");
+        }
         return this;
     }
 };
@@ -696,6 +796,7 @@ protected:
         if (matching == NULL) {
             error(loc(), "type error: cannot resolve function call");
             errors = true;
+            exit(1);
         } else if (done) {
             success = true;
             for (int i = 0; i < numActuals(); i++) {
@@ -717,6 +818,8 @@ protected:
                 resolved += 1;
             } else {
                 error(loc(), "type error: cannot resolve function call");
+                errors = true;
+                exit(1);
             }
         }
 
@@ -763,6 +866,14 @@ protected:
             c = c->rewriteAllocators (env);
         } end_for;
         if (calledExpr()->asType() != NULL) {
+            gcstring type = calledExpr()->asType()->as_string();
+            Decl_Map::iterator it = primitiveDecls.find(type);
+            // Error if trying to create built-in class via allocator
+            if (it != primitiveDecls.end()) {
+                error(loc(), "syntax error: built-in class %s cannot be "
+                    "constructed using allocator", type.c_str());
+                exit(1);
+            }
             AST_Ptr id = make_token(ID, 8, "__init__");
             AST_Ptr nu = consTree(NEW, calledExpr());
             AST_Ptr call1 = consTree(CALL1, id, paramsList()->insert(0, nu));
@@ -782,11 +893,13 @@ protected:
             if (attrref->child(0)->asType() == NULL) {
                 Type_Ptr classType = attrref->child(0)->getType()->binding();
                 gcstring attrName = attrref->child(1)->as_string();
-                if (classType->asType() != NULL) {
+                if (classType->asType() != NULL
+                    && !classType->asType()->isTypeVariable()) {
                     const Environ* members = classType->asType()
                         ->getDecl()->getEnviron();
                     Decl_Vector memberDecls;
                     members->find_immediate(attrName, memberDecls);
+
 
                     if (memberDecls.size() == 0) {
                         errors = true;
@@ -796,7 +909,7 @@ protected:
                         char *str = new char[attrName.size()];
                         attrName.copy(str, attrName.size(), 0);
                         AST_Ptr id = make_token(ID, attrName.size(), str);
-                        for (int i = 0; i < memberDecls.size(); i++)
+                        for (int i = 0; i < (int) memberDecls.size(); i++)
                             id->addDecl(memberDecls[i]);
                         replace(0, id);
                         child(1)->insert(0, attrref->child(0));
@@ -807,8 +920,13 @@ protected:
                 }
             }
         }
-        AST_Ptr temp = Callable::resolveTypes(context, resolved, ambiguities, errors);
-        return temp;
+        return Callable::resolveTypes(context, resolved, ambiguities, errors);
+    }
+
+    void checkNoBoundMethodValues() {
+        if (child(0)->as_string() != "attributeref") {
+            AST::checkNoBoundMethodValues();
+        }
     }
 };
 
@@ -846,14 +964,6 @@ protected:
 
     Type_Ptr _getReturnType(Type_Ptr matching, bool& errors) {
         Type_Ptr type =  child(1)->child(0)->getType();
-        if (type->as_string() == Dict) {
-            gcstring keyName = type->typeParam(0)->as_string();
-            if (keyName != Int && keyName != Str && keyName != Bool) {
-                errors = true;
-                error(loc(), "type error: the key of dict must be int, str,"
-                    "or bool");
-            }
-        }
         return type;
     }
 
@@ -893,7 +1003,7 @@ class Binop_AST : public Callable {
 
 NODE_FACTORY (Binop_AST, BINOP);
 
-/** A binary operator. */
+/** A compare operator. */
 class Compare_AST : public Callable {
 
     NODE_CONSTRUCTORS (Compare_AST, Callable);
@@ -924,6 +1034,73 @@ class Compare_AST : public Callable {
 };
 
 NODE_FACTORY (Compare_AST, COMPARE);
+
+/** A subscript operator. */
+class Subscription_AST : public Callable {
+
+    NODE_CONSTRUCTORS (Subscription_AST, Callable);
+
+    AST_Ptr calledExpr () {
+        return child (2);
+    }
+
+    int numActuals () {
+        return 2;
+    }
+
+    AST_Ptr actualParam (int k) {
+        return child(k);
+    }
+
+    AST_Ptr paramsList () {
+        return NULL;
+    }
+
+    void setActual (int k, AST_Ptr expr) {
+        replace (k, expr);
+    }
+
+    // Should never change the called expression
+    void setCalledExpr (AST_Ptr expr) {}
+
+};
+
+NODE_FACTORY (Subscription_AST, SUBSCRIPTION);
+
+
+/** A slicing operator. */
+class Slicing_AST : public Callable {
+
+    NODE_CONSTRUCTORS (Slicing_AST, Callable);
+
+    AST_Ptr calledExpr () {
+        return child (3);
+    }
+
+    int numActuals () {
+        return 3;
+    }
+
+    AST_Ptr actualParam (int k) {
+        return child(k);
+    }
+
+    AST_Ptr paramsList () {
+        return NULL;
+    }
+
+    void setActual (int k, AST_Ptr expr) {
+        replace (k, expr);
+    }
+
+    // Should never change the called expression
+    void setCalledExpr (AST_Ptr expr) {}
+
+};
+
+NODE_FACTORY (Slicing_AST, SLICING);
+
+
 
 /** A unary operator. */
 class Unop_AST : public Callable {

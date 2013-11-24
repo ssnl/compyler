@@ -146,7 +146,7 @@ protected:
             if (c_i_ < 2)
                 c = c->resolveTypes (context, resolved, ambiguities, errors);
         } end_for;
-        if (child(0)->arity() > 1) {
+        if (child(0)->as_string() == "target_list") {
             errors = true;
             error(loc(), "type error: cannot unpack");
         }
@@ -260,8 +260,11 @@ protected:
             addDecl(decl);
         } else if (decl->isType()) {
             error(loc(), "syntax error: %s is already a class", text.c_str());
-        } else
+            exit(1);
+        } else {
             error(loc(), "syntax error: %s is already a variable", text.c_str());
+            exit(1);
+        }
     }
 
     void resolveSimpleIds (const Environ* env) {
@@ -438,11 +441,15 @@ protected:
             addDecl(decl);
         } else if (decl->isType()) {
             error(loc(), "syntax error: %s is already a class", text.c_str());
+            exit(1);
         } else if (decl->isFunction()) {
             error(loc(), "syntax error: %s is already a definition",
                     text.c_str());
-        } else
+            exit(1);
+        } else {
             error(loc(), "syntax error: %s is already a variable", text.c_str());
+            exit(1);
+        }
     }
 
     void resolveSimpleIds (const Environ* env) {

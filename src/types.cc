@@ -23,7 +23,6 @@ AST::resolveTypesOuter (Decl* context)
     int resolved0, ambiguities0, resolved, ambiguities;
     bool errors;
     resolved = ambiguities = -1;
-    // r->freezeDecls (true);
     do {
         resolved0 = resolved;
         ambiguities0 = ambiguities;
@@ -31,7 +30,7 @@ AST::resolveTypesOuter (Decl* context)
         errors = false;
         r = r->resolveTypes (context, resolved, ambiguities, errors);
     } while (!errors && (resolved != resolved0 || ambiguities != ambiguities0));
-    // r->freezeDecls (false);
+
     return r;
 }
 
@@ -465,6 +464,7 @@ protected:
             addDecl(decl);
         } else {
             error (loc(), "name error: type name '%s' is not defined", text.c_str());
+            exit(1);
         }
     }
 

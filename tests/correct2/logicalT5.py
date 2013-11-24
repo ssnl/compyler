@@ -1,7 +1,7 @@
 # basic logical type: tests if logical expressions resolve types properly
 def foo(x):
-  pass
+  return True
 def bar(y):
-  pass
-print foo or bar
-print foo and bar
+  return False
+print foo(5) and bar(6)
+print bar(10) or foo(1)

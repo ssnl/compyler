@@ -1,5 +1,2 @@
 # misc: random tests
-class A:
-  def foo(self):
-    x = self
-
+x = {1:"hi", 2:"yes"}

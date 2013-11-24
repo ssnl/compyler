@@ -184,6 +184,7 @@ protected:
             }
         } else {
             error (loc(), "name error: name '%s' is not defined", text.c_str());
+            exit(1);
         }
     }
 
@@ -221,11 +222,14 @@ protected:
         Decl* decl = enclosing->getEnviron()->find(text);
         if (decl == NULL)
             return;
-        else if (decl->isType())
+        else if (decl->isType()) {
             error(loc(), "syntax error: %s is already a class", text.c_str());
-        else if (decl->isFunction())
+            exit(1);
+        } else if (decl->isFunction()) {
             error(loc(), "syntax error: %s is already a definition",
                 text.c_str());
+            exit(1);
+        }
     }
 
     void checkResolved () {

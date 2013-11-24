@@ -1,0 +1,3 @@
+./apyc --phase=2 -o out.dast tests/correct2/$1.py
+pyunparse --alpha --remove-extensions out.dast > out
+cat tests/runtime2.py out | python

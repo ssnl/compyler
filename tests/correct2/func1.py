@@ -1,5 +1,5 @@
 # basic function: tests a very simple blank function.
 def f():
-  pass
+  return 3
 
-print f == 0
+print f() == 0

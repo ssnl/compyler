@@ -7,3 +7,4 @@ def foo(x):
   return bar
 
 foo("hi")()
+

@@ -1,11 +1,11 @@
 # basic call type overload: tests that calls are typed correctly in overloaded functions
 def foo(x::int,y::int):
-    pass
+    return 1
 
 def foo(x::str,y):
-    pass
+    return 2
 
 def foo(x::str,y::str):
-    pass
+    return 3
 
 print foo("hi",2)
