@@ -862,7 +862,7 @@ protected:
     }
 
     AST_Ptr rewriteAllocators (const Environ* env) {
-        for_each_child_var (c, child(1)) {
+        for_each_child_var (c, this) {
             c = c->rewriteAllocators (env);
         } end_for;
         if (calledExpr()->asType() != NULL) {
