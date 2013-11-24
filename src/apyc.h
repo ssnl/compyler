@@ -107,6 +107,9 @@ public:
     /** True iff I represent a type. */
     virtual bool isType () const;
 
+    /** True iff I represent a function. */
+    virtual bool isFunction() const;
+
     /** True iff I represent an internally generated type variable
      *  (which should not be included in the output list). */
     virtual bool isInternal () const;

@@ -206,7 +206,7 @@ protected:
                     resolved += 1;
                 } else {
                     errors = true;
-                    error(loc(), "type error: cannot resolve class variable");
+                    error(loc(), "type error: cannot resolve instance variable");
                 }
             }
         } else {
@@ -644,7 +644,6 @@ protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities,
                           bool& errors) {
-        cout << "Resolving call " << calledExpr()->as_string() << endl;
         setCalledExpr(calledExpr()->resolveTypes(context, resolved, ambiguities,
             errors));
         for (int i = 0; i < numActuals(); i++) {
@@ -657,7 +656,6 @@ protected:
         bool done = false, success;
 
         if (functionType == AMBIGUOUS) {
-            cout << "    Is ambiguous" << endl;
             for (int i = 0; i < calledExpr()->numDecls(); i++) {
                 success = true;
                 functionType = calledExpr()->getDecl(i)->getType()
@@ -677,14 +675,16 @@ protected:
                         success &= paramType->unifies(actualType);
                     }
                 }
+
                 if (success && matching == NULL) {
                     matching = functionType;
                     done = true;
-                } else {
+                } else if (success) {
                     done = false;
+                } else {
+                    calledExpr()->removeDecl(i--);
                 }
             }
-
         } else if (functionType->isTypeVariable()) {
             return this;
         } else {

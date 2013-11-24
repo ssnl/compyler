@@ -251,9 +251,17 @@ protected:
     }
 
     void collectDecls (Decl* enclosing) {
-        Decl* decl = enclosing->addDefDecl(child(0));
-        curr_environ->define(decl);
-        addDecl(decl);
+        gcstring text = child(0)->as_token()->as_string();
+        Decl* decl = enclosing->getEnviron()->find_immediate(text);
+
+        if (decl == NULL || decl->isFunction()) {
+            decl = enclosing->addDefDecl(child(0));
+            curr_environ->define(decl);
+            addDecl(decl);
+        } else if (decl->isType()) {
+            error(loc(), "syntax error: %s is already a class", text.c_str());
+        } else
+            error(loc(), "syntax error: %s is already a variable", text.c_str());
     }
 
     void resolveSimpleIds (const Environ* env) {
@@ -360,7 +368,7 @@ protected:
         }
 
         Type_Ptr classType = context->asType(ar, params);
-        getType()->paramType(0)->unify(classType, global_bindings);
+        child(1)->child(0)->getType()->unify(classType, global_bindings);
         return true;
     }
 };
@@ -420,11 +428,21 @@ protected:
     }
 
     void collectDecls (Decl* enclosing) {
-        gcstring name = child(0)->as_token()->as_string();
-        Decl* decl = makeClassDecl(name , child(1));
-        enclosing->addMember(decl);
-        curr_environ->define(decl);
-        addDecl(decl);
+        gcstring text = child(0)->as_token()->as_string();
+        Decl* decl = enclosing->getEnviron()->find(text);
+
+        if (decl == NULL) {
+            Decl* decl = makeClassDecl(text , child(1));
+            enclosing->addMember(decl);
+            curr_environ->define(decl);
+            addDecl(decl);
+        } else if (decl->isType()) {
+            error(loc(), "syntax error: %s is already a class", text.c_str());
+        } else if (decl->isFunction()) {
+            error(loc(), "syntax error: %s is already a definition",
+                    text.c_str());
+        } else
+            error(loc(), "syntax error: %s is already a variable", text.c_str());
     }
 
     void resolveSimpleIds (const Environ* env) {

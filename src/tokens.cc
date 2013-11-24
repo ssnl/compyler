@@ -188,6 +188,7 @@ protected:
     }
 
     void addTargetDecls (Decl* enclosing) {
+        checkDecls(enclosing);
         gcstring text = as_string();
         Decl* decl = curr_environ->find_immediate(text);
         if (decl == NULL) {
@@ -197,6 +198,7 @@ protected:
     }
 
     void addParamDecls (Decl* enclosing, int k) {
+        checkDecls(enclosing);
         gcstring text = as_string();
         Decl* decl = enclosing->getEnviron()->find_immediate(text);
         if (decl == NULL) {
@@ -209,6 +211,21 @@ protected:
                 "syntax error: duplicate argument '%s' in function definition",
                 text.c_str());
         }
+    }
+
+    /** Helper method for checking whether THIS is allowed to create a
+     *  decl within ENCLOSING, the container decl.  */
+    void checkDecls(Decl* enclosing) {
+        gcstring text = as_string();
+        // Check if THIS is already defined by a class
+        Decl* decl = enclosing->getEnviron()->find(text);
+        if (decl == NULL)
+            return;
+        else if (decl->isType())
+            error(loc(), "syntax error: %s is already a class", text.c_str());
+        else if (decl->isFunction())
+            error(loc(), "syntax error: %s is already a definition",
+                text.c_str());
     }
 
     void checkResolved () {

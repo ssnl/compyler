@@ -155,6 +155,12 @@ Decl::isMethod () const
     return false;
 }
 
+bool
+Decl::isFunction() const
+{
+    return false;
+}
+
 Type_Ptr
 Decl::asType (int, Type_Ptr, Type_Ptr) const
 {
@@ -410,6 +416,10 @@ protected:
 	addMember (decl);
 	return decl;
     }
+
+    bool isFunction () const {
+        return true;
+    }
 };
 
 Decl*
@@ -430,7 +440,7 @@ public:
 protected:
 
     bool isMethod () const {
-	return true;
+	   return true;
     }
 };
 
