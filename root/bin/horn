@@ -10,8 +10,8 @@ VERSION = "Horn parser generator, version 2.3"
 
 # Installation parameters
 
-datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root/share/horn"
-bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root/bin"
+datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/share/horn"
+bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/bin"
 
 def Usage():
     print >>sys.stderr, '''\

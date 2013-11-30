@@ -1,5 +1,5 @@
-prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root
-exec_prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root
+prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
+exec_prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 

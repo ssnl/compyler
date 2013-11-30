@@ -1,9 +1,9 @@
-SRCDIR  = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src
-BINDIR  = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root/bin
-DATADIR = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root/share/horn
-INCLUDEDIR = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root/include
+SRCDIR  = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src
+BINDIR  = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/bin
+DATADIR = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/share/horn
+INCLUDEDIR = /Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/include
 PYTHON  = /usr/local/bin/python
-BISON   = /usr/bin/bison
+BISON   = /usr/local/Cellar/bison/3.0/bin/bison
 FLEX    = /usr/bin/flex
 GCDIR = @GCDIR@
 HERE := $(shell pwd)/

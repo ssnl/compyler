@@ -66,6 +66,7 @@ typedef int16_t flex_int16_t;
 typedef uint16_t flex_uint16_t;
 typedef int32_t flex_int32_t;
 typedef uint32_t flex_uint32_t;
+typedef uint64_t flex_uint64_t;
 #else
 typedef signed char flex_int8_t;
 typedef short int flex_int16_t;
@@ -172,7 +173,12 @@ typedef unsigned int flex_uint32_t;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
 
-extern int gram_leng;
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
+
+extern yy_size_t gram_leng;
 
 extern FILE *gram_in, *gram_out;
 
@@ -198,11 +204,6 @@ extern FILE *gram_in, *gram_out;
 
 #define unput(c) yyunput( c, (yytext_ptr)  )
 
-#ifndef YY_TYPEDEF_YY_SIZE_T
-#define YY_TYPEDEF_YY_SIZE_T
-typedef size_t yy_size_t;
-#endif
-
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
 struct yy_buffer_state
@@ -220,7 +221,7 @@ struct yy_buffer_state
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	int yy_n_chars;
+	yy_size_t yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -290,8 +291,8 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 
 /* yy_hold_char holds the character lost when gram_text is formed. */
 static char yy_hold_char;
-static int yy_n_chars;		/* number of characters read into yy_ch_buf */
-int gram_leng;
+static yy_size_t yy_n_chars;		/* number of characters read into yy_ch_buf */
+yy_size_t gram_leng;
 
 /* Points to current character in buffer. */
 static char *yy_c_buf_p = (char *) 0;
@@ -319,7 +320,7 @@ static void gram__init_buffer (YY_BUFFER_STATE b,FILE *file  );
 
 YY_BUFFER_STATE gram__scan_buffer (char *base,yy_size_t size  );
 YY_BUFFER_STATE gram__scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE gram__scan_bytes (yyconst char *bytes,int len  );
+YY_BUFFER_STATE gram__scan_bytes (yyconst char *bytes,yy_size_t len  );
 
 void *gram_alloc (yy_size_t  );
 void *gram_realloc (void *,yy_size_t  );
@@ -378,7 +379,7 @@ static void yy_fatal_error (yyconst char msg[]  );
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
 	(yytext_ptr) -= (yy_more_len); \
-	gram_leng = (size_t) (yy_cp - (yytext_ptr)); \
+	gram_leng = (yy_size_t) (yy_cp - (yytext_ptr)); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
@@ -1079,7 +1080,7 @@ static int yy_more_len = 0;
 #define YY_MORE_ADJ (yy_more_len)
 #define YY_RESTORE_YY_MORE_OFFSET
 char *gram_text;
-#line 1 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 1 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 /* -*- c-file-style: "stroustrup"; -*- */
 /* Bison Grammar Scanner                             -*- C -*-
 
@@ -1102,7 +1103,7 @@ char *gram_text;
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 /* Copyright (C) 2010 by the Regents of the University of California. */
 #define YY_NO_INPUT 1
-#line 29 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 29 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 
 #include <climits>
 #include "horn.h"
@@ -1143,7 +1144,7 @@ static symbol_convention convention = CAP_LOW;
    for generics/template types.  */
 /* Zero or more instances of backslash-newline.  Following GCC, allow
    white space between the backslash and the newline.  */
-#line 1147 "scan-horn.cc"
+#line 1148 "scan-horn.cc"
 
 #define INITIAL 0
 #define SC_ESCAPED_STRING 1
@@ -1193,7 +1194,7 @@ FILE *gram_get_out (void );
 
 void gram_set_out  (FILE * out_str  );
 
-int gram_get_leng (void );
+yy_size_t gram_get_leng (void );
 
 char *gram_get_text (void );
 
@@ -1252,7 +1253,7 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		int n; \
+		yy_size_t n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( gram_in )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -1337,7 +1338,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 92 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 92 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 
 
   /* Nesting level.  Either for nested braces, or nested angle brackets
@@ -1354,7 +1355,7 @@ YY_DECL
   | Scanning white space.  |
   `-----------------------*/
 
-#line 1358 "scan-horn.cc"
+#line 1359 "scan-horn.cc"
 
 	if ( !(yy_init) )
 		{
@@ -1443,19 +1444,19 @@ do_action:	/* This label is used only to access EOF actions. */
 /* Comments and white space.  */
 case 1:
 YY_RULE_SETUP
-#line 111 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 111 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 warn_at (gram_text, _("stray `,' treated as white space"));
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 112 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 112 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 114 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 114 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     handle_syncline (gram_text + sizeof "#line " - 1, gram_text);
   }
@@ -1473,349 +1474,349 @@ YY_RULE_SETUP
 
 case 4:
 YY_RULE_SETUP
-#line 132 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 132 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_CODE;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 133 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 133 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_CONVENTION;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 134 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 134 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_FLAG;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 135 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 135 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_DEFAULT_PREC;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 136 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 136 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_DEFINE;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 137 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 137 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_DEFINES;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 138 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 138 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_DESTRUCTOR;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 139 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 139 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_DPREC;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 140 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 140 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_ERROR_VERBOSE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 141 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 141 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_EXPECT;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 142 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 142 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_EXPECT_RR;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 143 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 143 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_FILE_PREFIX;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 144 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 144 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_YACC;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 145 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 145 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_INITIAL_ACTION;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 146 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 146 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_GLR_PARSER;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 147 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 147 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_INTERACTIVE;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 148 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 148 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_LANGUAGE;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 149 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 149 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_LEFT;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 150 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 150 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PARAM;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 151 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 151 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_FLAG;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 152 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 152 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_MERGE;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 153 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 153 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NAME_PREFIX;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 154 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 154 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NO_DEFAULT_PREC;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 155 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 155 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NO_LINES;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 156 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 156 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NONASSOC;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 157 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 157 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NONDETERMINISTIC_PARSER;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 158 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 158 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_NTERM;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 159 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 159 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_OUTPUT;
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 160 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 160 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PARAM;
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 161 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 161 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PARAM;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 162 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 162 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PREC;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 163 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 163 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PRECEDENCE;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 164 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 164 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PRINTER;
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 165 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 165 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_FLAG;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 166 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 166 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_REQUIRE;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 167 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 167 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_RIGHT;
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 168 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 168 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_SKELETON;
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 169 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 169 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_START;
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 170 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 170 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_TOKEN;
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 171 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 171 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_TOKEN;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 172 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 172 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_TOKEN_TABLE;
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 173 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 173 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_TYPE;
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 174 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 174 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_UNION;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 175 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 175 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_VERBOSE;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 176 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 176 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_YACC;
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 178 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 178 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_EXPAND;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 179 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 179 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PERCENT_PREFER;
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 181 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 181 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return ANY;
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 182 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 182 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return UPPER;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 183 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 183 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return LOWER;
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 184 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 184 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return LETTER;
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 185 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 185 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return DIGIT;
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 186 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 186 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return HEX;
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 187 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 187 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return ALNUM;
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 188 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 188 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return SPACE;
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 189 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 189 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return BLANK;
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 190 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 190 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return CONTROL;
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 191 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 191 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return GRAPHIC;
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 192 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 192 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PRINTABLE;
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 193 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 193 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PUNCTUATION;
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 196 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 196 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return BOL;
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 197 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 197 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return EOL;
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 198 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 198 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return ENDFILE;
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 200 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 200 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     complain_at (gram_text, _("invalid directive: '%s'"), gram_text);
   }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 204 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 204 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return gram_text[0];
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 205 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 205 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return PLUS_EQ;
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 207 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 207 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return DOTDOT;
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 209 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 209 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return UNDERSCORE_ID;
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 210 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 210 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
                                       switch (convention) {
                                       case LOW_CAP: case ANY_ALLCAP:
@@ -1827,7 +1828,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 218 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 218 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
                                       switch (convention) {
                                       case LOW_CAP: case ALLCAP_ANY:
@@ -1839,7 +1840,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 226 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 226 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
                                       switch (convention) {
                                       case CAP_LOW: case ALLCAP_ANY:
@@ -1851,21 +1852,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 234 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 234 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return OTHER_ID;
 	YY_BREAK
 case 76:
-#line 237 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 237 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 77:
 YY_RULE_SETUP
-#line 237 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 237 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return INT;
 	YY_BREAK
 /* Identifiers may not start with a digit.  Yet, don't silently
      accept "1FOO" as "1 FOO".  */
 case 78:
 YY_RULE_SETUP
-#line 241 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 241 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     complain_at (gram_text, _("invalid identifier: '%s'"), gram_text);
   }
@@ -1873,25 +1874,25 @@ YY_RULE_SETUP
 /* Characters.  */
 case 79:
 YY_RULE_SETUP
-#line 246 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 246 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { BEGIN SC_ESCAPED_CHARACTER; yymore (); }
 	YY_BREAK
 /* Strings. */
 case 80:
 YY_RULE_SETUP
-#line 249 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 249 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { BEGIN SC_ESCAPED_STRING; yymore (); }
 	YY_BREAK
 /* Prologue. */
 case 81:
 YY_RULE_SETUP
-#line 252 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 252 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { BEGIN SC_PROLOGUE; yymore (); }
 	YY_BREAK
 /* Code in between braces.  */
 case 82:
 YY_RULE_SETUP
-#line 255 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 255 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     nesting = 0;
     BEGIN SC_BRACED_CODE;
@@ -1902,7 +1903,7 @@ YY_RULE_SETUP
 case 83:
 /* rule 83 can match eol */
 YY_RULE_SETUP
-#line 262 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 262 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     nesting = 0;
     BEGIN SC_PREDICATE;
@@ -1912,23 +1913,23 @@ YY_RULE_SETUP
 /* A type. */
 case 84:
 YY_RULE_SETUP
-#line 269 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 269 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return TAG_ANY;
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 270 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 270 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return TAG_NONE;
 	YY_BREAK
 case 86:
 /* rule 86 can match eol */
 YY_RULE_SETUP
-#line 271 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 271 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 return TAG;
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 272 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 272 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     nesting = 0;
     BEGIN SC_TAG;
@@ -1937,7 +1938,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 278 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 278 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     if ((percent_percent_count += 1) == 2)
       BEGIN SC_EPILOGUE;
@@ -1946,13 +1947,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 284 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 284 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     complain_at (gram_text, _("invalid character: '%s'"), gram_text);
   }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 288 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 288 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     while (gram_leng > 0 && gram_text[gram_leng-1] == '\0')
         gram_leng -= 1;
@@ -1968,7 +1969,7 @@ case YY_STATE_EOF(INITIAL):
 
 case 90:
 YY_RULE_SETUP
-#line 303 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 303 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 complain_at (gram_text, _("invalid null character"));
 	YY_BREAK
 
@@ -1980,11 +1981,11 @@ complain_at (gram_text, _("invalid null character"));
 case 91:
 /* rule 91 can match eol */
 YY_RULE_SETUP
-#line 313 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 313 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); BEGIN context_state; }
 	YY_BREAK
 case YY_STATE_EOF(SC_COMMENT):
-#line 314 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 314 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 unexpected_eof (gram_text, "*/"); BEGIN context_state;
 	YY_BREAK
 
@@ -1996,17 +1997,17 @@ unexpected_eof (gram_text, "*/"); BEGIN context_state;
 case 92:
 /* rule 92 can match eol */
 YY_RULE_SETUP
-#line 324 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 324 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); BEGIN context_state; }
 	YY_BREAK
 case 93:
 /* rule 93 can match eol */
 YY_RULE_SETUP
-#line 325 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 325 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 yymore ();
 	YY_BREAK
 case YY_STATE_EOF(SC_LINE_COMMENT):
-#line 326 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 326 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); BEGIN context_state; }
 	YY_BREAK
 
@@ -2019,7 +2020,7 @@ case YY_STATE_EOF(SC_LINE_COMMENT):
 case 94:
 /* rule 94 can match eol */
 YY_RULE_SETUP
-#line 337 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 337 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     if (gram_text[0] == '\n')
       unexpected_newline (gram_text, "\"");
@@ -2028,7 +2029,7 @@ YY_RULE_SETUP
   }
 	YY_BREAK
 case YY_STATE_EOF(SC_ESCAPED_STRING):
-#line 343 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 343 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     unexpected_eof (gram_text, "\"");
     BEGIN INITIAL;
@@ -2044,7 +2045,7 @@ case YY_STATE_EOF(SC_ESCAPED_STRING):
 case 95:
 /* rule 95 can match eol */
 YY_RULE_SETUP
-#line 356 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 356 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     if (gram_text[0] == '\n')
       unexpected_newline (gram_text, "'");
@@ -2056,7 +2057,7 @@ YY_RULE_SETUP
   }
 	YY_BREAK
 case YY_STATE_EOF(SC_ESCAPED_CHARACTER):
-#line 365 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 365 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     unexpected_eof (gram_text, "'");
     BEGIN INITIAL;
@@ -2072,7 +2073,7 @@ case YY_STATE_EOF(SC_ESCAPED_CHARACTER):
 
 case 96:
 YY_RULE_SETUP
-#line 379 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 379 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     --nesting;
     if (nesting < 0)
@@ -2086,16 +2087,16 @@ YY_RULE_SETUP
 case 97:
 /* rule 97 can match eol */
 YY_RULE_SETUP
-#line 389 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 389 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 390 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 390 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { nesting += 1; yymore (); }
 	YY_BREAK
 case YY_STATE_EOF(SC_TAG):
-#line 392 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 392 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     unexpected_eof (gram_text, ">");
     BEGIN INITIAL;
@@ -2110,31 +2111,31 @@ case YY_STATE_EOF(SC_TAG):
 
 case 99:
 YY_RULE_SETUP
-#line 405 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 405 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { complain_at (gram_text, "invalid escape: \\X"); }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 406 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 406 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { complain_at (gram_text, "invalid \\x escape"); }
 	YY_BREAK
 case 101:
-#line 408 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 408 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 102:
-#line 409 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 409 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 103:
-#line 410 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 410 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 104:
-#line 411 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 411 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 105:
 /* rule 105 can match eol */
 YY_RULE_SETUP
-#line 411 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 411 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 413 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 413 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
                           complain_at (gram_text, "Unicode escapes not currently supported."); }
 	YY_BREAK
@@ -2147,7 +2148,7 @@ YY_RULE_SETUP
 case 107:
 /* rule 107 can match eol */
 YY_RULE_SETUP
-#line 424 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 424 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); }
 	YY_BREAK
 
@@ -2155,17 +2156,17 @@ YY_RULE_SETUP
 
 case 108:
 YY_RULE_SETUP
-#line 429 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 429 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { BEGIN context_state; yymore (); }
 	YY_BREAK
 case 109:
 /* rule 109 can match eol */
 YY_RULE_SETUP
-#line 430 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 430 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { unexpected_newline (gram_text, "'"); BEGIN context_state; }
 	YY_BREAK
 case YY_STATE_EOF(SC_CHARACTER):
-#line 431 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 431 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { unexpected_eof (gram_text, "'"); BEGIN context_state; }
 	YY_BREAK
 
@@ -2173,17 +2174,17 @@ case YY_STATE_EOF(SC_CHARACTER):
 
 case 110:
 YY_RULE_SETUP
-#line 436 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 436 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { BEGIN context_state; yymore (); }
 	YY_BREAK
 case 111:
 /* rule 111 can match eol */
 YY_RULE_SETUP
-#line 437 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 437 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { unexpected_newline (gram_text, "\""); BEGIN context_state; }
 	YY_BREAK
 case YY_STATE_EOF(SC_STRING):
-#line 438 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 438 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { unexpected_eof (gram_text, "\""); BEGIN context_state; }
 	YY_BREAK
 
@@ -2194,7 +2195,7 @@ case YY_STATE_EOF(SC_STRING):
 
 case 112:
 YY_RULE_SETUP
-#line 448 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 448 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     context_state = YY_START;
     yymore ();
@@ -2203,7 +2204,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 453 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 453 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     context_state = YY_START;
     yymore ();
@@ -2213,7 +2214,7 @@ YY_RULE_SETUP
 case 114:
 /* rule 114 can match eol */
 YY_RULE_SETUP
-#line 458 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 458 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     context_state = YY_START;
     yymore ();
@@ -2223,7 +2224,7 @@ YY_RULE_SETUP
 case 115:
 /* rule 115 can match eol */
 YY_RULE_SETUP
-#line 463 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 463 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     context_state = YY_START;
     yymore ();
@@ -2239,24 +2240,24 @@ YY_RULE_SETUP
 case 116:
 /* rule 116 can match eol */
 YY_RULE_SETUP
-#line 478 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 478 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { nesting++; yymore (); }
 	YY_BREAK
 case 117:
 /* rule 117 can match eol */
 YY_RULE_SETUP
-#line 479 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 479 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { nesting--; yymore (); }
 	YY_BREAK
 case 118:
 /* rule 118 can match eol */
 YY_RULE_SETUP
-#line 481 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 481 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 { yymore (); }
 	YY_BREAK
 case YY_STATE_EOF(SC_BRACED_CODE):
 case YY_STATE_EOF(SC_PREDICATE):
-#line 483 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 483 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     int token = (YY_START == SC_BRACED_CODE) ? BRACED_CODE : BRACED_PREDICATE;
     unexpected_eof (gram_text, "}");
@@ -2269,7 +2270,7 @@ case YY_STATE_EOF(SC_PREDICATE):
 
 case 119:
 YY_RULE_SETUP
-#line 493 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 493 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     --nesting;
     if (nesting < 0)
@@ -2286,7 +2287,7 @@ YY_RULE_SETUP
 
 case 120:
 YY_RULE_SETUP
-#line 507 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 507 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     --nesting;
     if (nesting < 0)
@@ -2306,14 +2307,14 @@ YY_RULE_SETUP
 
 case 121:
 YY_RULE_SETUP
-#line 525 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 525 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     BEGIN INITIAL;
     return PROLOGUE;
   }
 	YY_BREAK
 case YY_STATE_EOF(SC_PROLOGUE):
-#line 530 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 530 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     unexpected_eof (gram_text, "%}");
     BEGIN INITIAL;
@@ -2328,7 +2329,7 @@ case YY_STATE_EOF(SC_PROLOGUE):
 
 
 case YY_STATE_EOF(SC_EPILOGUE):
-#line 545 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 545 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 {
     BEGIN INITIAL;
     while (gram_leng > 0 && gram_text[gram_leng-1] == '\0')
@@ -2338,19 +2339,19 @@ case YY_STATE_EOF(SC_EPILOGUE):
 	YY_BREAK
 
 case 122:
-#line 555 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 555 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 case 123:
 /* rule 123 can match eol */
 YY_RULE_SETUP
-#line 555 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 555 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 yymore ();
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 557 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 557 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 2354 "scan-horn.cc"
+#line 2355 "scan-horn.cc"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2535,7 +2536,7 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			int num_to_read =
+			yy_size_t num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
@@ -2549,7 +2550,7 @@ static int yy_get_next_buffer (void)
 
 			if ( b->yy_is_our_buffer )
 				{
-				int new_size = b->yy_buf_size * 2;
+				yy_size_t new_size = b->yy_buf_size * 2;
 
 				if ( new_size <= 0 )
 					b->yy_buf_size += b->yy_buf_size / 8;
@@ -2580,7 +2581,7 @@ static int yy_get_next_buffer (void)
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			(yy_n_chars), (size_t) num_to_read );
+			(yy_n_chars), num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
 		}
@@ -2703,7 +2704,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			int offset = (yy_c_buf_p) - (yytext_ptr);
+			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -2727,7 +2728,7 @@ static int yy_get_next_buffer (void)
 				case EOB_ACT_END_OF_FILE:
 					{
 					if ( gram_wrap( ) )
-						return EOF;
+						return 0;
 
 					if ( ! (yy_did_buffer_switch_on_eof) )
 						YY_NEW_FILE;
@@ -2977,7 +2978,7 @@ void gram_pop_buffer_state (void)
  */
 static void gram_ensure_buffer_stack (void)
 {
-	int num_to_alloc;
+	yy_size_t num_to_alloc;
     
 	if (!(yy_buffer_stack)) {
 
@@ -3074,12 +3075,11 @@ YY_BUFFER_STATE gram__scan_string (yyconst char * yystr )
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE gram__scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
+YY_BUFFER_STATE gram__scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
-	yy_size_t n;
-	int i;
+	yy_size_t n, i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
 	n = _yybytes_len + 2;
@@ -3161,7 +3161,7 @@ FILE *gram_get_out  (void)
 /** Get the length of the current token.
  * 
  */
-int gram_get_leng  (void)
+yy_size_t gram_get_leng  (void)
 {
         return gram_leng;
 }
@@ -3309,7 +3309,7 @@ void gram_free (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 557 "/home/cs/hilfingr/work/grammars/horn/scan-horn.l"
+#line 557 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-horn.l"
 
 
 

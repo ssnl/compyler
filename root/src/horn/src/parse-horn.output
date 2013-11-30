@@ -1,0 +1,3247 @@
+Terminals which are not used
+
+   PERCENTS
+   "%?{...}"
+   ID
+   "*none*"
+   "*grammar*"
+   "*rules*"
+   "*rule*"
+   "*grammar_declaration*"
+   "*rhs_choices*"
+   "*rhs_annotations*"
+   "*rhs*"
+   "*generated-rule*"
+   "*action*"
+   "*token*"
+   "*list*"
+   LEX_GROUP
+   LEX_OPT
+   LEX_PHRASE
+   LEX_PLUS
+   LEX_SET
+   LEX_SUB
+   LEX_RULE
+   LEX_RULE_PREFERRED
+   LEX_STAR
+   LEX_SUBRULE
+   LEX_STRING
+   LEX_REF
+   SYNC
+
+
+Grammar
+
+    0 $accept: input "end of file"
+
+    1 input: prologue_declarations "%%" grammar epilogue.opt
+    2      | error
+
+    3 prologue_declarations: /* empty */
+    4                      | prologue_declarations prologue_declaration
+    5                      | prologue_declarations prologue_declaration error
+    6                      | error
+
+    7 prologue_declaration: grammar_declaration
+    8                     | "%{...%}"
+    9                     | "%<flag>"
+   10                     | "%convention" any_id any_id
+   11                     | "%define" variable content.opt
+   12                     | "%defines"
+   13                     | "%defines" "string"
+   14                     | "%error-verbose"
+   15                     | "%expect" "integer"
+   16                     | "%expect-rr" "integer"
+   17                     | "%file-prefix" "string"
+   18                     | "%glr-parser"
+   19                     | "%interactive"
+   20                     | "%initial-action" "{...}"
+   21                     | "%language" "string"
+   22                     | "%name-prefix" "string"
+   23                     | "%no-lines"
+   24                     | "%nondeterministic-parser"
+   25                     | "%output" "string"
+   26                     | "%param" params
+   27                     | "%require" "string"
+   28                     | "%skeleton" "string"
+   29                     | "%token-table"
+   30                     | "%verbose"
+   31                     | "%yacc"
+   32                     | ";"
+
+   33 params: params "{...}"
+   34       | "{...}"
+
+   35 grammar_declaration: precedence_declaration
+   36                    | symbol_declaration
+   37                    | "%start" symbol
+   38                    | "%destructor" "{...}" generic_symlist
+   39                    | "%printer" "{...}" generic_symlist
+   40                    | "%default-prec"
+   41                    | "%no-default-prec"
+   42                    | "%code" braceless
+   43                    | "%code" any_id braceless
+
+   44 union_name: /* empty */
+   45           | any_id
+
+   46 grammar_declaration: "%union" union_name braceless
+
+   47 symbol_declaration: "%nterm" symbol_defs.1
+   48                   | "%token" symbol_defs.1
+   49                   | "%type" "<tag>" symbols.1
+
+   50 precedence_declaration: precedence_declarator tag.opt symbols.prec
+
+   51 precedence_declarator: "%left"
+   52                      | "%right"
+   53                      | "%nonassoc"
+   54                      | "%precedence"
+
+   55 tag.opt: /* empty */
+   56        | "<tag>"
+
+   57 symbols.prec: symbol.prec
+   58             | symbols.prec symbol.prec
+
+   59 symbol.prec: symbol
+   60            | symbol "integer"
+
+   61 symbols.1: symbol
+   62          | symbols.1 symbol
+
+   63 generic_symlist: generic_symlist_item
+   64                | generic_symlist generic_symlist_item
+
+   65 generic_symlist_item: symbol
+   66                     | "<tag>"
+   67                     | "<*>"
+   68                     | "<>"
+
+   69 symbol_def: TERM_ID
+   70           | "char"
+   71           | TERM_ID "integer"
+   72           | TERM_ID string_as_id
+   73           | "char" string_as_id
+   74           | TERM_ID "integer" string_as_id
+   75           | "<tag>"
+   76           | "char" "integer"
+   77           | "char" "integer" string_as_id
+
+   78 symbol_defs.1: symbol_def
+   79              | symbol_defs.1 symbol_def
+
+   80 grammar: rules_or_grammar_declaration
+   81        | grammar rules_or_grammar_declaration
+
+   82 rules_or_grammar_declaration: rules
+   83                             | grammar_declaration ";"
+   84                             | error ";"
+
+   85 rules: NONTERM_ID ":" rhses ";"
+   86      | lexical_rule
+
+   87 rhses: rhs
+   88      | rhses "|" rhs
+
+   89 rhs: rhs.2
+   90    | rhs.1
+
+   91 rhs.1: rhs.primary rhs.2
+   92      | action rhs.2
+   93      | rhs.primary rhs.1
+   94      | action rhs.1
+   95      | annotation rhs.1
+
+   96 rhs.2: /* empty */
+   97      | annotation rhs.2
+
+   98 rhs.primary: rhs.atom
+   99            | rhs.atom "?"
+  100            | rhs.atom "*"
+  101            | rhs.atom "+"
+
+  102 rhs.atom: augmented_symbol
+  103         | augmented_symbol "^"
+  104         | augmented_symbol "!"
+  105         | "(" rhses ")"
+
+  106 augmented_symbol: cf_symbol
+  107                 | any_id "=" cf_symbol
+  108                 | any_id "+=" cf_symbol
+
+  109 annotation: "%prec" symbol
+  110           | "%dprec" "integer"
+  111           | "%expect" "integer"
+  112           | "%expect-rr" "integer"
+  113           | "%merge" "<tag>"
+  114           | "%expand"
+
+  115 variable: any_id
+  116         | OTHER_ID
+
+  117 content.opt: /* empty */
+  118            | any_id
+  119            | "string"
+
+  120 braceless: "{...}"
+
+  121 any_id: TERM_ID
+  122       | NONTERM_ID
+  123       | UNDERSCORE_ID
+
+  124 id: any_id
+  125   | "char"
+
+  126 symbol: id
+  127       | string_as_id
+
+  128 cf_symbol: TERM_ID
+  129          | NONTERM_ID
+  130          | "char"
+  131          | string_as_id
+  132          | UNDERSCORE_ID
+
+  133 string_as_id: "string"
+
+  134 epilogue.opt: /* empty */
+  135             | "%%" "epilogue"
+
+  136 @1: /* empty */
+
+  137 lexical_rule: TERM_ID ":" @1 lexical_rhs ";"
+
+  138 @2: /* empty */
+
+  139 lexical_rule: "*" ":" @2 lexical_rhs ";"
+  140             | UNDERSCORE_ID ":" lexical_rhs_no_rules ";"
+  141             | "string" ":" action ";"
+  142             | "char" ":" action ";"
+
+  143 lexical_rhs: lexical_rhs_primaries
+  144            | lexical_rhs "|" lexical_rhs_primaries
+
+  145 lexical_rhs_no_rules: lexical_primaries
+  146                     | lexical_rhs_no_rules "|" lexical_primaries
+
+  147 lexical_rhs_primaries: lexical_prefix lexical_primaries lexical_suffix bare_action.opt
+  148                      | lexical_prefix preferred.opt "_EOF" preferred.opt bare_action.opt
+
+  149 lexical_primaries: lexical_term
+  150                  | lexical_primaries lexical_term
+
+  151 lexical_term: lexical_primary
+  152             | lexical_term "-" lexical_primary
+
+  153 lexical_primary: lexical_atom
+  154                | char_range
+  155                | lexical_atom "*"
+  156                | lexical_atom "+"
+  157                | lexical_atom "?"
+
+  158 lexical_atom: UNDERSCORE_ID
+  159             | "(" lexical_rhs_no_rules ")"
+  160             | "char"
+  161             | "string"
+  162             | predefined_atoms
+
+  163 predefined_atoms: "_ANY"
+  164                 | "_UPPER"
+  165                 | "_LOWER"
+  166                 | "_LETTER"
+  167                 | "_DIGIT"
+  168                 | "_HEX"
+  169                 | "_ALNUM"
+  170                 | "_SPACE"
+  171                 | "_BLANK"
+  172                 | "_CONTROL"
+  173                 | "_GRAPHIC"
+  174                 | "_PRINTABLE"
+  175                 | "_PUNCTUATION"
+
+  176 char_range: "char" ".." "char"
+
+  177 lexical_prefix: /* empty */
+  178               | "_BOL"
+
+  179 lexical_suffix: preferred.opt
+  180               | preferred.opt "_EOL" preferred.opt
+  181               | preferred.opt "_EOF" preferred.opt
+
+  182 preferred.opt: /* empty */
+  183              | "%prefer"
+
+  184 action: "{...}"
+
+  185 bare_action.opt: "{...}"
+  186                | /* empty */
+
+
+Terminals, with rules where they appear
+
+"end of file" (0) 0
+"!" (33) 104
+"(" (40) 105 159
+")" (41) 105 159
+"*" (42) 100 139 155
+"+" (43) 101 156
+"-" (45) 152
+":" (58) 85 137 139 140 141 142
+";" (59) 32 83 84 85 137 139 140 141 142
+"=" (61) 107
+"?" (63) 99 157
+"^" (94) 103
+"|" (124) 88 144 146
+error (256) 2 5 6 84
+"string" (258) 13 17 21 22 25 27 28 119 133 141 161
+"integer" (259) 15 16 60 71 74 76 77 110 111 112
+"%token" (260) 48
+"%nterm" (261) 47
+"%type" (262) 49
+"%destructor" (263) 38
+"%printer" (264) 39
+"%left" (265) 51
+"%right" (266) 52
+"%nonassoc" (267) 53
+"%precedence" (268) 54
+"%prec" (269) 109
+"%dprec" (270) 110
+"%merge" (271) 113
+"%code" (272) 42 43
+"%default-prec" (273) 40
+"%define" (274) 11
+"%defines" (275) 12 13
+"%error-verbose" (276) 14
+"%expect" (277) 15 111
+"%expect-rr" (278) 16 112
+"%<flag>" (279) 9
+"%file-prefix" (280) 17
+"%glr-parser" (281) 18
+"%interactive" (282) 19
+"%initial-action" (283) 20
+"%language" (284) 21
+"%name-prefix" (285) 22
+"%no-default-prec" (286) 41
+"%no-lines" (287) 23
+"%nondeterministic-parser" (288) 24
+"%output" (289) 25
+"%require" (290) 27
+"%skeleton" (291) 28
+"%start" (292) 37
+"%token-table" (293) 29
+"%verbose" (294) 30
+"%yacc" (295) 31
+"%convention" (296) 10
+"%expand" (297) 114
+"%prefer" (298) 183
+PERCENTS (299)
+"_ANY" (300) 163
+"_UPPER" (301) 164
+"_LOWER" (302) 165
+"_LETTER" (303) 166
+"_DIGIT" (304) 167
+"_HEX" (305) 168
+"_ALNUM" (306) 169
+"_SPACE" (307) 170
+"_BLANK" (308) 171
+"_CONTROL" (309) 172
+"_GRAPHIC" (310) 173
+"_PRINTABLE" (311) 174
+"_PUNCTUATION" (312) 175
+"_BOL" (313) 178
+"_EOL" (314) 180
+"_EOF" (315) 148 181
+"{...}" (316) 20 33 34 38 39 120 184 185
+"%?{...}" (317)
+"char" (318) 70 73 76 77 125 130 142 160 176
+".." (319) 176
+"epilogue" (320) 135
+ID (321)
+TERM_ID (322) 69 71 72 74 121 128 137
+NONTERM_ID (323) 85 122 129
+UNDERSCORE_ID (324) 123 132 140 158
+OTHER_ID (325) 116
+"%%" (326) 1 135
+"+=" (327) 108
+"%{...%}" (328) 8
+"<tag>" (329) 49 56 66 75 113
+"<*>" (330) 67
+"<>" (331) 68
+"%param" (332) 26
+"*none*" (333)
+"*grammar*" (334)
+"*rules*" (335)
+"*rule*" (336)
+"*grammar_declaration*" (337)
+"*rhs_choices*" (338)
+"*rhs_annotations*" (339)
+"*rhs*" (340)
+"*generated-rule*" (341)
+"*action*" (342)
+"*token*" (343)
+"*list*" (344)
+LEX_GROUP (345)
+LEX_OPT (346)
+LEX_PHRASE (347)
+LEX_PLUS (348)
+LEX_SET (349)
+LEX_SUB (350)
+LEX_RULE (351)
+LEX_RULE_PREFERRED (352)
+LEX_STAR (353)
+LEX_SUBRULE (354)
+LEX_STRING (355)
+LEX_REF (356)
+SYNC (357)
+"%union" (358) 46
+
+
+Nonterminals, with rules where they appear
+
+$accept (116)
+    on left: 0
+input (117)
+    on left: 1 2, on right: 0
+prologue_declarations (118)
+    on left: 3 4 5 6, on right: 1 4 5
+prologue_declaration (119)
+    on left: 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+    26 27 28 29 30 31 32, on right: 4 5
+params (120)
+    on left: 33 34, on right: 26 33
+grammar_declaration (121)
+    on left: 35 36 37 38 39 40 41 42 43 46, on right: 7 83
+union_name (122)
+    on left: 44 45, on right: 46
+symbol_declaration (123)
+    on left: 47 48 49, on right: 36
+precedence_declaration (124)
+    on left: 50, on right: 35
+precedence_declarator (125)
+    on left: 51 52 53 54, on right: 50
+tag.opt (126)
+    on left: 55 56, on right: 50
+symbols.prec (127)
+    on left: 57 58, on right: 50 58
+symbol.prec (128)
+    on left: 59 60, on right: 57 58
+symbols.1 (129)
+    on left: 61 62, on right: 49 62
+generic_symlist (130)
+    on left: 63 64, on right: 38 39 64
+generic_symlist_item (131)
+    on left: 65 66 67 68, on right: 63 64
+symbol_def (132)
+    on left: 69 70 71 72 73 74 75 76 77, on right: 78 79
+symbol_defs.1 (133)
+    on left: 78 79, on right: 47 48 79
+grammar (134)
+    on left: 80 81, on right: 1 81
+rules_or_grammar_declaration (135)
+    on left: 82 83 84, on right: 80 81
+rules (136)
+    on left: 85 86, on right: 82
+rhses (137)
+    on left: 87 88, on right: 85 88 105
+rhs (138)
+    on left: 89 90, on right: 87 88
+rhs.1 (139)
+    on left: 91 92 93 94 95, on right: 90 93 94 95
+rhs.2 (140)
+    on left: 96 97, on right: 89 91 92 97
+rhs.primary (141)
+    on left: 98 99 100 101, on right: 91 93
+rhs.atom (142)
+    on left: 102 103 104 105, on right: 98 99 100 101
+augmented_symbol (143)
+    on left: 106 107 108, on right: 102 103 104
+annotation (144)
+    on left: 109 110 111 112 113 114, on right: 95 97
+variable (145)
+    on left: 115 116, on right: 11
+content.opt (146)
+    on left: 117 118 119, on right: 11
+braceless (147)
+    on left: 120, on right: 42 43 46
+any_id (148)
+    on left: 121 122 123, on right: 10 43 45 107 108 115 118 124
+id (149)
+    on left: 124 125, on right: 126
+symbol (150)
+    on left: 126 127, on right: 37 59 60 61 62 65 109
+cf_symbol (151)
+    on left: 128 129 130 131 132, on right: 106 107 108
+string_as_id (152)
+    on left: 133, on right: 72 73 74 77 127 131
+epilogue.opt (153)
+    on left: 134 135, on right: 1
+lexical_rule (154)
+    on left: 137 139 140 141 142, on right: 86
+@1 (155)
+    on left: 136, on right: 137
+@2 (156)
+    on left: 138, on right: 139
+lexical_rhs (157)
+    on left: 143 144, on right: 137 139 144
+lexical_rhs_no_rules (158)
+    on left: 145 146, on right: 140 146 159
+lexical_rhs_primaries (159)
+    on left: 147 148, on right: 143 144
+lexical_primaries (160)
+    on left: 149 150, on right: 145 146 147 150
+lexical_term (161)
+    on left: 151 152, on right: 149 150 152
+lexical_primary (162)
+    on left: 153 154 155 156 157, on right: 151 152
+lexical_atom (163)
+    on left: 158 159 160 161 162, on right: 153 155 156 157
+predefined_atoms (164)
+    on left: 163 164 165 166 167 168 169 170 171 172 173 174 175,
+    on right: 162
+char_range (165)
+    on left: 176, on right: 154
+lexical_prefix (166)
+    on left: 177 178, on right: 147 148
+lexical_suffix (167)
+    on left: 179 180 181, on right: 147
+preferred.opt (168)
+    on left: 182 183, on right: 148 179 180 181
+action (169)
+    on left: 184, on right: 92 94 141 142
+bare_action.opt (170)
+    on left: 185 186, on right: 147 148
+
+
+state 0
+
+    0 $accept: . input "end of file"
+
+    error  shift, and go to state 1
+
+    "%token"                    reduce using rule 3 (prologue_declarations)
+    "%nterm"                    reduce using rule 3 (prologue_declarations)
+    "%type"                     reduce using rule 3 (prologue_declarations)
+    "%destructor"               reduce using rule 3 (prologue_declarations)
+    "%printer"                  reduce using rule 3 (prologue_declarations)
+    "%left"                     reduce using rule 3 (prologue_declarations)
+    "%right"                    reduce using rule 3 (prologue_declarations)
+    "%nonassoc"                 reduce using rule 3 (prologue_declarations)
+    "%precedence"               reduce using rule 3 (prologue_declarations)
+    "%code"                     reduce using rule 3 (prologue_declarations)
+    "%default-prec"             reduce using rule 3 (prologue_declarations)
+    "%define"                   reduce using rule 3 (prologue_declarations)
+    "%defines"                  reduce using rule 3 (prologue_declarations)
+    "%error-verbose"            reduce using rule 3 (prologue_declarations)
+    "%expect"                   reduce using rule 3 (prologue_declarations)
+    "%expect-rr"                reduce using rule 3 (prologue_declarations)
+    "%<flag>"                   reduce using rule 3 (prologue_declarations)
+    "%file-prefix"              reduce using rule 3 (prologue_declarations)
+    "%glr-parser"               reduce using rule 3 (prologue_declarations)
+    "%interactive"              reduce using rule 3 (prologue_declarations)
+    "%initial-action"           reduce using rule 3 (prologue_declarations)
+    "%language"                 reduce using rule 3 (prologue_declarations)
+    "%name-prefix"              reduce using rule 3 (prologue_declarations)
+    "%no-default-prec"          reduce using rule 3 (prologue_declarations)
+    "%no-lines"                 reduce using rule 3 (prologue_declarations)
+    "%nondeterministic-parser"  reduce using rule 3 (prologue_declarations)
+    "%output"                   reduce using rule 3 (prologue_declarations)
+    "%require"                  reduce using rule 3 (prologue_declarations)
+    "%skeleton"                 reduce using rule 3 (prologue_declarations)
+    "%start"                    reduce using rule 3 (prologue_declarations)
+    "%token-table"              reduce using rule 3 (prologue_declarations)
+    "%verbose"                  reduce using rule 3 (prologue_declarations)
+    "%yacc"                     reduce using rule 3 (prologue_declarations)
+    "%convention"               reduce using rule 3 (prologue_declarations)
+    "%%"                        reduce using rule 3 (prologue_declarations)
+    "%{...%}"                   reduce using rule 3 (prologue_declarations)
+    ";"                         reduce using rule 3 (prologue_declarations)
+    "%param"                    reduce using rule 3 (prologue_declarations)
+    "%union"                    reduce using rule 3 (prologue_declarations)
+
+    input                  go to state 2
+    prologue_declarations  go to state 3
+
+
+state 1
+
+    2 input: error .
+    6 prologue_declarations: error .
+
+    "end of file"  reduce using rule 2 (input)
+    $default       reduce using rule 6 (prologue_declarations)
+
+
+state 2
+
+    0 $accept: input . "end of file"
+
+    "end of file"  shift, and go to state 4
+
+
+state 3
+
+    1 input: prologue_declarations . "%%" grammar epilogue.opt
+    4 prologue_declarations: prologue_declarations . prologue_declaration
+    5                      | prologue_declarations . prologue_declaration error
+
+    "%token"                    shift, and go to state 5
+    "%nterm"                    shift, and go to state 6
+    "%type"                     shift, and go to state 7
+    "%destructor"               shift, and go to state 8
+    "%printer"                  shift, and go to state 9
+    "%left"                     shift, and go to state 10
+    "%right"                    shift, and go to state 11
+    "%nonassoc"                 shift, and go to state 12
+    "%precedence"               shift, and go to state 13
+    "%code"                     shift, and go to state 14
+    "%default-prec"             shift, and go to state 15
+    "%define"                   shift, and go to state 16
+    "%defines"                  shift, and go to state 17
+    "%error-verbose"            shift, and go to state 18
+    "%expect"                   shift, and go to state 19
+    "%expect-rr"                shift, and go to state 20
+    "%<flag>"                   shift, and go to state 21
+    "%file-prefix"              shift, and go to state 22
+    "%glr-parser"               shift, and go to state 23
+    "%interactive"              shift, and go to state 24
+    "%initial-action"           shift, and go to state 25
+    "%language"                 shift, and go to state 26
+    "%name-prefix"              shift, and go to state 27
+    "%no-default-prec"          shift, and go to state 28
+    "%no-lines"                 shift, and go to state 29
+    "%nondeterministic-parser"  shift, and go to state 30
+    "%output"                   shift, and go to state 31
+    "%require"                  shift, and go to state 32
+    "%skeleton"                 shift, and go to state 33
+    "%start"                    shift, and go to state 34
+    "%token-table"              shift, and go to state 35
+    "%verbose"                  shift, and go to state 36
+    "%yacc"                     shift, and go to state 37
+    "%convention"               shift, and go to state 38
+    "%%"                        shift, and go to state 39
+    "%{...%}"                   shift, and go to state 40
+    ";"                         shift, and go to state 41
+    "%param"                    shift, and go to state 42
+    "%union"                    shift, and go to state 43
+
+    prologue_declaration    go to state 44
+    grammar_declaration     go to state 45
+    symbol_declaration      go to state 46
+    precedence_declaration  go to state 47
+    precedence_declarator   go to state 48
+
+
+state 4
+
+    0 $accept: input "end of file" .
+
+    $default  accept
+
+
+state 5
+
+   48 symbol_declaration: "%token" . symbol_defs.1
+
+    "char"   shift, and go to state 49
+    TERM_ID  shift, and go to state 50
+    "<tag>"  shift, and go to state 51
+
+    symbol_def     go to state 52
+    symbol_defs.1  go to state 53
+
+
+state 6
+
+   47 symbol_declaration: "%nterm" . symbol_defs.1
+
+    "char"   shift, and go to state 49
+    TERM_ID  shift, and go to state 50
+    "<tag>"  shift, and go to state 51
+
+    symbol_def     go to state 52
+    symbol_defs.1  go to state 54
+
+
+state 7
+
+   49 symbol_declaration: "%type" . "<tag>" symbols.1
+
+    "<tag>"  shift, and go to state 55
+
+
+state 8
+
+   38 grammar_declaration: "%destructor" . "{...}" generic_symlist
+
+    "{...}"  shift, and go to state 56
+
+
+state 9
+
+   39 grammar_declaration: "%printer" . "{...}" generic_symlist
+
+    "{...}"  shift, and go to state 57
+
+
+state 10
+
+   51 precedence_declarator: "%left" .
+
+    $default  reduce using rule 51 (precedence_declarator)
+
+
+state 11
+
+   52 precedence_declarator: "%right" .
+
+    $default  reduce using rule 52 (precedence_declarator)
+
+
+state 12
+
+   53 precedence_declarator: "%nonassoc" .
+
+    $default  reduce using rule 53 (precedence_declarator)
+
+
+state 13
+
+   54 precedence_declarator: "%precedence" .
+
+    $default  reduce using rule 54 (precedence_declarator)
+
+
+state 14
+
+   42 grammar_declaration: "%code" . braceless
+   43                    | "%code" . any_id braceless
+
+    "{...}"        shift, and go to state 58
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    braceless  go to state 62
+    any_id     go to state 63
+
+
+state 15
+
+   40 grammar_declaration: "%default-prec" .
+
+    $default  reduce using rule 40 (grammar_declaration)
+
+
+state 16
+
+   11 prologue_declaration: "%define" . variable content.opt
+
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+    OTHER_ID       shift, and go to state 64
+
+    variable  go to state 65
+    any_id    go to state 66
+
+
+state 17
+
+   12 prologue_declaration: "%defines" .
+   13                     | "%defines" . "string"
+
+    "string"  shift, and go to state 67
+
+    $default  reduce using rule 12 (prologue_declaration)
+
+
+state 18
+
+   14 prologue_declaration: "%error-verbose" .
+
+    $default  reduce using rule 14 (prologue_declaration)
+
+
+state 19
+
+   15 prologue_declaration: "%expect" . "integer"
+
+    "integer"  shift, and go to state 68
+
+
+state 20
+
+   16 prologue_declaration: "%expect-rr" . "integer"
+
+    "integer"  shift, and go to state 69
+
+
+state 21
+
+    9 prologue_declaration: "%<flag>" .
+
+    $default  reduce using rule 9 (prologue_declaration)
+
+
+state 22
+
+   17 prologue_declaration: "%file-prefix" . "string"
+
+    "string"  shift, and go to state 70
+
+
+state 23
+
+   18 prologue_declaration: "%glr-parser" .
+
+    $default  reduce using rule 18 (prologue_declaration)
+
+
+state 24
+
+   19 prologue_declaration: "%interactive" .
+
+    $default  reduce using rule 19 (prologue_declaration)
+
+
+state 25
+
+   20 prologue_declaration: "%initial-action" . "{...}"
+
+    "{...}"  shift, and go to state 71
+
+
+state 26
+
+   21 prologue_declaration: "%language" . "string"
+
+    "string"  shift, and go to state 72
+
+
+state 27
+
+   22 prologue_declaration: "%name-prefix" . "string"
+
+    "string"  shift, and go to state 73
+
+
+state 28
+
+   41 grammar_declaration: "%no-default-prec" .
+
+    $default  reduce using rule 41 (grammar_declaration)
+
+
+state 29
+
+   23 prologue_declaration: "%no-lines" .
+
+    $default  reduce using rule 23 (prologue_declaration)
+
+
+state 30
+
+   24 prologue_declaration: "%nondeterministic-parser" .
+
+    $default  reduce using rule 24 (prologue_declaration)
+
+
+state 31
+
+   25 prologue_declaration: "%output" . "string"
+
+    "string"  shift, and go to state 74
+
+
+state 32
+
+   27 prologue_declaration: "%require" . "string"
+
+    "string"  shift, and go to state 75
+
+
+state 33
+
+   28 prologue_declaration: "%skeleton" . "string"
+
+    "string"  shift, and go to state 76
+
+
+state 34
+
+   37 grammar_declaration: "%start" . symbol
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 81
+    string_as_id  go to state 82
+
+
+state 35
+
+   29 prologue_declaration: "%token-table" .
+
+    $default  reduce using rule 29 (prologue_declaration)
+
+
+state 36
+
+   30 prologue_declaration: "%verbose" .
+
+    $default  reduce using rule 30 (prologue_declaration)
+
+
+state 37
+
+   31 prologue_declaration: "%yacc" .
+
+    $default  reduce using rule 31 (prologue_declaration)
+
+
+state 38
+
+   10 prologue_declaration: "%convention" . any_id any_id
+
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    any_id  go to state 83
+
+
+state 39
+
+    1 input: prologue_declarations "%%" . grammar epilogue.opt
+
+    error               shift, and go to state 84
+    "string"            shift, and go to state 85
+    "%token"            shift, and go to state 5
+    "%nterm"            shift, and go to state 6
+    "%type"             shift, and go to state 7
+    "%destructor"       shift, and go to state 8
+    "%printer"          shift, and go to state 9
+    "%left"             shift, and go to state 10
+    "%right"            shift, and go to state 11
+    "%nonassoc"         shift, and go to state 12
+    "%precedence"       shift, and go to state 13
+    "%code"             shift, and go to state 14
+    "%default-prec"     shift, and go to state 15
+    "%no-default-prec"  shift, and go to state 28
+    "%start"            shift, and go to state 34
+    "char"              shift, and go to state 86
+    TERM_ID             shift, and go to state 87
+    NONTERM_ID          shift, and go to state 88
+    UNDERSCORE_ID       shift, and go to state 89
+    "*"                 shift, and go to state 90
+    "%union"            shift, and go to state 43
+
+    grammar_declaration           go to state 91
+    symbol_declaration            go to state 46
+    precedence_declaration        go to state 47
+    precedence_declarator         go to state 48
+    grammar                       go to state 92
+    rules_or_grammar_declaration  go to state 93
+    rules                         go to state 94
+    lexical_rule                  go to state 95
+
+
+state 40
+
+    8 prologue_declaration: "%{...%}" .
+
+    $default  reduce using rule 8 (prologue_declaration)
+
+
+state 41
+
+   32 prologue_declaration: ";" .
+
+    $default  reduce using rule 32 (prologue_declaration)
+
+
+state 42
+
+   26 prologue_declaration: "%param" . params
+
+    "{...}"  shift, and go to state 96
+
+    params  go to state 97
+
+
+state 43
+
+   46 grammar_declaration: "%union" . union_name braceless
+
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    $default  reduce using rule 44 (union_name)
+
+    union_name  go to state 98
+    any_id      go to state 99
+
+
+state 44
+
+    4 prologue_declarations: prologue_declarations prologue_declaration .
+    5                      | prologue_declarations prologue_declaration . error
+
+    error  shift, and go to state 100
+
+    "%token"                    reduce using rule 4 (prologue_declarations)
+    "%nterm"                    reduce using rule 4 (prologue_declarations)
+    "%type"                     reduce using rule 4 (prologue_declarations)
+    "%destructor"               reduce using rule 4 (prologue_declarations)
+    "%printer"                  reduce using rule 4 (prologue_declarations)
+    "%left"                     reduce using rule 4 (prologue_declarations)
+    "%right"                    reduce using rule 4 (prologue_declarations)
+    "%nonassoc"                 reduce using rule 4 (prologue_declarations)
+    "%precedence"               reduce using rule 4 (prologue_declarations)
+    "%code"                     reduce using rule 4 (prologue_declarations)
+    "%default-prec"             reduce using rule 4 (prologue_declarations)
+    "%define"                   reduce using rule 4 (prologue_declarations)
+    "%defines"                  reduce using rule 4 (prologue_declarations)
+    "%error-verbose"            reduce using rule 4 (prologue_declarations)
+    "%expect"                   reduce using rule 4 (prologue_declarations)
+    "%expect-rr"                reduce using rule 4 (prologue_declarations)
+    "%<flag>"                   reduce using rule 4 (prologue_declarations)
+    "%file-prefix"              reduce using rule 4 (prologue_declarations)
+    "%glr-parser"               reduce using rule 4 (prologue_declarations)
+    "%interactive"              reduce using rule 4 (prologue_declarations)
+    "%initial-action"           reduce using rule 4 (prologue_declarations)
+    "%language"                 reduce using rule 4 (prologue_declarations)
+    "%name-prefix"              reduce using rule 4 (prologue_declarations)
+    "%no-default-prec"          reduce using rule 4 (prologue_declarations)
+    "%no-lines"                 reduce using rule 4 (prologue_declarations)
+    "%nondeterministic-parser"  reduce using rule 4 (prologue_declarations)
+    "%output"                   reduce using rule 4 (prologue_declarations)
+    "%require"                  reduce using rule 4 (prologue_declarations)
+    "%skeleton"                 reduce using rule 4 (prologue_declarations)
+    "%start"                    reduce using rule 4 (prologue_declarations)
+    "%token-table"              reduce using rule 4 (prologue_declarations)
+    "%verbose"                  reduce using rule 4 (prologue_declarations)
+    "%yacc"                     reduce using rule 4 (prologue_declarations)
+    "%convention"               reduce using rule 4 (prologue_declarations)
+    "%%"                        reduce using rule 4 (prologue_declarations)
+    "%{...%}"                   reduce using rule 4 (prologue_declarations)
+    ";"                         reduce using rule 4 (prologue_declarations)
+    "%param"                    reduce using rule 4 (prologue_declarations)
+    "%union"                    reduce using rule 4 (prologue_declarations)
+
+
+state 45
+
+    7 prologue_declaration: grammar_declaration .
+
+    $default  reduce using rule 7 (prologue_declaration)
+
+
+state 46
+
+   36 grammar_declaration: symbol_declaration .
+
+    $default  reduce using rule 36 (grammar_declaration)
+
+
+state 47
+
+   35 grammar_declaration: precedence_declaration .
+
+    $default  reduce using rule 35 (grammar_declaration)
+
+
+state 48
+
+   50 precedence_declaration: precedence_declarator . tag.opt symbols.prec
+
+    "<tag>"  shift, and go to state 101
+
+    $default  reduce using rule 55 (tag.opt)
+
+    tag.opt  go to state 102
+
+
+state 49
+
+   70 symbol_def: "char" .
+   73           | "char" . string_as_id
+   76           | "char" . "integer"
+   77           | "char" . "integer" string_as_id
+
+    "string"   shift, and go to state 77
+    "integer"  shift, and go to state 103
+
+    $default  reduce using rule 70 (symbol_def)
+
+    string_as_id  go to state 104
+
+
+state 50
+
+   69 symbol_def: TERM_ID .
+   71           | TERM_ID . "integer"
+   72           | TERM_ID . string_as_id
+   74           | TERM_ID . "integer" string_as_id
+
+    "string"   shift, and go to state 77
+    "integer"  shift, and go to state 105
+
+    $default  reduce using rule 69 (symbol_def)
+
+    string_as_id  go to state 106
+
+
+state 51
+
+   75 symbol_def: "<tag>" .
+
+    $default  reduce using rule 75 (symbol_def)
+
+
+state 52
+
+   78 symbol_defs.1: symbol_def .
+
+    $default  reduce using rule 78 (symbol_defs.1)
+
+
+state 53
+
+   48 symbol_declaration: "%token" symbol_defs.1 .
+   79 symbol_defs.1: symbol_defs.1 . symbol_def
+
+    "char"   shift, and go to state 49
+    TERM_ID  shift, and go to state 50
+    "<tag>"  shift, and go to state 51
+
+    $default  reduce using rule 48 (symbol_declaration)
+
+    symbol_def  go to state 107
+
+
+state 54
+
+   47 symbol_declaration: "%nterm" symbol_defs.1 .
+   79 symbol_defs.1: symbol_defs.1 . symbol_def
+
+    "char"   shift, and go to state 49
+    TERM_ID  shift, and go to state 50
+    "<tag>"  shift, and go to state 51
+
+    $default  reduce using rule 47 (symbol_declaration)
+
+    symbol_def  go to state 107
+
+
+state 55
+
+   49 symbol_declaration: "%type" "<tag>" . symbols.1
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    symbols.1     go to state 108
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 109
+    string_as_id  go to state 82
+
+
+state 56
+
+   38 grammar_declaration: "%destructor" "{...}" . generic_symlist
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+    "<tag>"        shift, and go to state 110
+    "<*>"          shift, and go to state 111
+    "<>"           shift, and go to state 112
+
+    generic_symlist       go to state 113
+    generic_symlist_item  go to state 114
+    any_id                go to state 79
+    id                    go to state 80
+    symbol                go to state 115
+    string_as_id          go to state 82
+
+
+state 57
+
+   39 grammar_declaration: "%printer" "{...}" . generic_symlist
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+    "<tag>"        shift, and go to state 110
+    "<*>"          shift, and go to state 111
+    "<>"           shift, and go to state 112
+
+    generic_symlist       go to state 116
+    generic_symlist_item  go to state 114
+    any_id                go to state 79
+    id                    go to state 80
+    symbol                go to state 115
+    string_as_id          go to state 82
+
+
+state 58
+
+  120 braceless: "{...}" .
+
+    $default  reduce using rule 120 (braceless)
+
+
+state 59
+
+  121 any_id: TERM_ID .
+
+    $default  reduce using rule 121 (any_id)
+
+
+state 60
+
+  122 any_id: NONTERM_ID .
+
+    $default  reduce using rule 122 (any_id)
+
+
+state 61
+
+  123 any_id: UNDERSCORE_ID .
+
+    $default  reduce using rule 123 (any_id)
+
+
+state 62
+
+   42 grammar_declaration: "%code" braceless .
+
+    $default  reduce using rule 42 (grammar_declaration)
+
+
+state 63
+
+   43 grammar_declaration: "%code" any_id . braceless
+
+    "{...}"  shift, and go to state 58
+
+    braceless  go to state 117
+
+
+state 64
+
+  116 variable: OTHER_ID .
+
+    $default  reduce using rule 116 (variable)
+
+
+state 65
+
+   11 prologue_declaration: "%define" variable . content.opt
+
+    "string"       shift, and go to state 118
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    $default  reduce using rule 117 (content.opt)
+
+    content.opt  go to state 119
+    any_id       go to state 120
+
+
+state 66
+
+  115 variable: any_id .
+
+    $default  reduce using rule 115 (variable)
+
+
+state 67
+
+   13 prologue_declaration: "%defines" "string" .
+
+    $default  reduce using rule 13 (prologue_declaration)
+
+
+state 68
+
+   15 prologue_declaration: "%expect" "integer" .
+
+    $default  reduce using rule 15 (prologue_declaration)
+
+
+state 69
+
+   16 prologue_declaration: "%expect-rr" "integer" .
+
+    $default  reduce using rule 16 (prologue_declaration)
+
+
+state 70
+
+   17 prologue_declaration: "%file-prefix" "string" .
+
+    $default  reduce using rule 17 (prologue_declaration)
+
+
+state 71
+
+   20 prologue_declaration: "%initial-action" "{...}" .
+
+    $default  reduce using rule 20 (prologue_declaration)
+
+
+state 72
+
+   21 prologue_declaration: "%language" "string" .
+
+    $default  reduce using rule 21 (prologue_declaration)
+
+
+state 73
+
+   22 prologue_declaration: "%name-prefix" "string" .
+
+    $default  reduce using rule 22 (prologue_declaration)
+
+
+state 74
+
+   25 prologue_declaration: "%output" "string" .
+
+    $default  reduce using rule 25 (prologue_declaration)
+
+
+state 75
+
+   27 prologue_declaration: "%require" "string" .
+
+    $default  reduce using rule 27 (prologue_declaration)
+
+
+state 76
+
+   28 prologue_declaration: "%skeleton" "string" .
+
+    $default  reduce using rule 28 (prologue_declaration)
+
+
+state 77
+
+  133 string_as_id: "string" .
+
+    $default  reduce using rule 133 (string_as_id)
+
+
+state 78
+
+  125 id: "char" .
+
+    $default  reduce using rule 125 (id)
+
+
+state 79
+
+  124 id: any_id .
+
+    $default  reduce using rule 124 (id)
+
+
+state 80
+
+  126 symbol: id .
+
+    $default  reduce using rule 126 (symbol)
+
+
+state 81
+
+   37 grammar_declaration: "%start" symbol .
+
+    $default  reduce using rule 37 (grammar_declaration)
+
+
+state 82
+
+  127 symbol: string_as_id .
+
+    $default  reduce using rule 127 (symbol)
+
+
+state 83
+
+   10 prologue_declaration: "%convention" any_id . any_id
+
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    any_id  go to state 121
+
+
+state 84
+
+   84 rules_or_grammar_declaration: error . ";"
+
+    ";"  shift, and go to state 122
+
+
+state 85
+
+  141 lexical_rule: "string" . ":" action ";"
+
+    ":"  shift, and go to state 123
+
+
+state 86
+
+  142 lexical_rule: "char" . ":" action ";"
+
+    ":"  shift, and go to state 124
+
+
+state 87
+
+  137 lexical_rule: TERM_ID . ":" @1 lexical_rhs ";"
+
+    ":"  shift, and go to state 125
+
+
+state 88
+
+   85 rules: NONTERM_ID . ":" rhses ";"
+
+    ":"  shift, and go to state 126
+
+
+state 89
+
+  140 lexical_rule: UNDERSCORE_ID . ":" lexical_rhs_no_rules ";"
+
+    ":"  shift, and go to state 127
+
+
+state 90
+
+  139 lexical_rule: "*" . ":" @2 lexical_rhs ";"
+
+    ":"  shift, and go to state 128
+
+
+state 91
+
+   83 rules_or_grammar_declaration: grammar_declaration . ";"
+
+    ";"  shift, and go to state 129
+
+
+state 92
+
+    1 input: prologue_declarations "%%" grammar . epilogue.opt
+   81 grammar: grammar . rules_or_grammar_declaration
+
+    error               shift, and go to state 84
+    "string"            shift, and go to state 85
+    "%token"            shift, and go to state 5
+    "%nterm"            shift, and go to state 6
+    "%type"             shift, and go to state 7
+    "%destructor"       shift, and go to state 8
+    "%printer"          shift, and go to state 9
+    "%left"             shift, and go to state 10
+    "%right"            shift, and go to state 11
+    "%nonassoc"         shift, and go to state 12
+    "%precedence"       shift, and go to state 13
+    "%code"             shift, and go to state 14
+    "%default-prec"     shift, and go to state 15
+    "%no-default-prec"  shift, and go to state 28
+    "%start"            shift, and go to state 34
+    "char"              shift, and go to state 86
+    TERM_ID             shift, and go to state 87
+    NONTERM_ID          shift, and go to state 88
+    UNDERSCORE_ID       shift, and go to state 89
+    "%%"                shift, and go to state 130
+    "*"                 shift, and go to state 90
+    "%union"            shift, and go to state 43
+
+    "end of file"  reduce using rule 134 (epilogue.opt)
+
+    grammar_declaration           go to state 91
+    symbol_declaration            go to state 46
+    precedence_declaration        go to state 47
+    precedence_declarator         go to state 48
+    rules_or_grammar_declaration  go to state 131
+    rules                         go to state 94
+    epilogue.opt                  go to state 132
+    lexical_rule                  go to state 95
+
+
+state 93
+
+   80 grammar: rules_or_grammar_declaration .
+
+    $default  reduce using rule 80 (grammar)
+
+
+state 94
+
+   82 rules_or_grammar_declaration: rules .
+
+    $default  reduce using rule 82 (rules_or_grammar_declaration)
+
+
+state 95
+
+   86 rules: lexical_rule .
+
+    $default  reduce using rule 86 (rules)
+
+
+state 96
+
+   34 params: "{...}" .
+
+    $default  reduce using rule 34 (params)
+
+
+state 97
+
+   26 prologue_declaration: "%param" params .
+   33 params: params . "{...}"
+
+    "{...}"  shift, and go to state 133
+
+    $default  reduce using rule 26 (prologue_declaration)
+
+
+state 98
+
+   46 grammar_declaration: "%union" union_name . braceless
+
+    "{...}"  shift, and go to state 58
+
+    braceless  go to state 134
+
+
+state 99
+
+   45 union_name: any_id .
+
+    $default  reduce using rule 45 (union_name)
+
+
+state 100
+
+    5 prologue_declarations: prologue_declarations prologue_declaration error .
+
+    $default  reduce using rule 5 (prologue_declarations)
+
+
+state 101
+
+   56 tag.opt: "<tag>" .
+
+    $default  reduce using rule 56 (tag.opt)
+
+
+state 102
+
+   50 precedence_declaration: precedence_declarator tag.opt . symbols.prec
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    symbols.prec  go to state 135
+    symbol.prec   go to state 136
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 137
+    string_as_id  go to state 82
+
+
+state 103
+
+   76 symbol_def: "char" "integer" .
+   77           | "char" "integer" . string_as_id
+
+    "string"  shift, and go to state 77
+
+    $default  reduce using rule 76 (symbol_def)
+
+    string_as_id  go to state 138
+
+
+state 104
+
+   73 symbol_def: "char" string_as_id .
+
+    $default  reduce using rule 73 (symbol_def)
+
+
+state 105
+
+   71 symbol_def: TERM_ID "integer" .
+   74           | TERM_ID "integer" . string_as_id
+
+    "string"  shift, and go to state 77
+
+    $default  reduce using rule 71 (symbol_def)
+
+    string_as_id  go to state 139
+
+
+state 106
+
+   72 symbol_def: TERM_ID string_as_id .
+
+    $default  reduce using rule 72 (symbol_def)
+
+
+state 107
+
+   79 symbol_defs.1: symbol_defs.1 symbol_def .
+
+    $default  reduce using rule 79 (symbol_defs.1)
+
+
+state 108
+
+   49 symbol_declaration: "%type" "<tag>" symbols.1 .
+   62 symbols.1: symbols.1 . symbol
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    $default  reduce using rule 49 (symbol_declaration)
+
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 140
+    string_as_id  go to state 82
+
+
+state 109
+
+   61 symbols.1: symbol .
+
+    $default  reduce using rule 61 (symbols.1)
+
+
+state 110
+
+   66 generic_symlist_item: "<tag>" .
+
+    $default  reduce using rule 66 (generic_symlist_item)
+
+
+state 111
+
+   67 generic_symlist_item: "<*>" .
+
+    $default  reduce using rule 67 (generic_symlist_item)
+
+
+state 112
+
+   68 generic_symlist_item: "<>" .
+
+    $default  reduce using rule 68 (generic_symlist_item)
+
+
+state 113
+
+   38 grammar_declaration: "%destructor" "{...}" generic_symlist .
+   64 generic_symlist: generic_symlist . generic_symlist_item
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+    "<tag>"        shift, and go to state 110
+    "<*>"          shift, and go to state 111
+    "<>"           shift, and go to state 112
+
+    $default  reduce using rule 38 (grammar_declaration)
+
+    generic_symlist_item  go to state 141
+    any_id                go to state 79
+    id                    go to state 80
+    symbol                go to state 115
+    string_as_id          go to state 82
+
+
+state 114
+
+   63 generic_symlist: generic_symlist_item .
+
+    $default  reduce using rule 63 (generic_symlist)
+
+
+state 115
+
+   65 generic_symlist_item: symbol .
+
+    $default  reduce using rule 65 (generic_symlist_item)
+
+
+state 116
+
+   39 grammar_declaration: "%printer" "{...}" generic_symlist .
+   64 generic_symlist: generic_symlist . generic_symlist_item
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+    "<tag>"        shift, and go to state 110
+    "<*>"          shift, and go to state 111
+    "<>"           shift, and go to state 112
+
+    $default  reduce using rule 39 (grammar_declaration)
+
+    generic_symlist_item  go to state 141
+    any_id                go to state 79
+    id                    go to state 80
+    symbol                go to state 115
+    string_as_id          go to state 82
+
+
+state 117
+
+   43 grammar_declaration: "%code" any_id braceless .
+
+    $default  reduce using rule 43 (grammar_declaration)
+
+
+state 118
+
+  119 content.opt: "string" .
+
+    $default  reduce using rule 119 (content.opt)
+
+
+state 119
+
+   11 prologue_declaration: "%define" variable content.opt .
+
+    $default  reduce using rule 11 (prologue_declaration)
+
+
+state 120
+
+  118 content.opt: any_id .
+
+    $default  reduce using rule 118 (content.opt)
+
+
+state 121
+
+   10 prologue_declaration: "%convention" any_id any_id .
+
+    $default  reduce using rule 10 (prologue_declaration)
+
+
+state 122
+
+   84 rules_or_grammar_declaration: error ";" .
+
+    $default  reduce using rule 84 (rules_or_grammar_declaration)
+
+
+state 123
+
+  141 lexical_rule: "string" ":" . action ";"
+
+    "{...}"  shift, and go to state 142
+
+    action  go to state 143
+
+
+state 124
+
+  142 lexical_rule: "char" ":" . action ";"
+
+    "{...}"  shift, and go to state 142
+
+    action  go to state 144
+
+
+state 125
+
+  137 lexical_rule: TERM_ID ":" . @1 lexical_rhs ";"
+
+    $default  reduce using rule 136 (@1)
+
+    @1  go to state 145
+
+
+state 126
+
+   85 rules: NONTERM_ID ":" . rhses ";"
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhses             go to state 157
+    rhs               go to state 158
+    rhs.1             go to state 159
+    rhs.2             go to state 160
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 127
+
+  140 lexical_rule: UNDERSCORE_ID ":" . lexical_rhs_no_rules ";"
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    lexical_rhs_no_rules  go to state 186
+    lexical_primaries     go to state 187
+    lexical_term          go to state 188
+    lexical_primary       go to state 189
+    lexical_atom          go to state 190
+    predefined_atoms      go to state 191
+    char_range            go to state 192
+
+
+state 128
+
+  139 lexical_rule: "*" ":" . @2 lexical_rhs ";"
+
+    $default  reduce using rule 138 (@2)
+
+    @2  go to state 193
+
+
+state 129
+
+   83 rules_or_grammar_declaration: grammar_declaration ";" .
+
+    $default  reduce using rule 83 (rules_or_grammar_declaration)
+
+
+state 130
+
+  135 epilogue.opt: "%%" . "epilogue"
+
+    "epilogue"  shift, and go to state 194
+
+
+state 131
+
+   81 grammar: grammar rules_or_grammar_declaration .
+
+    $default  reduce using rule 81 (grammar)
+
+
+state 132
+
+    1 input: prologue_declarations "%%" grammar epilogue.opt .
+
+    $default  reduce using rule 1 (input)
+
+
+state 133
+
+   33 params: params "{...}" .
+
+    $default  reduce using rule 33 (params)
+
+
+state 134
+
+   46 grammar_declaration: "%union" union_name braceless .
+
+    $default  reduce using rule 46 (grammar_declaration)
+
+
+state 135
+
+   50 precedence_declaration: precedence_declarator tag.opt symbols.prec .
+   58 symbols.prec: symbols.prec . symbol.prec
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    $default  reduce using rule 50 (precedence_declaration)
+
+    symbol.prec   go to state 195
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 137
+    string_as_id  go to state 82
+
+
+state 136
+
+   57 symbols.prec: symbol.prec .
+
+    $default  reduce using rule 57 (symbols.prec)
+
+
+state 137
+
+   59 symbol.prec: symbol .
+   60            | symbol . "integer"
+
+    "integer"  shift, and go to state 196
+
+    $default  reduce using rule 59 (symbol.prec)
+
+
+state 138
+
+   77 symbol_def: "char" "integer" string_as_id .
+
+    $default  reduce using rule 77 (symbol_def)
+
+
+state 139
+
+   74 symbol_def: TERM_ID "integer" string_as_id .
+
+    $default  reduce using rule 74 (symbol_def)
+
+
+state 140
+
+   62 symbols.1: symbols.1 symbol .
+
+    $default  reduce using rule 62 (symbols.1)
+
+
+state 141
+
+   64 generic_symlist: generic_symlist generic_symlist_item .
+
+    $default  reduce using rule 64 (generic_symlist)
+
+
+state 142
+
+  184 action: "{...}" .
+
+    $default  reduce using rule 184 (action)
+
+
+state 143
+
+  141 lexical_rule: "string" ":" action . ";"
+
+    ";"  shift, and go to state 197
+
+
+state 144
+
+  142 lexical_rule: "char" ":" action . ";"
+
+    ";"  shift, and go to state 198
+
+
+state 145
+
+  137 lexical_rule: TERM_ID ":" @1 . lexical_rhs ";"
+
+    "_BOL"  shift, and go to state 199
+
+    $default  reduce using rule 177 (lexical_prefix)
+
+    lexical_rhs            go to state 200
+    lexical_rhs_primaries  go to state 201
+    lexical_prefix         go to state 202
+
+
+state 146
+
+  109 annotation: "%prec" . symbol
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 78
+    TERM_ID        shift, and go to state 59
+    NONTERM_ID     shift, and go to state 60
+    UNDERSCORE_ID  shift, and go to state 61
+
+    any_id        go to state 79
+    id            go to state 80
+    symbol        go to state 203
+    string_as_id  go to state 82
+
+
+state 147
+
+  110 annotation: "%dprec" . "integer"
+
+    "integer"  shift, and go to state 204
+
+
+state 148
+
+  113 annotation: "%merge" . "<tag>"
+
+    "<tag>"  shift, and go to state 205
+
+
+state 149
+
+  111 annotation: "%expect" . "integer"
+
+    "integer"  shift, and go to state 206
+
+
+state 150
+
+  112 annotation: "%expect-rr" . "integer"
+
+    "integer"  shift, and go to state 207
+
+
+state 151
+
+  114 annotation: "%expand" .
+
+    $default  reduce using rule 114 (annotation)
+
+
+state 152
+
+  130 cf_symbol: "char" .
+
+    $default  reduce using rule 130 (cf_symbol)
+
+
+state 153
+
+  121 any_id: TERM_ID .
+  128 cf_symbol: TERM_ID .
+
+    "="       reduce using rule 121 (any_id)
+    "+="      reduce using rule 121 (any_id)
+    $default  reduce using rule 128 (cf_symbol)
+
+
+state 154
+
+  122 any_id: NONTERM_ID .
+  129 cf_symbol: NONTERM_ID .
+
+    "="       reduce using rule 122 (any_id)
+    "+="      reduce using rule 122 (any_id)
+    $default  reduce using rule 129 (cf_symbol)
+
+
+state 155
+
+  123 any_id: UNDERSCORE_ID .
+  132 cf_symbol: UNDERSCORE_ID .
+
+    "="       reduce using rule 123 (any_id)
+    "+="      reduce using rule 123 (any_id)
+    $default  reduce using rule 132 (cf_symbol)
+
+
+state 156
+
+  105 rhs.atom: "(" . rhses ")"
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhses             go to state 208
+    rhs               go to state 158
+    rhs.1             go to state 159
+    rhs.2             go to state 160
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 157
+
+   85 rules: NONTERM_ID ":" rhses . ";"
+   88 rhses: rhses . "|" rhs
+
+    "|"  shift, and go to state 209
+    ";"  shift, and go to state 210
+
+
+state 158
+
+   87 rhses: rhs .
+
+    $default  reduce using rule 87 (rhses)
+
+
+state 159
+
+   90 rhs: rhs.1 .
+
+    $default  reduce using rule 90 (rhs)
+
+
+state 160
+
+   89 rhs: rhs.2 .
+
+    $default  reduce using rule 89 (rhs)
+
+
+state 161
+
+   91 rhs.1: rhs.primary . rhs.2
+   93      | rhs.primary . rhs.1
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhs.1             go to state 211
+    rhs.2             go to state 212
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 162
+
+   98 rhs.primary: rhs.atom .
+   99            | rhs.atom . "?"
+  100            | rhs.atom . "*"
+  101            | rhs.atom . "+"
+
+    "*"  shift, and go to state 213
+    "+"  shift, and go to state 214
+    "?"  shift, and go to state 215
+
+    $default  reduce using rule 98 (rhs.primary)
+
+
+state 163
+
+  102 rhs.atom: augmented_symbol .
+  103         | augmented_symbol . "^"
+  104         | augmented_symbol . "!"
+
+    "^"  shift, and go to state 216
+    "!"  shift, and go to state 217
+
+    $default  reduce using rule 102 (rhs.atom)
+
+
+state 164
+
+   95 rhs.1: annotation . rhs.1
+   97 rhs.2: annotation . rhs.2
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhs.1             go to state 218
+    rhs.2             go to state 219
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 165
+
+  107 augmented_symbol: any_id . "=" cf_symbol
+  108                 | any_id . "+=" cf_symbol
+
+    "="   shift, and go to state 220
+    "+="  shift, and go to state 221
+
+
+state 166
+
+  106 augmented_symbol: cf_symbol .
+
+    $default  reduce using rule 106 (augmented_symbol)
+
+
+state 167
+
+  131 cf_symbol: string_as_id .
+
+    $default  reduce using rule 131 (cf_symbol)
+
+
+state 168
+
+   92 rhs.1: action . rhs.2
+   94      | action . rhs.1
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhs.1             go to state 222
+    rhs.2             go to state 223
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 169
+
+  161 lexical_atom: "string" .
+
+    $default  reduce using rule 161 (lexical_atom)
+
+
+state 170
+
+  163 predefined_atoms: "_ANY" .
+
+    $default  reduce using rule 163 (predefined_atoms)
+
+
+state 171
+
+  164 predefined_atoms: "_UPPER" .
+
+    $default  reduce using rule 164 (predefined_atoms)
+
+
+state 172
+
+  165 predefined_atoms: "_LOWER" .
+
+    $default  reduce using rule 165 (predefined_atoms)
+
+
+state 173
+
+  166 predefined_atoms: "_LETTER" .
+
+    $default  reduce using rule 166 (predefined_atoms)
+
+
+state 174
+
+  167 predefined_atoms: "_DIGIT" .
+
+    $default  reduce using rule 167 (predefined_atoms)
+
+
+state 175
+
+  168 predefined_atoms: "_HEX" .
+
+    $default  reduce using rule 168 (predefined_atoms)
+
+
+state 176
+
+  169 predefined_atoms: "_ALNUM" .
+
+    $default  reduce using rule 169 (predefined_atoms)
+
+
+state 177
+
+  170 predefined_atoms: "_SPACE" .
+
+    $default  reduce using rule 170 (predefined_atoms)
+
+
+state 178
+
+  171 predefined_atoms: "_BLANK" .
+
+    $default  reduce using rule 171 (predefined_atoms)
+
+
+state 179
+
+  172 predefined_atoms: "_CONTROL" .
+
+    $default  reduce using rule 172 (predefined_atoms)
+
+
+state 180
+
+  173 predefined_atoms: "_GRAPHIC" .
+
+    $default  reduce using rule 173 (predefined_atoms)
+
+
+state 181
+
+  174 predefined_atoms: "_PRINTABLE" .
+
+    $default  reduce using rule 174 (predefined_atoms)
+
+
+state 182
+
+  175 predefined_atoms: "_PUNCTUATION" .
+
+    $default  reduce using rule 175 (predefined_atoms)
+
+
+state 183
+
+  160 lexical_atom: "char" .
+  176 char_range: "char" . ".." "char"
+
+    ".."  shift, and go to state 224
+
+    $default  reduce using rule 160 (lexical_atom)
+
+
+state 184
+
+  158 lexical_atom: UNDERSCORE_ID .
+
+    $default  reduce using rule 158 (lexical_atom)
+
+
+state 185
+
+  159 lexical_atom: "(" . lexical_rhs_no_rules ")"
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    lexical_rhs_no_rules  go to state 225
+    lexical_primaries     go to state 187
+    lexical_term          go to state 188
+    lexical_primary       go to state 189
+    lexical_atom          go to state 190
+    predefined_atoms      go to state 191
+    char_range            go to state 192
+
+
+state 186
+
+  140 lexical_rule: UNDERSCORE_ID ":" lexical_rhs_no_rules . ";"
+  146 lexical_rhs_no_rules: lexical_rhs_no_rules . "|" lexical_primaries
+
+    "|"  shift, and go to state 226
+    ";"  shift, and go to state 227
+
+
+state 187
+
+  145 lexical_rhs_no_rules: lexical_primaries .
+  150 lexical_primaries: lexical_primaries . lexical_term
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    $default  reduce using rule 145 (lexical_rhs_no_rules)
+
+    lexical_term      go to state 228
+    lexical_primary   go to state 189
+    lexical_atom      go to state 190
+    predefined_atoms  go to state 191
+    char_range        go to state 192
+
+
+state 188
+
+  149 lexical_primaries: lexical_term .
+  152 lexical_term: lexical_term . "-" lexical_primary
+
+    "-"  shift, and go to state 229
+
+    $default  reduce using rule 149 (lexical_primaries)
+
+
+state 189
+
+  151 lexical_term: lexical_primary .
+
+    $default  reduce using rule 151 (lexical_term)
+
+
+state 190
+
+  153 lexical_primary: lexical_atom .
+  155                | lexical_atom . "*"
+  156                | lexical_atom . "+"
+  157                | lexical_atom . "?"
+
+    "*"  shift, and go to state 230
+    "+"  shift, and go to state 231
+    "?"  shift, and go to state 232
+
+    $default  reduce using rule 153 (lexical_primary)
+
+
+state 191
+
+  162 lexical_atom: predefined_atoms .
+
+    $default  reduce using rule 162 (lexical_atom)
+
+
+state 192
+
+  154 lexical_primary: char_range .
+
+    $default  reduce using rule 154 (lexical_primary)
+
+
+state 193
+
+  139 lexical_rule: "*" ":" @2 . lexical_rhs ";"
+
+    "_BOL"  shift, and go to state 199
+
+    $default  reduce using rule 177 (lexical_prefix)
+
+    lexical_rhs            go to state 233
+    lexical_rhs_primaries  go to state 201
+    lexical_prefix         go to state 202
+
+
+state 194
+
+  135 epilogue.opt: "%%" "epilogue" .
+
+    $default  reduce using rule 135 (epilogue.opt)
+
+
+state 195
+
+   58 symbols.prec: symbols.prec symbol.prec .
+
+    $default  reduce using rule 58 (symbols.prec)
+
+
+state 196
+
+   60 symbol.prec: symbol "integer" .
+
+    $default  reduce using rule 60 (symbol.prec)
+
+
+state 197
+
+  141 lexical_rule: "string" ":" action ";" .
+
+    $default  reduce using rule 141 (lexical_rule)
+
+
+state 198
+
+  142 lexical_rule: "char" ":" action ";" .
+
+    $default  reduce using rule 142 (lexical_rule)
+
+
+state 199
+
+  178 lexical_prefix: "_BOL" .
+
+    $default  reduce using rule 178 (lexical_prefix)
+
+
+state 200
+
+  137 lexical_rule: TERM_ID ":" @1 lexical_rhs . ";"
+  144 lexical_rhs: lexical_rhs . "|" lexical_rhs_primaries
+
+    "|"  shift, and go to state 234
+    ";"  shift, and go to state 235
+
+
+state 201
+
+  143 lexical_rhs: lexical_rhs_primaries .
+
+    $default  reduce using rule 143 (lexical_rhs)
+
+
+state 202
+
+  147 lexical_rhs_primaries: lexical_prefix . lexical_primaries lexical_suffix bare_action.opt
+  148                      | lexical_prefix . preferred.opt "_EOF" preferred.opt bare_action.opt
+
+    "string"        shift, and go to state 169
+    "%prefer"       shift, and go to state 236
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    $default  reduce using rule 182 (preferred.opt)
+
+    lexical_primaries  go to state 237
+    lexical_term       go to state 188
+    lexical_primary    go to state 189
+    lexical_atom       go to state 190
+    predefined_atoms   go to state 191
+    char_range         go to state 192
+    preferred.opt      go to state 238
+
+
+state 203
+
+  109 annotation: "%prec" symbol .
+
+    $default  reduce using rule 109 (annotation)
+
+
+state 204
+
+  110 annotation: "%dprec" "integer" .
+
+    $default  reduce using rule 110 (annotation)
+
+
+state 205
+
+  113 annotation: "%merge" "<tag>" .
+
+    $default  reduce using rule 113 (annotation)
+
+
+state 206
+
+  111 annotation: "%expect" "integer" .
+
+    $default  reduce using rule 111 (annotation)
+
+
+state 207
+
+  112 annotation: "%expect-rr" "integer" .
+
+    $default  reduce using rule 112 (annotation)
+
+
+state 208
+
+   88 rhses: rhses . "|" rhs
+  105 rhs.atom: "(" rhses . ")"
+
+    "|"  shift, and go to state 209
+    ")"  shift, and go to state 239
+
+
+state 209
+
+   88 rhses: rhses "|" . rhs
+
+    "string"       shift, and go to state 77
+    "%prec"        shift, and go to state 146
+    "%dprec"       shift, and go to state 147
+    "%merge"       shift, and go to state 148
+    "%expect"      shift, and go to state 149
+    "%expect-rr"   shift, and go to state 150
+    "%expand"      shift, and go to state 151
+    "{...}"        shift, and go to state 142
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 153
+    NONTERM_ID     shift, and go to state 154
+    UNDERSCORE_ID  shift, and go to state 155
+    "("            shift, and go to state 156
+
+    $default  reduce using rule 96 (rhs.2)
+
+    rhs               go to state 240
+    rhs.1             go to state 159
+    rhs.2             go to state 160
+    rhs.primary       go to state 161
+    rhs.atom          go to state 162
+    augmented_symbol  go to state 163
+    annotation        go to state 164
+    any_id            go to state 165
+    cf_symbol         go to state 166
+    string_as_id      go to state 167
+    action            go to state 168
+
+
+state 210
+
+   85 rules: NONTERM_ID ":" rhses ";" .
+
+    $default  reduce using rule 85 (rules)
+
+
+state 211
+
+   93 rhs.1: rhs.primary rhs.1 .
+
+    $default  reduce using rule 93 (rhs.1)
+
+
+state 212
+
+   91 rhs.1: rhs.primary rhs.2 .
+
+    $default  reduce using rule 91 (rhs.1)
+
+
+state 213
+
+  100 rhs.primary: rhs.atom "*" .
+
+    $default  reduce using rule 100 (rhs.primary)
+
+
+state 214
+
+  101 rhs.primary: rhs.atom "+" .
+
+    $default  reduce using rule 101 (rhs.primary)
+
+
+state 215
+
+   99 rhs.primary: rhs.atom "?" .
+
+    $default  reduce using rule 99 (rhs.primary)
+
+
+state 216
+
+  103 rhs.atom: augmented_symbol "^" .
+
+    $default  reduce using rule 103 (rhs.atom)
+
+
+state 217
+
+  104 rhs.atom: augmented_symbol "!" .
+
+    $default  reduce using rule 104 (rhs.atom)
+
+
+state 218
+
+   95 rhs.1: annotation rhs.1 .
+
+    $default  reduce using rule 95 (rhs.1)
+
+
+state 219
+
+   97 rhs.2: annotation rhs.2 .
+
+    $default  reduce using rule 97 (rhs.2)
+
+
+state 220
+
+  107 augmented_symbol: any_id "=" . cf_symbol
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 241
+    NONTERM_ID     shift, and go to state 242
+    UNDERSCORE_ID  shift, and go to state 243
+
+    cf_symbol     go to state 244
+    string_as_id  go to state 167
+
+
+state 221
+
+  108 augmented_symbol: any_id "+=" . cf_symbol
+
+    "string"       shift, and go to state 77
+    "char"         shift, and go to state 152
+    TERM_ID        shift, and go to state 241
+    NONTERM_ID     shift, and go to state 242
+    UNDERSCORE_ID  shift, and go to state 243
+
+    cf_symbol     go to state 245
+    string_as_id  go to state 167
+
+
+state 222
+
+   94 rhs.1: action rhs.1 .
+
+    $default  reduce using rule 94 (rhs.1)
+
+
+state 223
+
+   92 rhs.1: action rhs.2 .
+
+    $default  reduce using rule 92 (rhs.1)
+
+
+state 224
+
+  176 char_range: "char" ".." . "char"
+
+    "char"  shift, and go to state 246
+
+
+state 225
+
+  146 lexical_rhs_no_rules: lexical_rhs_no_rules . "|" lexical_primaries
+  159 lexical_atom: "(" lexical_rhs_no_rules . ")"
+
+    "|"  shift, and go to state 226
+    ")"  shift, and go to state 247
+
+
+state 226
+
+  146 lexical_rhs_no_rules: lexical_rhs_no_rules "|" . lexical_primaries
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    lexical_primaries  go to state 248
+    lexical_term       go to state 188
+    lexical_primary    go to state 189
+    lexical_atom       go to state 190
+    predefined_atoms   go to state 191
+    char_range         go to state 192
+
+
+state 227
+
+  140 lexical_rule: UNDERSCORE_ID ":" lexical_rhs_no_rules ";" .
+
+    $default  reduce using rule 140 (lexical_rule)
+
+
+state 228
+
+  150 lexical_primaries: lexical_primaries lexical_term .
+  152 lexical_term: lexical_term . "-" lexical_primary
+
+    "-"  shift, and go to state 229
+
+    $default  reduce using rule 150 (lexical_primaries)
+
+
+state 229
+
+  152 lexical_term: lexical_term "-" . lexical_primary
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    lexical_primary   go to state 249
+    lexical_atom      go to state 190
+    predefined_atoms  go to state 191
+    char_range        go to state 192
+
+
+state 230
+
+  155 lexical_primary: lexical_atom "*" .
+
+    $default  reduce using rule 155 (lexical_primary)
+
+
+state 231
+
+  156 lexical_primary: lexical_atom "+" .
+
+    $default  reduce using rule 156 (lexical_primary)
+
+
+state 232
+
+  157 lexical_primary: lexical_atom "?" .
+
+    $default  reduce using rule 157 (lexical_primary)
+
+
+state 233
+
+  139 lexical_rule: "*" ":" @2 lexical_rhs . ";"
+  144 lexical_rhs: lexical_rhs . "|" lexical_rhs_primaries
+
+    "|"  shift, and go to state 234
+    ";"  shift, and go to state 250
+
+
+state 234
+
+  144 lexical_rhs: lexical_rhs "|" . lexical_rhs_primaries
+
+    "_BOL"  shift, and go to state 199
+
+    $default  reduce using rule 177 (lexical_prefix)
+
+    lexical_rhs_primaries  go to state 251
+    lexical_prefix         go to state 202
+
+
+state 235
+
+  137 lexical_rule: TERM_ID ":" @1 lexical_rhs ";" .
+
+    $default  reduce using rule 137 (lexical_rule)
+
+
+state 236
+
+  183 preferred.opt: "%prefer" .
+
+    $default  reduce using rule 183 (preferred.opt)
+
+
+state 237
+
+  147 lexical_rhs_primaries: lexical_prefix lexical_primaries . lexical_suffix bare_action.opt
+  150 lexical_primaries: lexical_primaries . lexical_term
+
+    "string"        shift, and go to state 169
+    "%prefer"       shift, and go to state 236
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    $default  reduce using rule 182 (preferred.opt)
+
+    lexical_term      go to state 228
+    lexical_primary   go to state 189
+    lexical_atom      go to state 190
+    predefined_atoms  go to state 191
+    char_range        go to state 192
+    lexical_suffix    go to state 252
+    preferred.opt     go to state 253
+
+
+state 238
+
+  148 lexical_rhs_primaries: lexical_prefix preferred.opt . "_EOF" preferred.opt bare_action.opt
+
+    "_EOF"  shift, and go to state 254
+
+
+state 239
+
+  105 rhs.atom: "(" rhses ")" .
+
+    $default  reduce using rule 105 (rhs.atom)
+
+
+state 240
+
+   88 rhses: rhses "|" rhs .
+
+    $default  reduce using rule 88 (rhses)
+
+
+state 241
+
+  128 cf_symbol: TERM_ID .
+
+    $default  reduce using rule 128 (cf_symbol)
+
+
+state 242
+
+  129 cf_symbol: NONTERM_ID .
+
+    $default  reduce using rule 129 (cf_symbol)
+
+
+state 243
+
+  132 cf_symbol: UNDERSCORE_ID .
+
+    $default  reduce using rule 132 (cf_symbol)
+
+
+state 244
+
+  107 augmented_symbol: any_id "=" cf_symbol .
+
+    $default  reduce using rule 107 (augmented_symbol)
+
+
+state 245
+
+  108 augmented_symbol: any_id "+=" cf_symbol .
+
+    $default  reduce using rule 108 (augmented_symbol)
+
+
+state 246
+
+  176 char_range: "char" ".." "char" .
+
+    $default  reduce using rule 176 (char_range)
+
+
+state 247
+
+  159 lexical_atom: "(" lexical_rhs_no_rules ")" .
+
+    $default  reduce using rule 159 (lexical_atom)
+
+
+state 248
+
+  146 lexical_rhs_no_rules: lexical_rhs_no_rules "|" lexical_primaries .
+  150 lexical_primaries: lexical_primaries . lexical_term
+
+    "string"        shift, and go to state 169
+    "_ANY"          shift, and go to state 170
+    "_UPPER"        shift, and go to state 171
+    "_LOWER"        shift, and go to state 172
+    "_LETTER"       shift, and go to state 173
+    "_DIGIT"        shift, and go to state 174
+    "_HEX"          shift, and go to state 175
+    "_ALNUM"        shift, and go to state 176
+    "_SPACE"        shift, and go to state 177
+    "_BLANK"        shift, and go to state 178
+    "_CONTROL"      shift, and go to state 179
+    "_GRAPHIC"      shift, and go to state 180
+    "_PRINTABLE"    shift, and go to state 181
+    "_PUNCTUATION"  shift, and go to state 182
+    "char"          shift, and go to state 183
+    UNDERSCORE_ID   shift, and go to state 184
+    "("             shift, and go to state 185
+
+    $default  reduce using rule 146 (lexical_rhs_no_rules)
+
+    lexical_term      go to state 228
+    lexical_primary   go to state 189
+    lexical_atom      go to state 190
+    predefined_atoms  go to state 191
+    char_range        go to state 192
+
+
+state 249
+
+  152 lexical_term: lexical_term "-" lexical_primary .
+
+    $default  reduce using rule 152 (lexical_term)
+
+
+state 250
+
+  139 lexical_rule: "*" ":" @2 lexical_rhs ";" .
+
+    $default  reduce using rule 139 (lexical_rule)
+
+
+state 251
+
+  144 lexical_rhs: lexical_rhs "|" lexical_rhs_primaries .
+
+    $default  reduce using rule 144 (lexical_rhs)
+
+
+state 252
+
+  147 lexical_rhs_primaries: lexical_prefix lexical_primaries lexical_suffix . bare_action.opt
+
+    "{...}"  shift, and go to state 255
+
+    $default  reduce using rule 186 (bare_action.opt)
+
+    bare_action.opt  go to state 256
+
+
+state 253
+
+  179 lexical_suffix: preferred.opt .
+  180               | preferred.opt . "_EOL" preferred.opt
+  181               | preferred.opt . "_EOF" preferred.opt
+
+    "_EOL"  shift, and go to state 257
+    "_EOF"  shift, and go to state 258
+
+    $default  reduce using rule 179 (lexical_suffix)
+
+
+state 254
+
+  148 lexical_rhs_primaries: lexical_prefix preferred.opt "_EOF" . preferred.opt bare_action.opt
+
+    "%prefer"  shift, and go to state 236
+
+    $default  reduce using rule 182 (preferred.opt)
+
+    preferred.opt  go to state 259
+
+
+state 255
+
+  185 bare_action.opt: "{...}" .
+
+    $default  reduce using rule 185 (bare_action.opt)
+
+
+state 256
+
+  147 lexical_rhs_primaries: lexical_prefix lexical_primaries lexical_suffix bare_action.opt .
+
+    $default  reduce using rule 147 (lexical_rhs_primaries)
+
+
+state 257
+
+  180 lexical_suffix: preferred.opt "_EOL" . preferred.opt
+
+    "%prefer"  shift, and go to state 236
+
+    $default  reduce using rule 182 (preferred.opt)
+
+    preferred.opt  go to state 260
+
+
+state 258
+
+  181 lexical_suffix: preferred.opt "_EOF" . preferred.opt
+
+    "%prefer"  shift, and go to state 236
+
+    $default  reduce using rule 182 (preferred.opt)
+
+    preferred.opt  go to state 261
+
+
+state 259
+
+  148 lexical_rhs_primaries: lexical_prefix preferred.opt "_EOF" preferred.opt . bare_action.opt
+
+    "{...}"  shift, and go to state 255
+
+    $default  reduce using rule 186 (bare_action.opt)
+
+    bare_action.opt  go to state 262
+
+
+state 260
+
+  180 lexical_suffix: preferred.opt "_EOL" preferred.opt .
+
+    $default  reduce using rule 180 (lexical_suffix)
+
+
+state 261
+
+  181 lexical_suffix: preferred.opt "_EOF" preferred.opt .
+
+    $default  reduce using rule 181 (lexical_suffix)
+
+
+state 262
+
+  148 lexical_rhs_primaries: lexical_prefix preferred.opt "_EOF" preferred.opt bare_action.opt .
+
+    $default  reduce using rule 148 (lexical_rhs_primaries)

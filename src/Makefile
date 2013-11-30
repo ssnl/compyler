@@ -15,13 +15,15 @@
 ARCH := $(shell uname -m)
 OS := $(shell uname)
 
-ifndef LIBHOME
-ifdef MASTERDIR
-   LIBHOME := $(MASTERDIR)/pkg/$(ARCH)/horn2
-else
-   LIBHOME := $(HOME)/pkg/$(ARCH)/horn2
-endif
-endif
+# ifndef LIBHOME
+# ifdef MASTERDIR
+#    LIBHOME := $(MASTERDIR)/pkg/$(ARCH)/horn2
+# else
+#    LIBHOME := $(HOME)/pkg/$(ARCH)/horn2
+# endif
+# endif
+
+LIBHOME = ../root
 
 HORN = $(LIBHOME)/bin/horn
 

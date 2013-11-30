@@ -10,8 +10,8 @@ VERSION = "Horn parser generator, version 2.3"
 
 # Installation parameters
 
-datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/data"
-bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/bin"
+datadir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/data"
+bindir = "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/bin"
 
 def Usage():
     print >>sys.stderr, '''\
@@ -78,7 +78,7 @@ except GetoptError:
     Usage()
 
 hornpp = join(bindir, 'hornpp')
-bison = "/usr/bin/bison"
+bison = "/usr/local/Cellar/bison/3.0/bin/bison"
 flex = "/usr/bin/flex"
 
 if output_file:

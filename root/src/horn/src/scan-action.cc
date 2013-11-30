@@ -66,6 +66,7 @@ typedef int16_t flex_int16_t;
 typedef uint16_t flex_uint16_t;
 typedef int32_t flex_int32_t;
 typedef uint32_t flex_uint32_t;
+typedef uint64_t flex_uint64_t;
 #else
 typedef signed char flex_int8_t;
 typedef short int flex_int16_t;
@@ -172,7 +173,12 @@ typedef unsigned int flex_uint32_t;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
 
-extern int scan_act_leng;
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
+
+extern yy_size_t scan_act_leng;
 
 extern FILE *scan_act_in, *scan_act_out;
 
@@ -198,11 +204,6 @@ extern FILE *scan_act_in, *scan_act_out;
 
 #define unput(c) yyunput( c, (yytext_ptr)  )
 
-#ifndef YY_TYPEDEF_YY_SIZE_T
-#define YY_TYPEDEF_YY_SIZE_T
-typedef size_t yy_size_t;
-#endif
-
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
 struct yy_buffer_state
@@ -220,7 +221,7 @@ struct yy_buffer_state
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
 	 */
-	int yy_n_chars;
+	yy_size_t yy_n_chars;
 
 	/* Whether we "own" the buffer - i.e., we know we created it,
 	 * and can realloc() it to grow it, and should free() it to
@@ -290,8 +291,8 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 
 /* yy_hold_char holds the character lost when scan_act_text is formed. */
 static char yy_hold_char;
-static int yy_n_chars;		/* number of characters read into yy_ch_buf */
-int scan_act_leng;
+static yy_size_t yy_n_chars;		/* number of characters read into yy_ch_buf */
+yy_size_t scan_act_leng;
 
 /* Points to current character in buffer. */
 static char *yy_c_buf_p = (char *) 0;
@@ -319,7 +320,7 @@ static void scan_act__init_buffer (YY_BUFFER_STATE b,FILE *file  );
 
 YY_BUFFER_STATE scan_act__scan_buffer (char *base,yy_size_t size  );
 YY_BUFFER_STATE scan_act__scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE scan_act__scan_bytes (yyconst char *bytes,int len  );
+YY_BUFFER_STATE scan_act__scan_bytes (yyconst char *bytes,yy_size_t len  );
 
 void *scan_act_alloc (yy_size_t  );
 void *scan_act_realloc (void *,yy_size_t  );
@@ -377,7 +378,7 @@ static void yy_fatal_error (yyconst char msg[]  );
  */
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
-	scan_act_leng = (size_t) (yy_cp - yy_bp); \
+	scan_act_leng = (yy_size_t) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
@@ -534,17 +535,17 @@ int scan_act__flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *scan_act_text;
-#line 1 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 1 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 /* -*- c-file-style: "stroustrup"; -*- */
 #define YY_NO_INPUT 1
-#line 7 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 7 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 #include "horn.h"
 
 using namespace std;
 
 static vector<lstring>* refs;
 
-#line 548 "scan-action.cc"
+#line 549 "scan-action.cc"
 
 #define INITIAL 0
 
@@ -583,7 +584,7 @@ FILE *scan_act_get_out (void );
 
 void scan_act_set_out  (FILE * out_str  );
 
-int scan_act_get_leng (void );
+yy_size_t scan_act_get_leng (void );
 
 char *scan_act_get_text (void );
 
@@ -642,7 +643,7 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		int n; \
+		yy_size_t n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( scan_act_in )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -724,11 +725,11 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 23 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 23 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 
 
 
-#line 732 "scan-action.cc"
+#line 733 "scan-action.cc"
 
 	if ( !(yy_init) )
 		{
@@ -808,46 +809,46 @@ do_action:	/* This label is used only to access EOF actions. */
 			goto yy_find_action;
 
 case 1:
-#line 27 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 27 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 2:
-#line 28 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 28 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 3:
-#line 29 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 29 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 4:
 YY_RULE_SETUP
-#line 29 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 29 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 { refs->push_back (lstring (scan_act_text, scan_act_leng)); }
 	YY_BREAK
 case 5:
-#line 32 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 32 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 6:
 YY_RULE_SETUP
-#line 32 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 32 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 { 
                                   complain ("'%s' is not allowed in this "
                                             "dialect.", scan_act_text); }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
-#line 37 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 37 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 8:
 /* rule 8 can match eol */
-#line 38 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 38 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 9:
 /* rule 9 can match eol */
-#line 39 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 39 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 39 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 39 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 { }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 41 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 41 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 851 "scan-action.cc"
+#line 852 "scan-action.cc"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1034,7 +1035,7 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			int num_to_read =
+			yy_size_t num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
@@ -1048,7 +1049,7 @@ static int yy_get_next_buffer (void)
 
 			if ( b->yy_is_our_buffer )
 				{
-				int new_size = b->yy_buf_size * 2;
+				yy_size_t new_size = b->yy_buf_size * 2;
 
 				if ( new_size <= 0 )
 					b->yy_buf_size += b->yy_buf_size / 8;
@@ -1079,7 +1080,7 @@ static int yy_get_next_buffer (void)
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			(yy_n_chars), (size_t) num_to_read );
+			(yy_n_chars), num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
 		}
@@ -1201,7 +1202,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			int offset = (yy_c_buf_p) - (yytext_ptr);
+			yy_size_t offset = (yy_c_buf_p) - (yytext_ptr);
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -1225,7 +1226,7 @@ static int yy_get_next_buffer (void)
 				case EOB_ACT_END_OF_FILE:
 					{
 					if ( scan_act_wrap( ) )
-						return EOF;
+						return 0;
 
 					if ( ! (yy_did_buffer_switch_on_eof) )
 						YY_NEW_FILE;
@@ -1473,7 +1474,7 @@ void scan_act_pop_buffer_state (void)
  */
 static void scan_act_ensure_buffer_stack (void)
 {
-	int num_to_alloc;
+	yy_size_t num_to_alloc;
     
 	if (!(yy_buffer_stack)) {
 
@@ -1570,12 +1571,11 @@ YY_BUFFER_STATE scan_act__scan_string (yyconst char * yystr )
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE scan_act__scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
+YY_BUFFER_STATE scan_act__scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
-	yy_size_t n;
-	int i;
+	yy_size_t n, i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
 	n = _yybytes_len + 2;
@@ -1657,7 +1657,7 @@ FILE *scan_act_get_out  (void)
 /** Get the length of the current token.
  * 
  */
-int scan_act_get_leng  (void)
+yy_size_t scan_act_get_leng  (void)
 {
         return scan_act_leng;
 }
@@ -1805,7 +1805,7 @@ void scan_act_free (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 41 "/home/cs/hilfingr/work/grammars/horn/scan-action.l"
+#line 41 "/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/scan-action.l"
 
 
 

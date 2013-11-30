@@ -1,7 +1,7 @@
-prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root
-exec_prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/../../../root
-top_builddir=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/bdw-gc/libatomic_ops
-top_srcdir=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/tools/horn/src/bdw-gc/libatomic_ops
+prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
+exec_prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
+top_builddir=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/bdw-gc/libatomic_ops
+top_srcdir=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root/src/horn/src/bdw-gc/libatomic_ops
 
 Name: The atomic_ops library (uninstalled)
 Description: Atomic memory update operations
