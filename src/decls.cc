@@ -57,12 +57,12 @@ Decl::Decl (const gcstring& name, Decl* container, Environ* members)
     /* Allow name.c_str() to be used in the future without reallocation. */
     name.c_str ();
 }
-        
-/* Print THIS on OUT. */ 
-void 
+
+/* Print THIS on OUT. */
+void
 Decl::print (ostream& out) const
 {
-    out << "(" << declTypeName () << " " << getIndex () 
+    out << "(" << declTypeName () << " " << getIndex ()
 	<< " " << getName () << " ";
     printContainer (out);
     printPosition (out);
@@ -82,7 +82,7 @@ Decl::print () const
 void
 Decl::printContainer (ostream& out) const
 {
-    if (getContainer () != NULL) 
+    if (getContainer () != NULL)
         out << getContainer ()->getIndex () << " ";
     else
         out << "-1 ";
@@ -111,7 +111,7 @@ void
 Decl::printTypeParams (ostream& out) const {
 }
 
-Type_Ptr 
+Type_Ptr
 Decl::getType () const
 {
     return NULL;
@@ -234,7 +234,7 @@ Decl::addParamDecl (AST_Ptr id, int k) {
     addMember (result);
     return result;
 }
-    
+
 
 Decl*
 Decl::addTypeVarDecl (AST_Ptr id) {
@@ -297,7 +297,7 @@ Decl::declTypeName () const
 class TypedDecl : public Decl {
 protected:
     TypedDecl (const gcstring& name, Decl* container, AST_Ptr type,
-	       Environ* members = NULL) 
+	       Environ* members = NULL)
         :  Decl (name, container, members),
            _type (type == NULL ? NULL : type->asType ()) {
     }
@@ -502,10 +502,6 @@ protected:
 	return true;
     }
 
-private:
-
-    mutable Type_Ptr _selectedType;
-
 };
 
 Decl*
@@ -702,7 +698,7 @@ setBuiltinDecl (Decl* decl)
     BuiltinMap::const_iterator entryPair = builtinMap.find (decl->getName ());
     if (entryPair != builtinMap.end ()) {
         if (*entryPair->second != NULL) {
-            throw logic_error (string("multiple definition of builtin class ") 
+            throw logic_error (string("multiple definition of builtin class ")
                                + decl->getName ().c_str());
         }
         *entryPair->second = decl;
