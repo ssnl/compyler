@@ -1,0 +1,22 @@
+import sys
+
+def toint(x):
+    return int(x)
+
+def tostr(x):
+    return str(x)
+
+def close(f):
+    f.close()
+
+def readline(f):
+    return f.readline()
+
+def read(f):
+    return f.read()
+
+def truth(x):
+    return bool(x)
+
+
+

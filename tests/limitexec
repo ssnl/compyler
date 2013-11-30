@@ -1,0 +1,7 @@
+#!/bin/sh 
+
+ulimit -f 64000
+ulimit -t 40
+ulimit -d 200000
+
+exec "$@"

@@ -30,9 +30,6 @@ check1:
 check2:
 	$(MAKE) -C tests APYC=$(APYC) check2
 
-check3:
-	$(MAKE) -C tests APYC=$(APYC) check3
-
 clean:
 	$(RM) *~ apyc
 	$(MAKE) -C src clean
