@@ -2,8 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Change prompt
+# export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h$ \[\033[33;1m\]"
+export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h\[\033[m\]\$ "
+
 # Change this directory to home
-export HOME=$DIR
+# export HOME=$DIR
 
 # Add local bin
 export PATH=$DIR/root/bin/:$PATH
