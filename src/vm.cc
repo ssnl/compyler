@@ -147,4 +147,8 @@ VirtualMachine::placeLabel (VMLabel label)
 void
 VirtualMachine::emitRuntime () 
 {
+    out << "#include \"runtime.h\"\n"
+        << "int main(int argc, char* argv[]) {\n"
+        << "    cout << \"Hello, world!\" << endl;\n"
+        << "}\n";
 }
