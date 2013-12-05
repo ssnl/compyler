@@ -1,6 +1,5 @@
 #!/bin/bash
 
+CURDIR=$(pwd)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-export HOME="$DIR/../../"
-python $DIR/output-cleaner.py $*
+cd $CURDIR && python ${DIR}/output-cleaner.py $*

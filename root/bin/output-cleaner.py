@@ -1,10 +1,13 @@
 
 from sys import argv
 
-'''
-Cleans the prelude AST and Decls from the output of apyc, printing
-the cleaned AST.
-'''
+def Usage():
+	pass
+
+"""
+Cleans the prelude AST and Decls from the output of apyc, printing the cleaned
+AST.
+"""
 def outputCleanedAST(fname):
 	inp = open(fname)
 	raw = inp.read().split("\n")
@@ -40,8 +43,10 @@ def outputCleanedSource(fname):
 	print "     prelude source "
 	print "     -------------- "
 	print "          ..."
-	for line in raw:
+	for line in raw[:-1]:
 		print line
+	if raw[-1]:
+		print raw[-1],
 
 def indexOf(lines,phrases):
 	c = len(phrases)
@@ -56,3 +61,5 @@ if __name__ == "__main__":
 			outputCleanedAST(argv[2])
 		elif argv[1] == "-p":
 			outputCleanedSource(argv[2])
+	else:
+		Usage()
