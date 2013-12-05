@@ -20,8 +20,14 @@ static const int COMPLE = 7;
 static const int COMPGE = 8;
 static const int COMPE = 9;
 
+/** Constants corresponding to runtime data structure variable names. */
+static const gcstring STACK = "STACK";
+static const gcstring HEAP = "HEAP";
+static const gcstring SM = "SM";
+static const gcstring CURR_FRAME = "curr_frame";
+
 VirtualMachine::VirtualMachine (ostream& _out)
-	: out(_out)
+    : out(_out)
 {
 }
 
@@ -43,7 +49,7 @@ VirtualMachine::emitEpilogue ()
 Label
 VirtualMachine::newLabel ()
 {
-	return NULL;
+    return NULL;
 }
 
 void
@@ -54,5 +60,8 @@ VirtualMachine::placeLabel (Label label)
 void
 VirtualMachine::emitRuntime ()
 {
-
+    out << "#include \"runtime.h\"\n"
+        << "int main(int argc, char* argv[]) {\n"
+        << "    cout << \"Hello, world!\" << endl;\n"
+        << "}\n";
 }

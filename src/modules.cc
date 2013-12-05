@@ -15,6 +15,7 @@ static GCINIT _gcdummy;
 
 const Environ* outerEnviron;
 Decl* mainModule;
+VirtualMachine* VM;
 
 /*****   MODULE    *****/
 
@@ -39,10 +40,8 @@ protected:
     /** Top-level code generation routine.  */
     // This is a placeholder!  Replace it.
     void outerCodeGen (ostream& out) {
-        out << "#include \"runtime.h\"\n"
-            << "int main(int argc, char* argv[]) {\n"
-            << "    cout << \"Hello, world!\" << endl;\n"
-            << "}\n";
+        VM = new VirtualMachine(out);
+        VM->emitRuntime();
     }
 
     NODE_CONSTRUCTORS (Module_AST, AST_Tree);

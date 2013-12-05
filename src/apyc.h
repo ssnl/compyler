@@ -373,4 +373,6 @@ private:
 
 };
 
+extern VirtualMachine* VM;
+
 #endif

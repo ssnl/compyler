@@ -10,5 +10,5 @@ using namespace std;
 
 const vector<Frame> STACK;
 const vector<void*> HEAP;
-const vector<void*> VM;
+const vector<void*> SM;
 Frame currFrame;

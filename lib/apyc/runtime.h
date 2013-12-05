@@ -37,7 +37,7 @@ typedef struct {
 
 extern const vector<Frame> STACK;
 extern const vector<void*> HEAP;
-extern const vector<void*> VM;
+extern const vector<void*> SM;
 extern const Frame curr_frame;
 
 #endif
