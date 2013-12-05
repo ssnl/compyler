@@ -1,3 +1,9 @@
+# Ignore generated binaries
+root/bin/*
+root/include/*
+root/lib/*
+root/share/*
+
 # System Files
 *.DS_Store
 
