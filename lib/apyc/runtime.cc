@@ -4,10 +4,11 @@
 
 /* Authors:  YOUR NAMES HERE */
 
-// OTHERS?
-
 #include "runtime.h"
 
 using namespace std;
 
-// FILL IN
+const vector<Frame> STACK;
+const vector<void*> HEAP;
+const vector<void*> VM;
+Frame currFrame;
