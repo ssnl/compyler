@@ -45,7 +45,7 @@ CXXFLAGS = -g -Wall $(INCLUDES)
 
 # List of normal C++ sources.  Add any new ones here
 SRCS = apyc.cc ast.cc decls.cc environ.cc exprs.cc modules.cc \
-       stmts.cc tokens.cc types.cc
+       stmts.cc tokens.cc types.cc virtualmachine.cc
 
 # C++ top-level (i.e., as opposed to #included) sources that are generated
 # by other rules in this Makefile.
