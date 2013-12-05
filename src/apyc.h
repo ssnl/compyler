@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <iostream>
 #include "ast.h"
 
 class Decl;
@@ -334,5 +335,40 @@ extern Decl* mainModule;
 /** A constant empty environment. */
 extern const Environ* theEmptyEnviron;
 
-#endif
+typedef gcstring Label;
 
+class VirtualMachine : public gc {
+public:
+
+    VirtualMachine (std::ostream& _out);
+
+    /** Outputs an instruction as code to my output stream. */
+    void emit (int type, void* arg);
+
+    /** Outputs code to handle the start of a function call into my output 
+     *  stream. */
+    void emitPrologue ();
+
+    /** Outputs code to handle the end of a function call into my output 
+     *  stream. */
+    void emitEpilogue ();
+
+    /** Creates and returns new code label. */
+    Label newLabel ();
+
+    /** Given a code label, inserts the label into the code in the output
+      * stream. */
+    void placeLabel (Label label);
+
+    /** Outputs datastructures required by the "compiled" C++ program at
+      * runtime. */
+    void emitRuntime ();
+
+private:
+
+    std::ostream& out;
+    int numlabels;
+
+};
+
+#endif
