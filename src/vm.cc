@@ -8,18 +8,17 @@
 
 using namespace std;
 
-/** Virtual machine flags indicating which types of commands to emit. */
-#define CALL 0;
-#define GOTO 1;
-#define GTZ 2;
-#define PUSH 3;
-#define MOVE 4;
-#define COMPL 5;
-#define COMPG 6;
-#define COMPLE 7;
-#define COMPGE 8;
-#define COMPE 9;
-
+/** Virtual machine instructions indicating which of command to emit. */
+static const int CALL = 0;
+static const int GOTO = 1;
+static const int GTZ = 2;
+static const int PUSH = 3;
+static const int MOVE = 4;
+static const int COMPL = 5;
+static const int COMPG = 6;
+static const int COMPLE = 7;
+static const int COMPGE = 8;
+static const int COMPE = 9;
 
 VirtualMachine::VirtualMachine (ostream& _out)
 	: out(_out)
@@ -27,32 +26,33 @@ VirtualMachine::VirtualMachine (ostream& _out)
 }
 
 void
-VirtualMachine::emit (int type, void* arg) 
+VirtualMachine::emit (Instruction instr, void* arg)
 {
 }
 
 void
-VirtualMachine::emitPrologue () 
+VirtualMachine::emitPrologue ()
 {
 }
 
 void
-VirtualMachine::emitEpilogue () 
+VirtualMachine::emitEpilogue ()
 {
 }
 
 Label
-VirtualMachine::newLabel () 
+VirtualMachine::newLabel ()
 {
 	return NULL;
 }
 
 void
-VirtualMachine::placeLabel (Label label) 
+VirtualMachine::placeLabel (Label label)
 {
 }
 
 void
-VirtualMachine::emitRuntime () 
+VirtualMachine::emitRuntime ()
 {
+
 }

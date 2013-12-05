@@ -21,7 +21,7 @@ class Environ;
 class GCINIT {
 public:
     GCINIT() {
-        if (!initialized) 
+        if (!initialized)
             GC_init();
         initialized = true;
     }
@@ -57,7 +57,7 @@ extern int numErrors ();
 
 
 /* Defined by Horn framework. */
-extern 
+extern
 gcstring yyprinted_location (const char* loc);
 
 extern void add_source_file (const gcstring& name);
@@ -73,7 +73,7 @@ extern int maxPhase;
 
 /* Decls */
 
-/** A declaration node, containing semantic information about a 
+/** A declaration node, containing semantic information about a
  *  program entity.  Subtypes of Decl refer to local variables,
  *  parameters, global variables, defined functions, methods, constants,
  *  modules, and classes. */
@@ -81,7 +81,7 @@ class Decl : public gc {
 public:
 
     Decl (const gcstring& name, Decl* container, Environ* members = NULL);
-        
+
     /** My index value (if I appear explicitly), and otherwise -1 to
      *  indicate that I am unindexed. */
     int getIndex () const { return _index; }
@@ -239,7 +239,7 @@ extern Decl* makeVarDecl (const gcstring& name,
  *  and of type TYPE. */
 extern Decl* makeParamDecl (const gcstring& name,
                             Decl* func, int k, AST_Ptr type);
-/** Declaration of an instance variable named NAME of type TYPE 
+/** Declaration of an instance variable named NAME of type TYPE
  *  in class CLAZZ. */
 extern Decl* makeInstanceDecl (const gcstring& name, Decl* clazz,
                                AST_Ptr type);
@@ -289,7 +289,7 @@ public:
     /** An initialiy empty environment enclosed in ENCLOSING. */
     Environ (const Environ* enclosing);
 
-    /** An environment initialized to the (immediate) contents of 
+    /** An environment initialized to the (immediate) contents of
      *  ENVIRON0, enclosed in enclosing. */
     Environ (const Environ* environ0, const Environ* enclosing);
 
@@ -335,6 +335,8 @@ extern Decl* mainModule;
 /** A constant empty environment. */
 extern const Environ* theEmptyEnviron;
 
+/* Virtual Machine */
+
 typedef gcstring Label;
 
 class VirtualMachine : public gc {
@@ -345,11 +347,11 @@ public:
     /** Outputs an instruction as code to my output stream. */
     void emit (int type, void* arg);
 
-    /** Outputs code to handle the start of a function call into my output 
+    /** Outputs code to handle the start of a function call into my output
      *  stream. */
     void emitPrologue ();
 
-    /** Outputs code to handle the end of a function call into my output 
+    /** Outputs code to handle the end of a function call into my output
      *  stream. */
     void emitEpilogue ();
 
