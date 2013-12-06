@@ -38,7 +38,6 @@ VirtualMachine::emit (int instr, void* arg)
 	// out <<  << endl;
 	switch (type) {
 
-		/** CALL **/
 		case CALL:
 			numRetLabels++;
 			out << "CallDesc* func = (CallDesc*) STACK.pop();" << endl;
@@ -47,26 +46,22 @@ VirtualMachine::emit (int instr, void* arg)
 			out << "__R__" + numRetLabels << ":" << endl;
 			break;
 
-		/** GOTO **/
 		// arg: the name of the label to jump to
 		case GOTO:
 			out << "goto " << arg << ";" << endl;
 			break;
 
-		/** GTZ **/
 		// arg: the name of the label to jump to
 		case GTZ:
 			out << "cmp = (int) STACK.pop();" << endl;
 			out << "if (cmp==0) goto " << arg << ";" << endl;
 			break;
 
-		/** PUSH **/
 		// arg: the data to push onto the stack
 		case PUSH:
 			out << "STACK.push(" << arg << ");" << endl;
 			break;
 
-		/** MOVE **/
 		// arg: gcstring denoting the type of the value to be assigned
 		case MOVE:
 			// we'll have to use vartype at some point, I think
@@ -76,42 +71,36 @@ VirtualMachine::emit (int instr, void* arg)
 			out << "*(dst) = ((itm&1==1) ? itm>>1 : itm);" << endl;
 			break;
 
-		/** COMPL **/
 		case COMPL:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
 			out << "STACK.push((cmp1 < cmp2) ? 1 : 0);" << endl;
 			break;
 
-		/** COMPG **/
 		case COMPG:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
 			out << "STACK.push((cmp1 > cmp2) ? 1 : 0);" << endl;
 			break;
 
-		/** COMPLE **/
 		case COMPLE:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
 			out << "STACK.push((cmp1 <= cmp2) ? 1 : 0);" << endl;
 			break;
 
-		/** COMPGE **/
 		case COMPGE:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
 			out << "STACK.push((cmp1 >= cmp2) ? 1 : 0);" << endl;
 			break;
 
-		/** COMPE **/
 		case COMPE:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
 			out << "STACK.push((cmp1 == cmp2) ? 1 : 0);" << endl;
 			break;
 
-		/** COMPNE **/
 		case COMPNE:
 			out << "cmp1 = (int) STACK.pop();" << endl;
 			out << "cmp2 = (int) STACK.pop();" << endl;
