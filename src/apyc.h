@@ -365,7 +365,7 @@ extern const Environ* theEmptyEnviron;
 
 /* Virtual Machine */
 
-typedef gcstring Label;
+typedef gcstring VMLabel;
 
 class VirtualMachine : public gc {
 public:
@@ -384,11 +384,11 @@ public:
     void emitEpilogue ();
 
     /** Creates and returns new code label. */
-    Label newLabel ();
+    VMLabel newLabel ();
 
     /** Given a code label, inserts the label into the code in the output
       * stream. */
-    void placeLabel (Label label);
+    void placeLabel (VMLabel label);
 
 private:
 
