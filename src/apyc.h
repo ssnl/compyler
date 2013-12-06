@@ -393,7 +393,8 @@ public:
 private:
 
     std::ostream& out;
-    int numlabels;
+    int numLabels;
+    int numRetLabels;
 
 };
 
