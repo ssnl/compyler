@@ -11,6 +11,9 @@
 #include <iostream>
 #include <vector>
 
+// To use pow()
+#include <math.h>
+
 using namespace std;
 
 /* Runtime Data Structures */
@@ -38,5 +41,52 @@ extern const vector<Frame> STACK;
 extern const vector<void*> HEAP;
 extern const vector<void*> SM;
 extern const Frame cf;
+
+// Type int and misc
+
+void __donotcall__(void* x);
+
+int __None__();
+
+bool __truth__(bool x);
+
+bool __not__(bool x);
+
+// __xrange__
+
+// __len__range__
+
+int __add__int__(int x, int y);
+
+int __sub__int__(int x, int y);
+
+int __mul__int__(int x, int y);
+
+int __floordiv__int__(int x, int y);
+
+int __mod__int__(int x, int y);
+
+int __pow__int__(int x, int y);
+
+int __neg__int__(int x);
+
+int __pos__int__(int x);
+
+bool __lt__int__(int x, int y);
+
+bool __gt__int__(int x, int y);
+
+bool __le__int__(int x, int y);
+
+bool __ge__int__(int x, int y);
+
+bool __eq__int__(int x, int y);
+
+bool __ne__int__(int x, int y);
+
+int __toint__str__(string x);
+
+
+// Type string
 
 #endif
