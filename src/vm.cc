@@ -26,7 +26,7 @@ VirtualMachine::VirtualMachine (ostream& _out)
 }
 
 void
-VirtualMachine::emit (Instruction instr, void* arg)
+VirtualMachine::emit (int instr, void* arg)
 {
 }
 

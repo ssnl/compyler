@@ -1,0 +1,10 @@
+prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
+exec_prefix=/Users/impguard/Dropbox/Documents/college/fa2013/cs164/proj/root
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: Boehm-Demers-Weiser Conservative Garbage Collector
+Description: A garbage collector for C and C++
+Version: 7.2
+Libs: -L${libdir} -lgc
+Cflags: -I${includedir}
