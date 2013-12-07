@@ -50,7 +50,7 @@ static struct { const char* name; Decl** var; } builtinInit[] = {
 static gcvector<Decl*> allDecls;
 
 Decl::Decl (const gcstring& name, Decl* container, Environ* members)
-    : _frozen (true), _name (name), _container (container),
+    : _frozen (true), _depth(-1), _name (name), _container (container),
       _members (members) {
     _index = allDecls.size ();
     allDecls.push_back (this);

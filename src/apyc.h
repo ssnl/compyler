@@ -88,6 +88,13 @@ public:
 
     const gcstring& getName () const { return _name; }
 
+    /** My depth value indicating my frame depth, and otherwise -1 to
+     *  indicate that I have no depth. */
+    int getDepth () const { return _depth; }
+
+    /** Set my depth to DEPTH. */
+    void setDepth (int depth) { _depth = depth; }
+
     /** Print THIS on OUT. */
     virtual void print(std::ostream& out) const;
 
@@ -224,6 +231,7 @@ protected:
 
 private:
     int _index;
+    int _depth;
     const gcstring _name;
     Decl* _container;
     Environ* _members;
@@ -361,10 +369,6 @@ public:
     /** Given a code label, inserts the label into the code in the output
       * stream. */
     void placeLabel (Label label);
-
-    /** Outputs data structures required by the "compiled" C++ program at
-      * runtime. */
-    void emitRuntime ();
 
 private:
 
