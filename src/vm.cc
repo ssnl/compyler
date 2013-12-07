@@ -38,7 +38,10 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (int instr, void* arg)
 {
-	switch (type) {
+
+    gcstring s1, s2, rlabel;
+
+	switch (instr) {
 
 		// e.g. call = (FuncDesc*) SM.pop();
 		//		cf = call.frame;
@@ -48,7 +51,7 @@ VirtualMachine::emit (int instr, void* arg)
 		case CALL:
 			numRetLabels++;
             emitComment("calling function");
-			gcstring rlabel = "__R__" + numRetLabels;
+		    rlabel = "__R__" + numRetLabels;
 			out << "    call = (FuncDesc*) SM.pop();" << endl;
 			out << "    cf = call.frame;" << endl;
 			out << "    RETURN_ADDR.push(&&" << rlabel << ");" << endl;
@@ -59,7 +62,7 @@ VirtualMachine::emit (int instr, void* arg)
 		// arg: the name of the label to jump to
 		// e.g. goto __L__16;
 		case GOTO:
-            emitComment("jumping to label " + arg);
+            emitComment("jumping to label " + *((gcstring*)arg));
 			out << "    goto " << arg << ";" << endl;
 			break;
 
@@ -67,7 +70,7 @@ VirtualMachine::emit (int instr, void* arg)
 		// e.g. cmp = (int*) SM.pop();
 		//		if (*(cmp)==0) goto __L__16;
 		case GTZ:
-            emitComment("jumping to label " + arg + " if top is 0");
+            emitComment("jumping to label " + *((gcstring*)arg) + " if top is 0");
 			out << "    cmp = (int*) SM.pop();" << endl;
 			out << "    if (*(cmp)==0) goto " << arg << ";" << endl;
 			break;
@@ -75,12 +78,13 @@ VirtualMachine::emit (int instr, void* arg)
 		// arg: the data to push onto the stack. If 0, pushes the top of HEAP
 		// e.g. SM.push(&cf.x);
 		case PUSH:
-			if arg == 0:
+			if (arg == 0) {
 				emitComment("pushing first in HEAP onto SM");
 				out << "    SM.push(HEAP[HEAP.size()-1]);" << endl;
-			else:
-				emitComment("pushing " + arg + " onto SM");
+			} else {
+				emitComment("pushing " + *((gcstring*)arg) + " onto SM");
 				out << "    SM.push(&(" << arg << "));" << endl;
+            }
 			break;
 
 		// arg: gcstring denoting the type of the value to be assigned
@@ -100,7 +104,7 @@ VirtualMachine::emit (int instr, void* arg)
 		// e.g. tmp_alloc = new $int(5);
 		// 		HEAP.push(&tmp_alloc);
 		case ALLOC:
-			emitComment("allocating memory for: " + arg);
+			emitComment("allocating memory for: " + *((gcstring*)arg));
 			out << "    tmp_alloc = " << arg << ";" << endl;
 			out << "    HEAP.push(&tmp_alloc);" << endl;
 			break;
@@ -109,8 +113,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (<)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << "<" << s2 << "? 1 : 0);" << endl;
 			break;
 
@@ -118,8 +122,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (>)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << ">" << s2 << "? 1 : 0);" << endl;
 			break;
 
@@ -127,8 +131,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (<=)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << "<=" << s2 << "? 1 : 0);" << endl;
 			break;
 
@@ -136,8 +140,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (>=)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << ">=" << s2 << "? 1 : 0);" << endl;
 			break;
 
@@ -145,8 +149,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (==)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << "==" << s2 << "? 1 : 0);" << endl;
 			break;
 
@@ -154,8 +158,8 @@ VirtualMachine::emit (int instr, void* arg)
 			emitComment("comparing (!=)");
 			out << "    cmp1 = ($int*) SM.pop();" << endl;
 			out << "    cmp2 = ($int*) SM.pop();" << endl;
-			gcstring s1 = " *(cmp1).value() ";
-			gcstring s2 = " *(cmp2).value() ";
+		    s1 = " *(cmp1).value() ";
+		    s2 = " *(cmp2).value() ";
 			out << "    SM.push((" << s1 << "!=" << s2 << "? 1 : 0);" << endl;
 			break;
 	}
@@ -198,5 +202,7 @@ VirtualMachine::emitRuntime ()
 void
 VirtualMachine::emitComment (gcstring s)
 {
-	out << "/* " << s << " */" << endl;
+    if (DEBUG_OUT) {
+	   out << "/* " << s << " */" << endl;
+    }
 }
