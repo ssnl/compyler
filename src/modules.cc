@@ -38,7 +38,6 @@ protected:
     }
 
     /** Top-level code generation routine.  */
-    // This is a placeholder!  Replace it.
     void outerCodeGen (ostream& out) {
         VM = new VirtualMachine(out);
         VM->emitRuntime();

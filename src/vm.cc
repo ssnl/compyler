@@ -60,8 +60,10 @@ VirtualMachine::placeLabel (Label label)
 void
 VirtualMachine::emitRuntime ()
 {
-    out << "#include \"runtime.h\"\n"
-        << "int main(int argc, char* argv[]) {\n"
-        << "    cout << \"Hello, world!\" << endl;\n"
-        << "}\n";
+    out << "#include \"runtime.h\"" << endl;
+
+    // Place holder
+    out << "{" << endl
+        << "    cout << \"Hello, world!\" << endl;" << endl
+        << "}";
 }

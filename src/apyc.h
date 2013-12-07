@@ -362,7 +362,7 @@ public:
       * stream. */
     void placeLabel (Label label);
 
-    /** Outputs datastructures required by the "compiled" C++ program at
+    /** Outputs data structures required by the "compiled" C++ program at
       * runtime. */
     void emitRuntime ();
 

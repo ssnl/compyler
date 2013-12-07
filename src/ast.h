@@ -84,7 +84,7 @@ public:
 
     /** Get my type, if I have one. */
     virtual Type_Ptr getType ();
-    
+
     /** Set my type to TYPE, or unify with TYPE if already
      *  set. Returns true iff successful. */
     virtual bool setType (Type_Ptr type);
@@ -98,7 +98,7 @@ public:
 
     /** Do outer-level semantic analysis on me---all scope and type
      *  analysis that applies to definitions and statements that are
-     *  not nested inside classes or function definitions.  Modifies 
+     *  not nested inside classes or function definitions.  Modifies
      *  the global environment with any definitions I represent.
      *  Returns the modified tree.  */
     virtual AST_Ptr doOuterSemantics ();
@@ -123,12 +123,12 @@ public:
      *  Returns the resolved node.  This will differ from THIS when it
      *  denotes a type.  */
     virtual AST_Ptr resolveSimpleIds (const Environ* env);
-    
+
     /** Resolve all simple (non-qualified) type identifiers in a typed
      *  identifier.  Does nothing for other nodes. Assumes that
      *  that ENV defines declarations visible at my outer level. */
     virtual void resolveSimpleTypeIds (const Environ* env);
-    
+
     /** Replace any allocators in me with appropriate NEW nodes,
      *  returning the modified node. */
     virtual AST_Ptr resolveAllocators (const Environ* env);
@@ -148,7 +148,7 @@ public:
 
     /** Resolve the types of me and my subcomponents, and resolve
      *  the meanings of unresolved attribute references (OBJ.ID, where
-     *  OBJ is not a class, so that the possible meanings of ID depends 
+     *  OBJ is not a class, so that the possible meanings of ID depends
      *  on the type of OBJ).  During resolution, all def's in me are
      *  frozen---i.e., references to them do not create fresh type
      *  variables. Returns the modified tree.   The return value
@@ -168,9 +168,9 @@ public:
      *  ambiguities of an identifier is the number of declarations
      *  found for it in excess of 1). CONTEXT provides the module or function
      *  containing me.  Returns the modified tree (see
-     *  resolveTypesOuter for details of modifications.) 
+     *  resolveTypesOuter for details of modifications.)
      */
-    virtual AST_Ptr resolveTypes (Decl* context, 
+    virtual AST_Ptr resolveTypes (Decl* context,
                                   int& resolved, int& ambiguities);
 
 
@@ -178,7 +178,7 @@ public:
      *  type OBJECTTYPE, (i.e., I am ID in OBJ.ID).  Increments RESOLVED
      *  by the number of previously unresolved identifiers that are so
      *  resolved and increments AMBIGUITIES by the number of
-     *  ambiguities (the number of ambiguities of an identifier is the 
+     *  ambiguities (the number of ambiguities of an identifier is the
      *  number of declarations found for it in excess of 1).
      */
     virtual void resolveSelectedType (Type_Ptr objectType, int& resolved,
@@ -187,7 +187,7 @@ public:
     /** Resolve the types of me and my subcomponents, and resolve
      *  the meanings of unresolved attribute references (OBJ.ID, where
      *  OBJ is not a class, so that the possible meanings of ID depends on the
-     *  type of OBJ).  All overloaded identifiers must be resolved.  
+     *  type of OBJ).  All overloaded identifiers must be resolved.
      *  CONTEXT provides the module or function containing me.
      *  Returns the modified tree (see also resolveTypesOuter).
      */
@@ -208,6 +208,20 @@ public:
 
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
+
+    /** Preprocess the declarations for each AST, providing new names for any
+     *  declaration that already has a name previously declared. Uses NAMES to
+     *  determine which names have already been declared. Modfies all
+     *  declaration names to be <Name>_<#>$ for some # corresponding to which
+     *  time it has appeared. */
+    virtual void declNamePreprocess(gcmap<gcstring, int>& names);
+
+    /** Preprocess any function declarations for each AST, setting their static
+     *  frame depths to be CURRDEPTH. Each function definition increments
+     *  CURRDEPTH by one to preprocess its children and decrements CURRDEPTH by
+     *  one after preprocessing its children. Declarations that are not
+     *  function definitions have undefined depth. */
+    virtual void declDepthPreprocess(int& currDepth);
 
     /** True if an error has been reported on me. */
     bool errorReported ();
@@ -240,7 +254,7 @@ protected:
     /** Undo the mark on THIS. */
     void unmark ();
 
-    /** Print me as an AST on OUT.  Use INDENT as the indentation for 
+    /** Print me as an AST on OUT.  Use INDENT as the indentation for
      *  subsequent lines if my representation takes up multiple lines.
      *  This method is intended to be called by other print methods
      *  during a traversal (using the print method below), whereas
@@ -288,13 +302,13 @@ public:
 protected:
 
     /** Used to produce factory objects. */
-    AST_Token (int syntax) 
+    AST_Token (int syntax)
         : CommonToken<AST, AST_Token, AST_Tree>(syntax) {
     }
 
     void _print (std::ostream& out, int indent);
 };
-    
+
 class AST_Tree : public CommonTree<AST, AST_Token, AST_Tree> {
     typedef CommonTree<AST, AST_Token, AST_Tree> Parent;
 
@@ -305,7 +319,7 @@ public:
 protected:
 
     /** Overrides AST::print.  Default definition of printing on
-     *  trees: prints (<OP> <LINE> <CHILD0> ...), where <OP> is the 
+     *  trees: prints (<OP> <LINE> <CHILD0> ...), where <OP> is the
      *  external operator name and line is the source line number. */
     void _print (std::ostream& out, int indent);
 
@@ -465,7 +479,7 @@ public:
 protected:
 
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities);
-    
+
     /** Computes my type, which is then cached by getType(). */
     virtual Type_Ptr computeType ();
 
@@ -476,7 +490,7 @@ protected:
 };
 
 
-/** Control structure: 
+/** Control structure:
  *      For each child, VAR, of AST_Node* NODE, ...
  *  Usage:
  *      for_each_child (C, aTree) {
@@ -491,7 +505,7 @@ protected:
             Var ## _i_ < Var ## _e_; Var ## _i_ += 1) {                      \
            const AST_Ptr Var  = Var ## _n_->child (Var ## _i_);
 
-/** Control structure: 
+/** Control structure:
  *      For each child, VAR, of AST_Node* NODE in reverse order, ...
  *  Usage:
  *      for_each_child (C, aTree) {
@@ -506,10 +520,10 @@ protected:
             Var ## _i_ >= 0; Var ## _i_ -= 1) {                              \
            const AST_Ptr Var  = Var ## _n_->child (Var ## _i_);
 
-/** Control structure: 
+/** Control structure:
  *      For each child, VAR, of AST_Node* NODE, ...
  *  replacing the child with the value of VAR at the end of each iteration.
- *    
+ *
  *  Usage:
  *      for_each_child_var (C, aTree) {
  *           <operations involving C (an AST_Node*)>
@@ -530,8 +544,8 @@ protected:
 static inline int
 _replace_and_incr (AST_Ptr& node, int& k, AST_Ptr& new_child)
 {
-    int n = new_child == NULL ? 0 
-        : new_child->is_list () ? new_child->arity () 
+    int n = new_child == NULL ? 0
+        : new_child->is_list () ? new_child->arity ()
         : 1;
     node->replace (k, new_child);
     return k += n;

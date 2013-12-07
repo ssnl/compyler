@@ -15,7 +15,7 @@ static GCINIT _gcdummy;
 
 /***** PRINT *****/
 
-/**       */
+/** A print statement with a trailing comma. */
 class Print_AST : public AST_Tree {
 protected:
 
@@ -127,7 +127,7 @@ protected:
         AST_Ptr formals = child (1);
         formals->resolveTypes (me, resolved, ambiguities);
         if (!returnType->isMissing ()) {
-            if (!funcType->returnType ()->unify (returnType->asType ())) 
+            if (!funcType->returnType ()->unify (returnType->asType ()))
                 error (this, "inconsistent return type");
         }
         for (size_t i = 0; i < formals->arity (); i += 1) {
@@ -169,7 +169,7 @@ protected:
 NODE_FACTORY (Method_AST, METHOD);
 
 
-    
+
 
 /***** FORMALS_LIST *****/
 
@@ -321,7 +321,7 @@ protected:
     void addTargetDecls (Decl* enclosing) {
         getId ()->addTargetDecls (enclosing);
     }
-    
+
     void collectTypeVarDecls (Decl* enclosing) {
         child (1)->collectTypeVarDecls (enclosing);
     }
@@ -330,10 +330,10 @@ protected:
         getId ()->addDecl (decl);
     }
 
-    
+
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities) {
         getId ()->resolveTypes (context, resolved, ambiguities);
-        if (!getId ()->setType (child (1)->asType ())) 
+        if (!getId ()->setType (child (1)->asType ()))
             error (this, "incompatible type assignment");
         return this;
     }
@@ -366,7 +366,7 @@ protected:
             error (this, "type mismatch in assignment");
         return this;
     }
-    
+
     AST_Ptr convertNone (bool) {
         child (0)->convertNone (true);
         replace (1, child (1)->convertNone (false));
@@ -409,11 +409,11 @@ protected:
         }
         if (!eltType->unify (child (0)->getType ())) {
             error (this, "for loop target does not match element type");
-        } 
+        }
 
         return this;
     }
-        
+
     void collectDecls (Decl* enclosing) {
         AST_Ptr target = child (0);
         for (size_t i = 1; i < arity (); i += 1)

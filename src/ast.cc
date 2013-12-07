@@ -92,7 +92,7 @@ AST::addDecl (Decl*)
 
 void
 AST::removeDecl (int k)
-{ 
+{
     throw logic_error ("node does not represent a named entity");
 }
 
@@ -176,7 +176,7 @@ AST::resolveSimpleTypeIds (const Environ* env)
         c->resolveSimpleTypeIds (env);
     } end_for;
 }
-    
+
 AST_Ptr
 AST::resolveAllocators (const Environ* env)
 {
@@ -254,6 +254,22 @@ AST::outerCodeGen (ostream&)
 {
 }
 
+void
+AST::declNamePreprocess(gcmap<gcstring, int>& names)
+{
+    for_each_child (c, this) {
+        c->declNamePreprocess(names);
+    } end_for;
+}
+
+void
+AST::declDepthPreprocess(int& currDepth)
+{
+    for_each_child (c, this) {
+        c->declDepthPreprocess(currDepth);
+    } end_for;
+}
+
 bool
 AST::errorReported ()
 {
@@ -294,7 +310,7 @@ AST_Tree::externalName ()
     name += 1;
     while (*name == '@')
         name += 1;
-    
+
     if (name[0] == '\0')
         return "?";
 
@@ -303,7 +319,7 @@ AST_Tree::externalName ()
 }
 
 AST_Ptr
-make_id (const char* text, const char* loc) 
+make_id (const char* text, const char* loc)
 {
     AST_Ptr result = AST::make_token (ID, strlen (text), text);
     result->set_loc (loc);
@@ -365,7 +381,7 @@ consTree (int syntax, const AST_Ptr& c0, const AST_Ptr& c1,
  * source file (those definitions appear in apyc-parser.hh, included above).
  */
 
-/** A node representing a missing element in the AST (e.g., a missing 
+/** A node representing a missing element in the AST (e.g., a missing
  *  >>FILE argument in a print node.) */
 class Empty_AST : public AST_Tree {
 
