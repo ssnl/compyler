@@ -395,7 +395,7 @@ public:
     void emitRuntime ();
 
     /** Outputs a string as a comment into my output stream */
-    void emitComment (gcstring s);
+    void emitComment (gcstring s, gcstring indent);
 
 private:
 
