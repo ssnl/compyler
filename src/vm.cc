@@ -56,14 +56,3 @@ void
 VirtualMachine::placeLabel (Label label)
 {
 }
-
-void
-VirtualMachine::emitRuntime ()
-{
-    out << "#include \"runtime.h\"" << endl;
-
-    // Place holder
-    out << "{" << endl
-        << "    cout << \"Hello, world!\" << endl;" << endl
-        << "}";
-}

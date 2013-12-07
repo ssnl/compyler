@@ -40,7 +40,14 @@ protected:
     /** Top-level code generation routine.  */
     void outerCodeGen (ostream& out) {
         VM = new VirtualMachine(out);
-        VM->emitRuntime();
+
+
+        out << "#include \"runtime.h\"" << endl;
+
+        out << "int main()"
+            << "{" << endl
+            << "    cout << \"Hello, world!\" << endl;" << endl
+            << "}";
     }
 
     NODE_CONSTRUCTORS (Module_AST, AST_Tree);
