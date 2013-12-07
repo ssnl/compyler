@@ -390,6 +390,13 @@ public:
       * stream. */
     void placeLabel (VMLabel label);
 
+    /** Outputs datastructures required by the "compiled" C++ program at
+      * runtime. */
+    void emitRuntime ();
+
+    /** Outputs a string as a comment into my output stream */
+    void emitComment (gcstring s);
+
 private:
 
     std::ostream& out;

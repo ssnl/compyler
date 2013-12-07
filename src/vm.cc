@@ -8,18 +8,21 @@
 
 using namespace std;
 
+static const bool DEBUG_OUT = true;
+
 /** Virtual machine instructions indicating which of command to emit. */
 static const int CALL = 0;
 static const int GOTO = 1;
 static const int GTZ = 2;
 static const int PUSH = 3;
 static const int MOVE = 4;
-static const int COMPL = 5;
-static const int COMPG = 6;
-static const int COMPLE = 7;
-static const int COMPGE = 8;
-static const int COMPE = 9;
-static const int COMPNE = 10;
+static const int ALLOC = 5;
+static const int COMPL = 6;
+static const int COMPG = 7;
+static const int COMPLE = 8;
+static const int COMPGE = 9;
+static const int COMPE = 10;
+static const int COMPNE = 11;
 
 /** Constants corresponding to runtime data structure variable names. */
 static const gcstring STACK = "STACK";
@@ -35,76 +38,125 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (int instr, void* arg)
 {
-	// out <<  << endl;
 	switch (type) {
 
+		// e.g. call = (FuncDesc*) SM.pop();
+		//		cf = call.frame;
+		//      RETURN_ADDR.push(&&__R__15);
+		//		goto **(call.label);
+		//	__R__15:
 		case CALL:
 			numRetLabels++;
-			out << "CallDesc* func = (CallDesc*) STACK.pop();" << endl;
-			out << "cf = func.frame;" << endl;
-			out << "goto **(func.label);" << endl;
-			out << "__R__" + numRetLabels << ":" << endl;
+            emitComment("calling function");
+			gcstring rlabel = "__R__" + numRetLabels;
+			out << "    call = (FuncDesc*) SM.pop();" << endl;
+			out << "    cf = call.frame;" << endl;
+			out << "    RETURN_ADDR.push(&&" << rlabel << ");" << endl;
+			out << "    goto **(call.label);" << endl;
+			out << rlabel << ":" << endl;
 			break;
 
 		// arg: the name of the label to jump to
+		// e.g. goto __L__16;
 		case GOTO:
-			out << "goto " << arg << ";" << endl;
+            emitComment("jumping to label " + arg);
+			out << "    goto " << arg << ";" << endl;
 			break;
 
 		// arg: the name of the label to jump to
+		// e.g. cmp = (int*) SM.pop();
+		//		if (*(cmp)==0) goto __L__16;
 		case GTZ:
-			out << "cmp = (int) STACK.pop();" << endl;
-			out << "if (cmp==0) goto " << arg << ";" << endl;
+            emitComment("jumping to label " + arg + " if top is 0");
+			out << "    cmp = (int*) SM.pop();" << endl;
+			out << "    if (*(cmp)==0) goto " << arg << ";" << endl;
 			break;
 
-		// arg: the data to push onto the stack
+		// arg: the data to push onto the stack. If 0, pushes the top of HEAP
+		// e.g. SM.push(&cf.x);
 		case PUSH:
-			out << "STACK.push(" << arg << ");" << endl;
+			if arg == 0:
+				emitComment("pushing first in HEAP onto SM");
+				out << "    SM.push(HEAP[HEAP.size()-1]);" << endl;
+			else:
+				emitComment("pushing " + arg + " onto SM");
+				out << "    SM.push(&(" << arg << "));" << endl;
 			break;
 
 		// arg: gcstring denoting the type of the value to be assigned
+		// e.g. dst = SM.pop();
+		// 		src = SM.pop();
+		//		*(dst) = (src&1==1) ? src>>1 : src;
 		case MOVE:
 			// we'll have to use vartype at some point, I think
 			// gcstring* vartype = (gcstring*)arg;
-			out << "dst = STACK.pop();" << endl;
-			out << "itm = STACK.pop();" << endl;
-			out << "*(dst) = ((itm&1==1) ? itm>>1 : itm);" << endl;
+			emitComment("moving second in stack to first in stack");
+			out << "    dst = SM.pop();" << endl;
+			out << "    src = SM.pop();" << endl;
+			out << "    *dst = *src;" << endl;
+			break;
+
+		// arg: gcstring denoting the creation of a new object
+		// e.g. tmp_alloc = new $int(5);
+		// 		HEAP.push(&tmp_alloc);
+		case ALLOC:
+			emitComment("allocating memory for: " + arg);
+			out << "    tmp_alloc = " << arg << ";" << endl;
+			out << "    HEAP.push(&tmp_alloc);" << endl;
 			break;
 
 		case COMPL:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 < cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (<)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << "<" << s2 << "? 1 : 0);" << endl;
 			break;
 
 		case COMPG:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 > cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (>)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << ">" << s2 << "? 1 : 0);" << endl;
 			break;
 
 		case COMPLE:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 <= cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (<=)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << "<=" << s2 << "? 1 : 0);" << endl;
 			break;
 
 		case COMPGE:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 >= cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (>=)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << ">=" << s2 << "? 1 : 0);" << endl;
 			break;
 
 		case COMPE:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 == cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (==)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << "==" << s2 << "? 1 : 0);" << endl;
 			break;
 
 		case COMPNE:
-			out << "cmp1 = (int) STACK.pop();" << endl;
-			out << "cmp2 = (int) STACK.pop();" << endl;
-			out << "STACK.push((cmp1 != cmp2) ? 1 : 0);" << endl;
+			emitComment("comparing (!=)");
+			out << "    cmp1 = ($int*) SM.pop();" << endl;
+			out << "    cmp2 = ($int*) SM.pop();" << endl;
+			gcstring s1 = " *(cmp1).value() ";
+			gcstring s2 = " *(cmp2).value() ";
+			out << "    SM.push((" << s1 << "!=" << s2 << "? 1 : 0);" << endl;
 			break;
 	}
 }
@@ -117,7 +169,8 @@ VirtualMachine::emitPrologue ()
 void
 VirtualMachine::emitEpilogue () 
 {
-	cout << "goto __R__" + numRetLabels << ";" << endl;
+	cout << "    void* rtn_label = RETURN_ADDR.pop();" << endl;
+	cout << "    goto **(rtn_label);" << endl;
 }
 
 VMLabel
@@ -140,4 +193,10 @@ VirtualMachine::emitRuntime ()
         << "int main(int argc, char* argv[]) {\n"
         << "    cout << \"Hello, world!\" << endl;\n"
         << "}\n";
+}
+
+void
+VirtualMachine::emitComment (gcstring s)
+{
+	out << "/* " << s << " */" << endl;
 }
