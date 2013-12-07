@@ -38,7 +38,7 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (int instr, void* arg)
 {
-    gcstring s1, s2, rlabel;
+    gcstring s1, s2, rlabel, str;
 
     switch (instr) {
 
@@ -49,43 +49,50 @@ VirtualMachine::emit (int instr, void* arg)
         //  __R__15:
         case CALL:
             numRetLabels++;
-            emitComment("calling function","    ");
+            emitComment("calling function", 4);
             rlabel = "__R__" + numRetLabels;
-            out << "    call = (FuncDesc*) SM.pop();" << endl;
-            out << "    currFrame = call.frame;" << endl;
-            out << "    goto **(call.label);" << endl;
-            out << rlabel << ":" << endl;
-            break;
+            write("call = (FuncDesc*) SM.pop();", 4);
+            write("currFrame = call.frame;", 4);
+            write("goto **(call.label);", 4);
+            write(rlabel + ":", 0);
+        break;
+
 
         // arg: the name of the label to jump to
         // e.g. goto __L__16;
         case GOTO:
-            emitComment("jumping to label " + *((gcstring*)arg),"    ");
-            out << "    goto " << arg << ";" << endl;
-            break;
+            str = *((gcstring*)arg);
+            emitComment("jumping to label " + str, 4);
+            write("goto " + str + ";", 4);
+        break;
+
 
         // arg: gcstring*, the name of the label to jump to
         // e.g. cmp = (int*) SM.pop();
         //      if (*(cmp)==0) goto __L__16;
         case GTZ:
-            emitComment("jumping to label " + *((gcstring*)arg) +
-                " if top is 0","    ");
-            out << "    cmp = (int*) SM.pop();" << endl;
-            out << "    if (*(cmp)==0) goto " << arg << ";" << endl;
-            break;
+            str = *((gcstring*)arg);
+            emitComment("jumping to label " + str +
+                " if top is 0", 4);;
+            write("cmp = (int*) SM.pop();", 4);
+            write("if (*(cmp)==0) goto " + str + ";", 4);
+        break;
+
 
         // arg: gcstring*, the data to push onto the stack.
         // if NULL, pushes the top of HEAP
         // e.g. SM.push(&currFrame.x);
         case PUSH:
             if (arg == NULL) {
-                emitComment("pushing first in HEAP onto SM", "    ");
-                out << "    SM.push(HEAP[HEAP.size()-1]);" << endl;
+                emitComment("pushing first in HEAP onto SM", 4);;
+                write("SM.push(HEAP[HEAP.size()-1]);", 4);
             } else {
-                emitComment("pushing " + *((gcstring*)arg) + " onto SM","    ");
-                out << "    SM.push(&(" << arg << "));" << endl;
+                str = *((gcstring*)arg);
+                emitComment("pushing " + str + " onto SM", 4);;
+                write("SM.push(&(" + str + "));", 4);
             }
-            break;
+        break;
+
 
         // arg: gcstring denoting the type of the value to be assigned
         // e.g. dst = SM.pop();
@@ -94,74 +101,81 @@ VirtualMachine::emit (int instr, void* arg)
         case MOVE:
             // we'll have to use vartype at some point, I think
             // gcstring* vartype = (gcstring*)arg;
-            emitComment("moving second in stack to first in stack","    ");
-            out << "    dst = SM.pop();" << endl;
-            out << "    src = SM.pop();" << endl;
-            out << "    *dst = *src;" << endl;
-            break;
+            emitComment("moving second in stack to first in stack", 4);;
+            write("dst = SM.pop();", 4);
+            write("src = SM.pop();", 4);
+            write("*dst = *src;", 4);
+        break;
+
 
         // arg: gcstring denoting the creation of a new object
         // e.g. tmp_alloc = new $int(5);
         //      HEAP.push(&tmp_alloc);
         case ALLOC:
-            emitComment("allocating memory for: " + *((gcstring*)arg),"    ");
-            out << "    tmp_alloc = " << arg << ";" << endl;
-            out << "    HEAP.push(&tmp_alloc);" << endl;
-            break;
+            str = *((gcstring*)arg);
+            emitComment("allocating memory for: " + str, 4);
+            write("tmp_alloc = " + str + ";", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+        break;
+
 
         case COMPL:
-            emitComment("comparing (<)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << "<" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (<)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) < 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
+
 
         case COMPG:
-            emitComment("comparing (>)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << ">" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (>)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) > 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
+
 
         case COMPLE:
-            emitComment("comparing (<=)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << "<=" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (<=)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) <= 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
 
         case COMPGE:
-            emitComment("comparing (>=)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << ">=" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (>=)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) >= 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
+
 
         case COMPE:
-            emitComment("comparing (==)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << "==" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (==)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) == 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
+
 
         case COMPNE:
-            emitComment("comparing (!=)","    ");
-            out << "    cmp1 = ($int*) SM.pop();" << endl;
-            out << "    cmp2 = ($int*) SM.pop();" << endl;
-            s1 = " *(cmp1).value() ";
-            s2 = " *(cmp2).value() ";
-            out << "    SM.push((" << s1 << "!=" << s2 << "? 1 : 0);" << endl;
-            break;
+            emitComment("comparing (!=)", 4);;
+            write("cmp1 = ($int*) SM.pop();", 4);
+            write("cmp2 = ($int*) SM.pop();", 4);
+            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) != 0);", 4);
+            write("HEAP.push(&tmp_alloc);", 4);
+            write("SM.push(&tmp_alloc);", 4);
+        break;
     }
 }
 
@@ -173,7 +187,7 @@ VirtualMachine::emitPrologue ()
 void
 VirtualMachine::emitEpilogue () 
 {
-    cout << "    goto **(currFrame.sl.return_addr);" << endl;
+    write("goto **(currFrame.sl.return_addr);", 4);;
 }
 
 VMLabel
@@ -186,7 +200,7 @@ VirtualMachine::newLabel ()
 void
 VirtualMachine::placeLabel (VMLabel label) 
 {
-    out << label << ":" << endl;
+    write(label + ":", 0);
 }
 
 void
@@ -199,9 +213,22 @@ VirtualMachine::emitRuntime ()
 }
 
 void
-VirtualMachine::emitComment (gcstring s, gcstring indent)
+VirtualMachine::emitComment (gcstring s, int indent)
 {
+    string indentstr = "";
     if (DEBUG_OUT) {
-       out << indent << "/* " << s << " */" << endl;
+        for (int i = 0; i < indent; i++) {
+            indentstr += " ";
+        }
+        out << indentstr << "/* " << s << " */" << endl;
     }
+}
+
+void
+VirtualMachine::write (gcstring s, int indent) {
+    string indentstr = "";
+    for (int i = 0; i < indent; i++) {
+        indentstr += " ";
+    }
+    out << indentstr << s << endl;
 }

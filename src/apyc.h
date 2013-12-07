@@ -394,8 +394,12 @@ public:
       * runtime. */
     void emitRuntime ();
 
-    /** Outputs a string as a comment into my output stream */
-    void emitComment (gcstring s, gcstring indent);
+    /** Outputs a string preceded by indent as a comment into my output
+      * stream. */
+    void emitComment (gcstring s, int indent);
+
+    /** Outputs a string preceded by indent into my output stream. */
+    void write (gcstring s, int indent);
 
 private:
 
