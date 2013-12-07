@@ -49,12 +49,12 @@ VirtualMachine::emit (int instr, void* arg)
         //  __R__15:
         case CALL:
             numRetLabels++;
-            emitComment("calling function", 4);
+            comment("calling function", 4);
             rlabel = "__R__" + numRetLabels;
-            write("call = (FuncDesc*) SM.pop();", 4);
-            write("currFrame = call.frame;", 4);
-            write("goto **(call.label);", 4);
-            write(rlabel + ":", 0);
+            code("call = (FuncDesc*) SM.pop();", 4);
+            code("currFrame = call.frame;", 4);
+            code("goto **(call.label);", 4);
+            code(rlabel + ":", 0);
         break;
 
 
@@ -62,8 +62,8 @@ VirtualMachine::emit (int instr, void* arg)
         // e.g. goto __L__16;
         case GOTO:
             str = *((gcstring*)arg);
-            emitComment("jumping to label " + str, 4);
-            write("goto " + str + ";", 4);
+            comment("jumping to label " + str, 4);
+            code("goto " + str + ";", 4);
         break;
 
 
@@ -72,10 +72,11 @@ VirtualMachine::emit (int instr, void* arg)
         //      if (*(cmp)==0) goto __L__16;
         case GTZ:
             str = *((gcstring*)arg);
-            emitComment("jumping to label " + str +
-                " if top is 0", 4);;
-            write("cmp = (int*) SM.pop();", 4);
-            write("if (*(cmp)==0) goto " + str + ";", 4);
+            comment("jumping to label " + str + " if top is 0", 4);
+            code("cmp = ($int*) SM.pop();", 4);
+            // I don't want to initialize a new $int(0) every time just for this
+            // purpose, we I'm making a constant ZERO = new $int(0).
+            code("if (*(cmp).compareTo(ZERO)) goto " + str + ";", 4);
         break;
 
 
@@ -84,12 +85,12 @@ VirtualMachine::emit (int instr, void* arg)
         // e.g. SM.push(&currFrame.x);
         case PUSH:
             if (arg == NULL) {
-                emitComment("pushing first in HEAP onto SM", 4);;
-                write("SM.push(HEAP[HEAP.size()-1]);", 4);
+                comment("pushing first in HEAP onto SM", 4);
+                code("SM.push(HEAP[HEAP.size()-1]);", 4);
             } else {
                 str = *((gcstring*)arg);
-                emitComment("pushing " + str + " onto SM", 4);;
-                write("SM.push(&(" + str + "));", 4);
+                comment("pushing " + str + " onto SM", 4);
+                code("SM.push(&(" + str + "));", 4);
             }
         break;
 
@@ -101,10 +102,10 @@ VirtualMachine::emit (int instr, void* arg)
         case MOVE:
             // we'll have to use vartype at some point, I think
             // gcstring* vartype = (gcstring*)arg;
-            emitComment("moving second in stack to first in stack", 4);;
-            write("dst = SM.pop();", 4);
-            write("src = SM.pop();", 4);
-            write("*dst = *src;", 4);
+            comment("moving second in stack to first in stack", 4);;
+            code("dst = SM.pop();", 4);
+            code("src = SM.pop();", 4);
+            code("*dst = *src;", 4);
         break;
 
 
@@ -113,68 +114,68 @@ VirtualMachine::emit (int instr, void* arg)
         //      HEAP.push(&tmp_alloc);
         case ALLOC:
             str = *((gcstring*)arg);
-            emitComment("allocating memory for: " + str, 4);
-            write("tmp_alloc = " + str + ";", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
+            comment("allocating memory for: " + str, 4);
+            code("tmp_alloc = " + str + ";", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
         break;
 
 
         case COMPL:
-            emitComment("comparing (<)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) < 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (<)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) < 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
 
 
         case COMPG:
-            emitComment("comparing (>)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) > 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (>)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) > 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
 
 
         case COMPLE:
-            emitComment("comparing (<=)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) <= 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (<=)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) <= 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
 
         case COMPGE:
-            emitComment("comparing (>=)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) >= 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (>=)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) >= 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
 
 
         case COMPE:
-            emitComment("comparing (==)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) == 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (==)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) == 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
 
 
         case COMPNE:
-            emitComment("comparing (!=)", 4);;
-            write("cmp1 = ($int*) SM.pop();", 4);
-            write("cmp2 = ($int*) SM.pop();", 4);
-            write("tmp_alloc = new int(*cmp1.compareTo(*cmp2) != 0);", 4);
-            write("HEAP.push(&tmp_alloc);", 4);
-            write("SM.push(&tmp_alloc);", 4);
+            comment("comparing (!=)", 4);;
+            code("cmp1 = ($ObjectBase*) SM.pop();", 4);
+            code("cmp2 = ($ObjectBase*) SM.pop();", 4);
+            code("tmp_alloc = new $int(*cmp1.compareTo(*cmp2) != 0);", 4);
+            code("HEAP.push(&tmp_alloc);", 4);
+            code("SM.push(&tmp_alloc);", 4);
         break;
     }
 }
@@ -187,7 +188,7 @@ VirtualMachine::emitPrologue ()
 void
 VirtualMachine::emitEpilogue () 
 {
-    write("goto **(currFrame.sl.return_addr);", 4);;
+    code("goto **(currFrame.sl.return_addr);", 4);;
 }
 
 VMLabel
@@ -200,7 +201,7 @@ VirtualMachine::newLabel ()
 void
 VirtualMachine::placeLabel (VMLabel label) 
 {
-    write(label + ":", 0);
+    code(label + ":", 0);
 }
 
 void
@@ -213,19 +214,20 @@ VirtualMachine::emitRuntime ()
 }
 
 void
-VirtualMachine::emitComment (gcstring s, int indent)
+VirtualMachine::comment (gcstring s, int indent)
 {
-    string indentstr = "";
     if (DEBUG_OUT) {
+        string indentstr = "";
         for (int i = 0; i < indent; i++) {
             indentstr += " ";
         }
         out << indentstr << "/* " << s << " */" << endl;
+        delete &indentstr;
     }
 }
 
 void
-VirtualMachine::write (gcstring s, int indent) {
+VirtualMachine::code (gcstring s, int indent) {
     string indentstr = "";
     for (int i = 0; i < indent; i++) {
         indentstr += " ";
