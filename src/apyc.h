@@ -377,6 +377,10 @@ private:
 
 };
 
+/** VirtualMachine that will be used to compile the code. */
 extern VirtualMachine* VM;
+
+/** Mapping from declarations to disambiguated names. */
+extern gcmap<Decl*, gcstring> declName;
 
 #endif

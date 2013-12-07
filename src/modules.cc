@@ -42,8 +42,10 @@ protected:
         VM = new VirtualMachine(out);
         out << "#include \"runtime.h\"" << endl;
         int startDepth = 0;
+        gcmap<gcstring, int> names;
         for_each_child(c, this) {
             c->declDepthPreprocess(startDepth);
+            c->declNamePreprocess(names);
         } end_for;
 
         // Placeholder Code
