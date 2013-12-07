@@ -142,6 +142,16 @@ protected:
         return this;
     }
 
+    void declDepthPreprocess (int& currDepth) {
+        Decl* me = getDecl ();
+        me->setDepth (currDepth);
+        currDepth += 1;
+        for_each_child (c, this) {
+            c->declDepthPreprocess (currDepth);
+        } end_for;
+        currDepth -= 1;
+    }
+
 };
 
 NODE_FACTORY (Def_AST, DEF);

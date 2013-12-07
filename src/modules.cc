@@ -40,10 +40,13 @@ protected:
     /** Top-level code generation routine.  */
     void outerCodeGen (ostream& out) {
         VM = new VirtualMachine(out);
-
-
         out << "#include \"runtime.h\"" << endl;
+        int startDepth = 0;
+        for_each_child(c, this) {
+            c->declDepthPreprocess(startDepth);
+        } end_for;
 
+        // Placeholder Code
         out << "int main()"
             << "{" << endl
             << "    cout << \"Hello, world!\" << endl;" << endl
