@@ -212,16 +212,16 @@ public:
     /** Preprocess the declarations for each AST, providing new names for any
      *  declaration that already has a name previously declared. Uses NAMES to
      *  determine which names have already been declared. Modfies all
-     *  declaration names to be <Name>_<#>$ for some # corresponding to which
+     *  declaration names to be <Name>_<#>$ for some <#> corresponding to which
      *  time it has appeared. */
-    virtual void declNamePreprocess(gcmap<gcstring, int>& names);
+    virtual void declNamePreprocess (gcmap<gcstring, int>& names);
 
     /** Preprocess any function declarations for each AST, setting their static
      *  frame depths to be CURRDEPTH. Each function definition increments
      *  CURRDEPTH by one to preprocess its children and decrements CURRDEPTH by
      *  one after preprocessing its children. Declarations that are not
      *  function definitions have undefined depth. */
-    virtual void declDepthPreprocess(int& currDepth);
+    virtual void declDepthPreprocess (int& currDepth);
 
     /** True if an error has been reported on me. */
     bool errorReported ();
@@ -267,6 +267,11 @@ protected:
      *  overridings of _print should recursively print their children.
      */
     static void print (AST_Ptr tree, std::ostream& out, int indent);
+
+    /** Generates a string for DECL by returning a name of the form <Name>_<#>$
+     *  where <Name> corresponds to the name of DECL and <#> corresponds to the
+     *  value of NAMES[<Name>]. Increments NAMES[<Name>] by one. */
+    static gcstring setupDeclName (Decl* decl, gcmap<gcstring, int>& names);
 
 private:
     /** The sequence number of the last traversal involving this

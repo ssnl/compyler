@@ -5,6 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -52,6 +53,16 @@ AST::print (AST_Ptr tree, std::ostream& out, int indent)
     else
         out << "...";
     tree->unmark ();
+}
+
+gcstring
+AST::setupDeclName (Decl* decl, gcmap<gcstring, int>& names)
+{
+    gcstring originalName = decl->getName();
+    int num = names[originalName];
+    stringstream newName;
+    newName << originalName << "_" << num << "$";
+    return newName.str();
 }
 
 Type_Ptr
@@ -257,9 +268,6 @@ AST::outerCodeGen (ostream&)
 void
 AST::declNamePreprocess(gcmap<gcstring, int>& names)
 {
-    for_each_child (c, this) {
-        c->declNamePreprocess(names);
-    } end_for;
 }
 
 void
