@@ -209,6 +209,10 @@ public:
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
 
+    /** Generates runtime data structures for modules, functions, and classes.
+     */
+    virtual void runtimeDataStructGen (gcstring container);
+
     /** Preprocess the declarations for each AST, providing new names for any
      *  declaration that already has a name previously declared. Uses NAMES to
      *  determine which names have already been declared. Modfies all

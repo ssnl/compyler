@@ -266,10 +266,18 @@ AST::outerCodeGen (ostream&)
 }
 
 void
+AST::runtimeDataStructGen (gcstring container)
+{
+    for_each_child (c, this) {
+        c->runtimeDataStructGen (container);
+    } end_for;
+}
+
+void
 AST::declNamePreprocess(gcmap<gcstring, int>& names)
 {
     for_each_child (c, this) {
-        c->declNamePreprocess(names);
+        c->declNamePreprocess (names);
     } end_for;
 }
 
