@@ -38,8 +38,9 @@ VirtualMachine::VirtualMachine (ostream& _out)
 }
 
 void
-VirtualMachine::emit (int instr)
+VirtualMachine::emit (const int& instr)
 {
+    code("");
     gcstring s1, s2, rlabel;
     switch (instr) {
 
@@ -94,46 +95,46 @@ VirtualMachine::emit (int instr)
         break;
 
         default:
-            comment("compilation error: argument mismatch in \
-                VirtualMachine::emit(int)");
+            comment("compilation error: argument mismatch in" +
+                string("VirtualMachine::emit(int)"));
         break;
     }
 }
 
 void
-VirtualMachine::emit (int instr, gcstring* arg)
+VirtualMachine::emit (const int& instr, gcstring arg)
 {
-    gcstring str = arg->c_str();
+    code("");
     switch (instr) {
 
         // arg: the name of the label to jump to
         // e.g. goto __L__16;
         case GOTO:
-            comment("jumping to label " + str);
-            code("goto " + str + ";");
+            comment("jumping to label " + arg);
+            code("goto " + arg + ";");
         break;
 
         // arg: gcstring*, the name of the label to jump to
         // e.g. cmp = (int*) SM.pop();
         //      if (*(cmp)==0) goto __L__16;
         case GTZ:
-            comment("jumping to label " + str + " if top is 0");
+            comment("jumping to label " + arg + " if top is 0");
             code("cmp = ($Integer*) SM.pop();");
             // Don't want to initialize a new $Integer(0) every time just for
             // this purpose; instead make a constant $ZERO = new $Integer(0).
-            code("if (*(cmp).compareTo($ZERO)) { goto " + str + "; }");
+            code("if (*(cmp).compareTo($ZERO)) { goto " + arg + "; }");
         break;
 
         // arg: gcstring*, the data to push onto the stack.
         // if NULL, pushes the top of HEAP
         // e.g. SM.push(&currFrame.x);
         case PUSH:
-            if (str == NULL) {
+            if (arg.length()) {
+                comment("pushing " + arg + " onto SM");
+                code("SM.push(&(" + arg + "));");
+            } else {
                 comment("pushing first in HEAP onto SM");
                 code("SM.push(HEAP[HEAP.size()-1]);");
-            } else {
-                comment("pushing " + str + " onto SM");
-                code("SM.push(&(" + str + "));");
             }
         break;
 
@@ -141,22 +142,22 @@ VirtualMachine::emit (int instr, gcstring* arg)
         // e.g. tmp_alloc = new $Integer(5);
         //      HEAP.push(&tmp_alloc);
         case ALLOC:
-            comment("allocating memory for: " + str);
-            code("tmp_alloc = " + str + ";");
+            comment("allocating memory for: " + arg);
+            code("tmp_alloc = " + arg + ";");
             code("HEAP.push(&tmp_alloc);");
         break;
 
         default:
-            comment("compilation error: argument mismatch in \
-                VirtualMachine::emit(int, gcstring)");
+            comment("compilation error: argument mismatch in" +
+                string("VirtualMachine::emit(int, gcstring)"));
         break;
     }
 }
 
 void
-VirtualMachine::emit (int instr, gcstring* arg, int arity)
+VirtualMachine::emit (const int& instr, gcstring arg, int arity)
 {
-    gcstring str = arg->c_str();
+    code("");
     gcstring argliststr = "";
     gcstring argstr;
 
@@ -174,12 +175,12 @@ VirtualMachine::emit (int instr, gcstring* arg, int arity)
                     argliststr += (argstr + ",");
                 }
             }
-            code("SM.push(" + str + "(" + argliststr + "));");
+            code("SM.push(" + arg + "(" + argliststr + "));");
         break;
 
         default:
-            comment("compilation error: argument mismatch in \
-                VirtualMachine::emit(int, gcstring, int)");
+            comment("compilation error: argument mismatch in" +
+                string("VirtualMachine::emit(int, gcstring, int)"));
         break;
     }
 }
@@ -217,10 +218,13 @@ VirtualMachine::placeLabel (VMLabel label)
 void
 VirtualMachine::emitRuntime () 
 {
-    out << "#include \"runtime.h\"\n"
-        << "int main(int argc, char* argv[]) {\n"
-        << "    cout << \"Hello, world!\" << endl;\n"
-        << "}\n";
+    code(gcstring("int main (int argc, char *argv[]) {"), 0);
+    // main body begins here:
+    emit(ALLOC, gcstring("new $Integer(5)"));
+    emit(PUSH, gcstring(""));
+    emit(PUSH, gcstring("currFrame.x"));
+    emit(MOVE);
+    code(gcstring("}"), 0);
 }
 
 void

@@ -373,9 +373,9 @@ public:
     VirtualMachine (std::ostream& _out);
 
     /** Outputs an instruction as code to my output stream. */
-    void emit (int instr);
-    void emit (int instr, gcstring* arg);
-    void emit (int instr, gcstring* arg, int arity);
+    void emit (const int& instr);
+    void emit (const int& instr, gcstring arg);
+    void emit (const int& instr, gcstring arg, int arity);
 
     /** Outputs code to handle the start of a function call into my output
      *  stream. */
