@@ -261,16 +261,3 @@ DB_Depth(Decl* d)
 {
     return d->getDepth();
 }
-
-void
-DB(gcmap<Decl*, gcstring> map)
-{
-    gcstring originalName, newName;
-    for (gcmap<Decl*, gcstring>::iterator it = map.begin();
-         it != map.end(); it++) {
-        originalName = it->first->getName();
-        newName = it->second;
-        fprintf (stderr, "Decl %s renamed to %s\n", originalName.c_str(),
-            newName.c_str());
-    }
-}

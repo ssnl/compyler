@@ -88,6 +88,13 @@ public:
 
     const gcstring& getName () const { return _name; }
 
+    /** Gets my name rewritten in the format that will be used at runtime. */
+    gcstring getRuntimeName () const;
+
+    /** Sets up my name rewritten in the format that will be used at runtime,
+     *  using NAMES to disambiguate my name. */
+    void setupRuntimeName (gcmap<gcstring, int>& names);
+
     /** My depth value indicating my frame depth, and otherwise -1 to
      *  indicate that I have no depth. */
     int getDepth () const { return _depth; }
@@ -109,6 +116,10 @@ public:
 
     /** Set my type to TYPE. */
     virtual void setType (Type_Ptr type);
+
+    /** Gets the name of the type of the entity I represent rewritten in the
+     *  format that will be used at runtime. */
+    virtual gcstring getRuntimeType () const;
 
     /** My associated AST, if any.  A Decl may be associated with a
      *  particular AST that corresponds to the declaration of the
@@ -233,6 +244,7 @@ private:
     int _index;
     int _depth;
     const gcstring _name;
+    gcstring _runtimeName;
     Decl* _container;
     Environ* _members;
     AST_Ptr _ast;
@@ -379,8 +391,5 @@ private:
 
 /** VirtualMachine that will be used to compile the code. */
 extern VirtualMachine* VM;
-
-/** Mapping from declarations to disambiguated names. */
-extern gcmap<Decl*, gcstring> declName;
 
 #endif

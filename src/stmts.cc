@@ -153,12 +153,8 @@ protected:
     void declNamePreprocess (gcmap<gcstring, int>& names) {
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
-        Decl* memberDecl;
-        gcstring memberNewName;
         for (int i = 0; i < members.size (); i++) {
-            memberDecl = members[i];
-            memberNewName = setupDeclName (members[i], names);
-            declName[memberDecl] = memberNewName;
+            members[i]->setupRuntimeName (names);
         }
         child (3)->declNamePreprocess (names);
     }
@@ -281,12 +277,8 @@ protected:
     void declNamePreprocess (gcmap<gcstring, int>& names) {
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
-        Decl* memberDecl;
-        gcstring memberNewName;
         for (int i = 0; i < members.size (); i++) {
-            memberDecl = members[i];
-            memberNewName = setupDeclName (members[i], names);
-            declName[memberDecl] = memberNewName;
+            members[i]->setupRuntimeName (names);
         }
         child (2)->declNamePreprocess (names);
     }

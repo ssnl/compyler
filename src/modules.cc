@@ -44,16 +44,46 @@ protected:
         out << "#include \"runtime.h\"" << endl;
         int startDepth = 0;
         gcmap<gcstring, int> names;
-        for_each_child (c, this) {
-            c->declDepthPreprocess (startDepth);
-            c->declNamePreprocess (names);
-        } end_for;
+        declDepthPreprocess (startDepth);
+        declNamePreprocess (names);
+        runtimeDataStructGen (out);
 
         // Placeholder Code
         out << "int main()"
             << "{" << endl
             << "    cout << \"Hello, world!\" << endl;" << endl
             << "}";
+    }
+
+    /** Creates a new name for every declaration, starting at but not including
+     *  the module, and recursively iterating to its children. Determines the
+     *  new name using NAMES to create a unique identifier. */
+    void declNamePreprocess (gcmap<gcstring, int>& names) {
+        Decl* me = mainModule;
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        for (int i = 0; i < members.size (); i++) {
+            members[i]->setupRuntimeName(names);
+        }
+        AST::declNamePreprocess (names);
+    }
+
+    /** Generates a struct containing the local variables for the main module.
+     *  Recursively generates runtime data structures for functions and classes
+     *  within the main module. */
+    void runtimeDataStructGen (std::ostream& out) {
+        Decl* me = mainModule;
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring container;
+        for (int i = 0; i < members.size(); i++) {
+            memberDecl = members[i];
+
+        }
+        AST::runtimeDataStructGen (out);
+        out << "class __main__ {" << endl
+            << "public:" << endl << endl
+            << container
+            << "};" << endl << endl;
     }
 
     NODE_CONSTRUCTORS (Module_AST, AST_Tree);

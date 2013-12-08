@@ -55,16 +55,6 @@ AST::print (AST_Ptr tree, std::ostream& out, int indent)
     tree->unmark ();
 }
 
-gcstring
-AST::setupDeclName (Decl* decl, gcmap<gcstring, int>& names)
-{
-    gcstring originalName = decl->getName ();
-    int num = names[originalName]++;
-    stringstream newName;
-    newName << originalName << "_" << num << "$";
-    return newName.str ();
-}
-
 Type_Ptr
 AST::asType ()
 {
@@ -266,10 +256,10 @@ AST::outerCodeGen (ostream&)
 }
 
 void
-AST::runtimeDataStructGen (gcstring container)
+AST::runtimeDataStructGen (ostream& out)
 {
     for_each_child (c, this) {
-        c->runtimeDataStructGen (container);
+        c->runtimeDataStructGen (out);
     } end_for;
 }
 

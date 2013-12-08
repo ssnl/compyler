@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <map>
+#include <sstream>
 #include "apyc.h"
 #include "apyc-parser.hh"
 
@@ -111,6 +112,20 @@ void
 Decl::printTypeParams (ostream& out) const {
 }
 
+gcstring
+Decl::getRuntimeName () const {
+    return _runtimeName;
+}
+
+void
+Decl::setupRuntimeName (gcmap<gcstring, int>& names) {
+    gcstring originalName = getName ();
+    int num = names[originalName]++;
+    stringstream newName;
+    newName << originalName << "_" << num << "$";
+    _runtimeName = newName.str();
+}
+
 Type_Ptr
 Decl::getType () const
 {
@@ -120,6 +135,12 @@ Decl::getType () const
 void
 Decl::setType (Type_Ptr type)
 {
+}
+
+gcstring
+Decl::getRuntimeType () const
+{
+    return "";
 }
 
 int

@@ -209,9 +209,9 @@ public:
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
 
-    /** Generates runtime data structures for modules, functions, and classes.
-     */
-    virtual void runtimeDataStructGen (gcstring container);
+    /** Generates runtime data structures for modules, functions, and classes
+     *  and prints them on OUT. */
+    virtual void runtimeDataStructGen (std::ostream& out);
 
     /** Preprocess the declarations for each AST, providing new names for any
      *  declaration that already has a name previously declared. Uses NAMES to
@@ -271,11 +271,6 @@ protected:
      *  overridings of _print should recursively print their children.
      */
     static void print (AST_Ptr tree, std::ostream& out, int indent);
-
-    /** Generates a string for DECL by returning a name of the form <Name>_<#>$
-     *  where <Name> corresponds to the name of DECL and <#> corresponds to the
-     *  value of NAMES[<Name>]. Increments NAMES[<Name>] by one. */
-    static gcstring setupDeclName (Decl* decl, gcmap<gcstring, int>& names);
 
 private:
     /** The sequence number of the last traversal involving this
