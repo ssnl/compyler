@@ -373,7 +373,9 @@ public:
     VirtualMachine (std::ostream& _out);
 
     /** Outputs an instruction as code to my output stream. */
-    void emit (int type, void* arg);
+    void emit (int instr);
+    void emit (int instr, gcstring* arg);
+    void emit (int instr, gcstring* arg, int arity);
 
     /** Outputs code to handle the start of a function call into my output
      *  stream. */
@@ -396,10 +398,10 @@ public:
 
     /** Outputs a string preceded by indent as a comment into my output
       * stream. */
-    void comment (gcstring s, int indent);
+    void comment (gcstring s, int indent=4);
 
     /** Outputs a string preceded by indent into my output stream. */
-    void code (gcstring s, int indent);
+    void code (gcstring s, int indent=4);
 
 private:
 
