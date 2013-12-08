@@ -403,6 +403,9 @@ public:
     /** Outputs a string preceded by indent into my output stream. */
     void code (gcstring s, int indent=4);
 
+    /** Outputs a newline into my output stream. */
+    void newline (int num=1);
+
 private:
 
     std::ostream& out;

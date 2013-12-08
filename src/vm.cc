@@ -42,7 +42,7 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (const int& instr)
 {
-    code("", 0);
+    newline();
     gcstring s1, s2, rlabel;
     switch (instr) {
 
@@ -106,7 +106,7 @@ VirtualMachine::emit (const int& instr)
 void
 VirtualMachine::emit (const int& instr, gcstring arg)
 {
-    code("", 0);
+    newline();
     switch (instr) {
 
         // arg: the name of the label to jump to
@@ -159,7 +159,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 void
 VirtualMachine::emit (const int& instr, gcstring arg, int arity)
 {
-    code("", 0);
+    newline();
     gcstring argliststr = "";
     gcstring argstr;
 
@@ -222,15 +222,17 @@ void
 VirtualMachine::emitRuntime ()
 {
     code("#include <runtime.h>", 0);
-    code("", 0);
+    newline();
     code(gcstring("int main (int argc, char *argv[]) {"), 0);
     // main body begins here:
-    // x = 5
+    newline(2);
+    comment("x = 5");
     emit(ALLOC, gcstring("new $Integer(5)"));
     emit(PUSH, HEAP_TOP);
     emit(PUSH, gcstring("currFrame.locals.x"));
     emit(MOVE);
-    // y = x + 3
+    newline(2);
+    comment("y = x + 3");
     emit(PUSH, gcstring("currFrame.locals.x"));
     emit(ALLOC, gcstring("new $Integer(3)"));
     emit(PUSH, HEAP_TOP);
@@ -249,6 +251,14 @@ VirtualMachine::comment (gcstring s, int indent)
             indentstr += " ";
         }
         out << indentstr << "/* " << s << " */" << endl;
+    }
+}
+
+void
+VirtualMachine::newline (int num)
+{
+    for (int i = 0; i < num; i++) {
+        code("", 0);
     }
 }
 
@@ -273,7 +283,7 @@ VirtualMachine::tostr (int val)
 void
 VirtualMachine::_emitCompareHelper (string c)
 {
-    comment("comparing (" + c + ")");;
+    comment("comparing (" + c + ")");
     code("cmp1 = ($ObjectBase*) SM.pop();");
     code("cmp2 = ($ObjectBase*) SM.pop();");
     code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) " + c + " 0);");
