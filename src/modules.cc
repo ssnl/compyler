@@ -16,6 +16,7 @@ static GCINIT _gcdummy;
 const Environ* outerEnviron;
 Decl* mainModule;
 VirtualMachine* VM;
+gcmap<Decl*, gcstring> declName;
 
 /*****   MODULE    *****/
 
@@ -39,13 +40,13 @@ protected:
 
     /** Top-level code generation routine.  */
     void outerCodeGen (ostream& out) {
-        VM = new VirtualMachine(out);
+        VM = new VirtualMachine (out);
         out << "#include \"runtime.h\"" << endl;
         int startDepth = 0;
         gcmap<gcstring, int> names;
-        for_each_child(c, this) {
-            c->declDepthPreprocess(startDepth);
-            c->declNamePreprocess(names);
+        for_each_child (c, this) {
+            c->declDepthPreprocess (startDepth);
+            c->declNamePreprocess (names);
         } end_for;
 
         // Placeholder Code

@@ -146,10 +146,21 @@ protected:
         Decl* me = getDecl ();
         me->setDepth (currDepth);
         currDepth += 1;
-        for_each_child (c, this) {
-            c->declDepthPreprocess (currDepth);
-        } end_for;
+        child(3)->declDepthPreprocess (currDepth);
         currDepth -= 1;
+    }
+
+    void declNamePreprocess (gcmap<gcstring, int>& names) {
+        Decl* me = getDecl ();
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring memberNewName;
+        for (int i = 0; i < members.size (); i++) {
+            memberDecl = members[i];
+            memberNewName = setupDeclName (members[i], names);
+            declName[memberDecl] = memberNewName;
+        }
+        child (3)->declNamePreprocess (names);
     }
 
 };
@@ -265,6 +276,19 @@ protected:
     AST_Ptr resolveTypes (Decl* context, int& resolved, int& ambiguities) {
         replace (2, child (2)->resolveTypes (getDecl (), resolved, ambiguities));
         return this;
+    }
+
+    void declNamePreprocess (gcmap<gcstring, int>& names) {
+        Decl* me = getDecl ();
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring memberNewName;
+        for (int i = 0; i < members.size (); i++) {
+            memberDecl = members[i];
+            memberNewName = setupDeclName (members[i], names);
+            declName[memberDecl] = memberNewName;
+        }
+        child (2)->declNamePreprocess (names);
     }
 
 private:

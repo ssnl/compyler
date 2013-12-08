@@ -58,11 +58,11 @@ AST::print (AST_Ptr tree, std::ostream& out, int indent)
 gcstring
 AST::setupDeclName (Decl* decl, gcmap<gcstring, int>& names)
 {
-    gcstring originalName = decl->getName();
-    int num = names[originalName];
+    gcstring originalName = decl->getName ();
+    int num = names[originalName]++;
     stringstream newName;
     newName << originalName << "_" << num << "$";
-    return newName.str();
+    return newName.str ();
 }
 
 Type_Ptr
@@ -268,13 +268,16 @@ AST::outerCodeGen (ostream&)
 void
 AST::declNamePreprocess(gcmap<gcstring, int>& names)
 {
+    for_each_child (c, this) {
+        c->declNamePreprocess(names);
+    } end_for;
 }
 
 void
 AST::declDepthPreprocess(int& currDepth)
 {
     for_each_child (c, this) {
-        c->declDepthPreprocess(currDepth);
+        c->declDepthPreprocess (currDepth);
     } end_for;
 }
 

@@ -65,7 +65,7 @@ error (AST_Ptr node, const char* format, ...)
 }
 
 void
-error_no_file (const char* format, ...) 
+error_no_file (const char* format, ...)
 {
     va_list ap;
     va_start (ap, format);
@@ -109,7 +109,7 @@ closeStdout ()
 static void
 makeExecutable (const gcstring& source, const gcstring& executable)
 {
-    gcstring command = GCC + " -g -I " + execPrefix + LIB_SUFFIX + 
+    gcstring command = GCC + " -g -I " + execPrefix + LIB_SUFFIX +
         " -o " + executable + " " + execPrefix + RUNTIME
         + " -x c++ " + source;
     int code = system (command.c_str ());
@@ -131,7 +131,7 @@ main (int argc, char* argv[])
 	    i += 1;
 	} else if (opt.compare (0, 8, "--phase=") == 0)
 	    maxPhase = atoi(opt.c_str () + 8);
-	else if (opt == "-dp") 
+	else if (opt == "-dp")
 	    debugParser = true;
         else if (opt == "-S")
             maxPhase = 3;
@@ -145,7 +145,7 @@ main (int argc, char* argv[])
     errCount = 0;
     gcstring infile = argv[i];
 
-    if (infile.size () < 4 
+    if (infile.size () < 4
         || infile.compare (infile.size ()-3, 3, ".py") != 0) {
         error_no_file ("Unknown file type: %s\n", argv[i]);
         exit (1);
@@ -171,8 +171,8 @@ main (int argc, char* argv[])
             case 3:
                 coutName = prefix + CODE_SUFFIX;
                 break;
-            } 
-        } else 
+            }
+        } else
             coutName = outfile;
     } else {
         coutName = TEMPORARY_TEMPLATE;
@@ -183,8 +183,8 @@ main (int argc, char* argv[])
             executableName = "a.out";
         else
             executableName = outfile;
-    }        
-        
+    }
+
     parse_init ();
     add_source_file (infile);
     if (maxPhase > 1) {
@@ -216,7 +216,7 @@ main (int argc, char* argv[])
 }
 
 /* Debugging routines.  These are never called in the skeleton.  They
- * are intended to be called from GDB, as in 
+ * are intended to be called from GDB, as in
  *     (gdb) call DB(aTree)
  */
 
@@ -253,4 +253,24 @@ DB(Decl* d)
 {
     d->print(cerr);
 }
-    
+
+/* Personal debugging routines */
+
+int
+DB_Depth(Decl* d)
+{
+    return d->getDepth();
+}
+
+void
+DB(gcmap<Decl*, gcstring> map)
+{
+    gcstring originalName, newName;
+    for (gcmap<Decl*, gcstring>::iterator it = map.begin();
+         it != map.end(); it++) {
+        originalName = it->first->getName();
+        newName = it->second;
+        fprintf (stderr, "Decl %s renamed to %s\n", originalName.c_str(),
+            newName.c_str());
+    }
+}
