@@ -70,57 +70,27 @@ VirtualMachine::emit (int instr)
         break;
 
         case COMPL:
-            comment("comparing (<)");;
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) < 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         case COMPG:
-            comment("comparing (>)");;
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) > 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         case COMPLE:
-            comment("comparing (<=)");;
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) <= 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         case COMPGE:
-            comment("comparing (>=)");;
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) >= 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         case COMPE:
-            comment("comparing (==)");
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) == 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         case COMPNE:
-            comment("comparing (!=)");
-            code("cmp1 = ($ObjectBase*) SM.pop();");
-            code("cmp2 = ($ObjectBase*) SM.pop();");
-            code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) != 0);");
-            code("HEAP.push(&tmp_alloc);");
-            code("SM.push(&tmp_alloc);");
+            _emitCompareHelper
         break;
 
         default:
@@ -266,7 +236,8 @@ VirtualMachine::comment (gcstring s, int indent)
 }
 
 void
-VirtualMachine::code (gcstring s, int indent) {
+VirtualMachine::code (gcstring s, int indent)
+{
     string indentstr = "";
     for (int i = 0; i < indent; i++) {
         indentstr += " ";
@@ -275,8 +246,20 @@ VirtualMachine::code (gcstring s, int indent) {
 }
 
 gcstring
-VirtualMachine::tostr (int val) {
+VirtualMachine::tostr (int val)
+{
     stringstream sts;
     sts << val;
     return gcstring(sts.str());
+}
+
+void
+VirtualMachine::_emitCompareHelper (string c)
+{
+    comment("comparing (" + c + ")");;
+    code("cmp1 = ($ObjectBase*) SM.pop();");
+    code("cmp2 = ($ObjectBase*) SM.pop();");
+    code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) " + c + " 0);");
+    code("HEAP.push(&tmp_alloc);");
+    code("SM.push(&tmp_alloc);");
 }
