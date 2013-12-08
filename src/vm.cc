@@ -70,27 +70,27 @@ VirtualMachine::emit (int instr)
         break;
 
         case COMPL:
-            _emitCompareHelper
+            _emitCompareHelper("<");
         break;
 
         case COMPG:
-            _emitCompareHelper
+            _emitCompareHelper(">");
         break;
 
         case COMPLE:
-            _emitCompareHelper
+            _emitCompareHelper("<=");
         break;
 
         case COMPGE:
-            _emitCompareHelper
+            _emitCompareHelper(">=");
         break;
 
         case COMPE:
-            _emitCompareHelper
+            _emitCompareHelper("==");
         break;
 
         case COMPNE:
-            _emitCompareHelper
+            _emitCompareHelper("!=");
         break;
 
         default:
