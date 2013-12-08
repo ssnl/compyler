@@ -342,6 +342,10 @@ public:
         _type = type;
     }
 
+    gcstring getRuntimeTypeName () const {
+        return getType ()->binding ()->getRuntimeName ();
+    }
+
 protected:
 
     void printType (ostream& out) const {
@@ -361,10 +365,6 @@ public:
 
     VarDecl (const gcstring& name, Decl* container, AST_Ptr type)
         :  TypedDecl (name, container, type) {
-    }
-
-    gcstring getRuntimeTypeName () const {
-        return getType ()->binding ()->getRuntimeName ();
     }
 
 protected:
@@ -392,10 +392,6 @@ public:
     ParamDecl (const gcstring& name, Decl* func, int k,
               AST_Ptr type)
         :  TypedDecl (name, func, type), _posn (k) {
-    }
-
-    gcstring getRuntimeTypeName () const {
-        return getType ()->binding ()->getRuntimeName ();
     }
 
     int getPosition () const {
@@ -434,10 +430,6 @@ public:
 
     InstanceDecl (const gcstring& name, Decl* cls, AST_Ptr type)
         :  TypedDecl (name, cls, type) {
-    }
-
-    gcstring getRuntimeTypeName () const {
-        return getType ()->binding ()->getRuntimeName ();
     }
 
 protected:

@@ -33,7 +33,7 @@ typedef struct Frame {
 typedef struct {
     Frame* SL;
     Label label;
-} CallDesc;
+} FuncDesc;
 
 extern const vector<Frame> STACK;
 extern const vector<void*> HEAP;

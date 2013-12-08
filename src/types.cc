@@ -516,6 +516,12 @@ int TypeVar_AST::next_uid = 0;
 /***** FUNCTION TYPES *****/
 
 class FunctionType_AST: public Type {
+public:
+
+    gcstring getRuntimeName () {
+        return "FuncDesc";
+    }
+
 protected:
 
     int numParams () {
