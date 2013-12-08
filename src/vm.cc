@@ -4,6 +4,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include "apyc.h"
 
 using namespace std;
@@ -166,7 +167,7 @@ VirtualMachine::emit (int instr, gcstring* arg)
             }
         break;
 
-        // arg: gcstring denoting the creation of a new object
+        // arg: gcstring*, the creation of a new object
         // e.g. tmp_alloc = new $Integer(5);
         //      HEAP.push(&tmp_alloc);
         case ALLOC:
@@ -186,10 +187,24 @@ void
 VirtualMachine::emit (int instr, gcstring* arg, int arity)
 {
     gcstring str = arg->c_str();
+    gcstring argliststr = "";
+    gcstring argstr;
+
     switch (instr) {
 
+        // arg: gcstring*, the name of the native function
+        // arity: int, the number of params the native function takes
         case NATIVE:
-            // write call to native method
+            for (int i = 0; i < arity; i++) {
+                argstr = "tmp_arg" + tostr(i);
+                code(argstr + " = SM.pop();");
+                if (i == arity-1) {
+                    argliststr += argstr;
+                } else {
+                    argliststr += (argstr + ",");
+                }
+            }
+            code("SM.push(" + str + "(" + argliststr + "));");
         break;
 
         default:
@@ -257,4 +272,11 @@ VirtualMachine::code (gcstring s, int indent) {
         indentstr += " ";
     }
     out << indentstr << s << endl;
+}
+
+gcstring
+VirtualMachine::tostr (int val) {
+    stringstream sts;
+    sts << val;
+    return gcstring(sts.str());
 }

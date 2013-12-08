@@ -409,6 +409,8 @@ private:
     int numLabels;
     int numRetLabels;
 
+    /** Yeah, necessary for uhh...convenience. */
+    gcstring tostr(int val);
 };
 
 /** VirtualMachine that will be used to compile the code. */
