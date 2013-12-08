@@ -8,26 +8,27 @@
 
 using namespace std;
 
-// Used to store frames during runtime
+// Stores frames during runtime
 const vector<Frame> STACK;
-
-// Used to store references to objects allocated during runtime
+// Stores references to objects allocated during runtime
 const vector<void*> HEAP;
-
 // Our runtime stack machine
 const vector<void*> SM;
 
-// Used to store the current environment (frame) of execution
+// Stores the current environment (frame) of execution
 Frame currFrame;
-
-// Used to store function pointer when popped from SM
+// Stores the static link of a called function
+Frame tmp_slink;
+// Stores newly created frame when calling function
+Frame tmp_frame;
+// Stores function pointer when popped from SM
 FuncDesc* call;
 
-// Used to store assignment destination in "dst = src"
+// Stores assignment destination in "dst = src"
 void* dst;
-
-// Used to store assignment source in "dst = src"
+// Stores assignment source in "dst = src"
 void* src;
-
-// Used to store temp reference to allocated object
+// Stores temp reference to allocated object
 void* tmp_alloc;
+// Stores arguments of native calls
+void* tmp_arg0, tmp_arg1, tmp_arg2, tmp_arg3;

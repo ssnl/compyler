@@ -26,6 +26,8 @@ static const int COMPE = 10;
 static const int COMPNE = 11;
 static const int NATIVE = 12;
 
+static gcstring HEAP_TOP = gcstring("");
+
 /** Constants corresponding to runtime data structure variable names. */
 static const gcstring STACK = "STACK";
 static const gcstring HEAP = "HEAP";
@@ -40,7 +42,7 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (const int& instr)
 {
-    code("");
+    code("", 0);
     gcstring s1, s2, rlabel;
     switch (instr) {
 
@@ -55,7 +57,7 @@ VirtualMachine::emit (const int& instr)
             rlabel = "__R__" + numRetLabels;
             code("call = (FuncDesc*) SM.pop();");
             code("currFrame.return_addr = " + rlabel);
-            code("tmp_slink = &call.frame;");
+            code("tmp_slink = call.frame;");
             code("goto *(call.label);");
             code(rlabel + ":", 0);
         break;
@@ -104,7 +106,7 @@ VirtualMachine::emit (const int& instr)
 void
 VirtualMachine::emit (const int& instr, gcstring arg)
 {
-    code("");
+    code("", 0);
     switch (instr) {
 
         // arg: the name of the label to jump to
@@ -114,7 +116,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("goto " + arg + ";");
         break;
 
-        // arg: gcstring*, the name of the label to jump to
+        // arg: gcstring, the name of the label to jump to
         // e.g. cmp = (int*) SM.pop();
         //      if (*(cmp)==0) goto __L__16;
         case GTZ:
@@ -125,7 +127,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("if (*(cmp).compareTo($ZERO)) { goto " + arg + "; }");
         break;
 
-        // arg: gcstring*, the data to push onto the stack.
+        // arg: gcstring, the data to push onto the stack.
         // if NULL, pushes the top of HEAP
         // e.g. SM.push(&currFrame.x);
         case PUSH:
@@ -138,7 +140,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             }
         break;
 
-        // arg: gcstring*, the creation of a new object
+        // arg: gcstring, the creation of a new object
         // e.g. tmp_alloc = new $Integer(5);
         //      HEAP.push(&tmp_alloc);
         case ALLOC:
@@ -157,7 +159,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 void
 VirtualMachine::emit (const int& instr, gcstring arg, int arity)
 {
-    code("");
+    code("", 0);
     gcstring argliststr = "";
     gcstring argstr;
 
@@ -166,13 +168,14 @@ VirtualMachine::emit (const int& instr, gcstring arg, int arity)
         // arg: gcstring*, the name of the native function
         // arity: int, the number of params the native function takes
         case NATIVE:
+            comment("calling " + arg + " (" + tostr(arity) + " params)");
             for (int i = 0; i < arity; i++) {
                 argstr = "tmp_arg" + tostr(i);
                 code(argstr + " = SM.pop();");
                 if (i == arity-1) {
                     argliststr += argstr;
                 } else {
-                    argliststr += (argstr + ",");
+                    argliststr += (argstr + ", ");
                 }
             }
             code("SM.push(" + arg + "(" + argliststr + "));");
@@ -216,15 +219,25 @@ VirtualMachine::placeLabel (VMLabel label)
 }
 
 void
-VirtualMachine::emitRuntime () 
+VirtualMachine::emitRuntime ()
 {
+    code("#include <runtime.h>", 0);
+    code("", 0);
     code(gcstring("int main (int argc, char *argv[]) {"), 0);
     // main body begins here:
+    // x = 5
     emit(ALLOC, gcstring("new $Integer(5)"));
-    emit(PUSH, gcstring(""));
-    emit(PUSH, gcstring("currFrame.x"));
+    emit(PUSH, HEAP_TOP);
+    emit(PUSH, gcstring("currFrame.locals.x"));
     emit(MOVE);
-    code(gcstring("}"), 0);
+    // y = x + 3
+    emit(PUSH, gcstring("currFrame.locals.x"));
+    emit(ALLOC, gcstring("new $Integer(3)"));
+    emit(PUSH, HEAP_TOP);
+    emit(NATIVE, gcstring("add_int"), 2);
+    emit(PUSH, gcstring("currFrame.locals.y"));
+    emit(MOVE);
+    code("}", 0);
 }
 
 void
