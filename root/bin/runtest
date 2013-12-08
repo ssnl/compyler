@@ -207,7 +207,7 @@ check-error $?
 
 # Process depending on phase
 SUCCESS=
-if [ -z $PHASE ]; then
+if [ -z $PHASE ] || [ $PHASE == 4 ]; then
   runp4
   SUCCESS=$?
 elif [ $PHASE == 3 ]; then
