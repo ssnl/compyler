@@ -5,7 +5,7 @@
 #       during development.
 
 # The __init__ methods of all builtin classes call a function that causes
-# a fatal error. 
+# a fatal error.
 
 class str:
     def __init__(self::str):

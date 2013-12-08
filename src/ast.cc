@@ -5,7 +5,6 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
-#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"

@@ -138,7 +138,7 @@ Decl::setType (Type_Ptr type)
 }
 
 gcstring
-Decl::getRuntimeType () const
+Decl::getRuntimeTypeName () const
 {
     return "";
 }
@@ -163,6 +163,12 @@ Decl::setAst (AST_Ptr ast)
 
 bool
 Decl::isType () const
+{
+    return false;
+}
+
+bool
+Decl::isTypeVar () const
 {
     return false;
 }
@@ -357,6 +363,10 @@ public:
         :  TypedDecl (name, container, type) {
     }
 
+    gcstring getRuntimeTypeName () const {
+        return getType ()->binding ()->getRuntimeName ();
+    }
+
 protected:
 
     const char* declTypeName () const {
@@ -382,6 +392,10 @@ public:
     ParamDecl (const gcstring& name, Decl* func, int k,
               AST_Ptr type)
         :  TypedDecl (name, func, type), _posn (k) {
+    }
+
+    gcstring getRuntimeTypeName () const {
+        return getType ()->binding ()->getRuntimeName ();
     }
 
     int getPosition () const {
@@ -422,6 +436,10 @@ public:
         :  TypedDecl (name, cls, type) {
     }
 
+    gcstring getRuntimeTypeName () const {
+        return getType ()->binding ()->getRuntimeName ();
+    }
+
 protected:
 
     const char* declTypeName () const {
@@ -446,6 +464,10 @@ public:
     TypeVarDecl (const gcstring& name, AST_Ptr canonical)
         :  Decl (name, NULL) {
 	setAst (canonical);
+    }
+
+    bool isTypeVar () const {
+        return true;
     }
 
 protected:

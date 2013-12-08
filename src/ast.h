@@ -355,6 +355,9 @@ public:
     /** Reports an erroneous type reference. */
     Type_Ptr getType ();
 
+    /** My runtime type name. By default, returns "". */
+    virtual gcstring getRuntimeName ();
+
     /** My arity, if I am a function type.  Otherwise -1. */
     virtual int numParams ();
 
@@ -421,8 +424,6 @@ public:
     /** Return a type equivalent to TYPE in which all nodes are replaced
      *  by their bindings. */
     static Type_Ptr replaceBindings (Type_Ptr type);
-
-
 
     NODE_BASE_CONSTRUCTORS_INIT (Type, AST_Tree, _binding (NULL));
 

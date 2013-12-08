@@ -5,6 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -159,6 +160,35 @@ protected:
         child (3)->declNamePreprocess (names);
     }
 
+    void runtimeDataStructGen (std::ostream& out) {
+        Decl* me = getDecl ();
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring memberName, memberTypeName;
+        stringstream body, generics;
+        bool first = true;
+        for (int i = 0; i < members.size (); i++) {
+            memberDecl = members[i];
+            memberName = memberDecl->getRuntimeName ();
+            memberTypeName = memberDecl->getRuntimeTypeName ();
+            if (memberTypeName != "") {
+                body << "    "
+                     << memberTypeName << " " << memberName << ";" << endl;
+            } else if (memberDecl->isTypeVar ()) {
+                if (!first)
+                    generics << ", ";
+                else
+                    first = false;
+                generics << "class " << memberName;
+            }
+        }
+        if (generics.str() != "")
+            out << "template <" << generics.str() << ">" << endl;
+        out << "struct " << me->getRuntimeName() << " {" << endl
+            << body.str ()
+            << "};" << endl << endl;
+        AST::runtimeDataStructGen (out);
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -283,6 +313,30 @@ protected:
         child (2)->declNamePreprocess (names);
     }
 
+    void runtimeDataStructGen (std::ostream& out) {
+        if (isPrimitive(getDecl ()))
+            return;
+        Decl* me = getDecl ();
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring memberName, memberTypeName;
+        stringstream body;
+        for (int i = 0; i < members.size (); i++) {
+            memberDecl = members[i];
+            memberName = memberDecl->getRuntimeName ();
+            memberTypeName = memberDecl->getRuntimeTypeName ();
+            if (memberTypeName != "") {
+                body << "    "
+                     << memberTypeName << " " << memberName << ";" << endl;
+            }
+        }
+        out << "class " << me->getRuntimeName() << " : $Object {" << endl
+            << "public:" << endl << endl
+            << body.str () << endl
+            << "};" << endl << endl;
+        AST::runtimeDataStructGen (out);
+    }
+
 private:
     /** Add declaration of method init to me. */
     void addInit () {
@@ -294,6 +348,21 @@ private:
                       consTree (BLOCK));
         newDef->collectDecls (me);
         child (2)->insert (0, newDef);
+    }
+
+    /** Check if declaration is a primitive type. */
+    bool isPrimitive (Decl* decl) {
+        return decl == intDecl
+            || decl == listDecl
+            || decl == tupleDecl[0]
+            || decl == tupleDecl[1]
+            || decl == tupleDecl[2]
+            || decl == tupleDecl[3]
+            || decl == strDecl
+            || decl == dictDecl
+            || decl == boolDecl
+            || decl == fileDecl
+            || decl == rangeDecl;
     }
 };
 

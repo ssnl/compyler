@@ -118,8 +118,9 @@ public:
     virtual void setType (Type_Ptr type);
 
     /** Gets the name of the type of the entity I represent rewritten in the
-     *  format that will be used at runtime. */
-    virtual gcstring getRuntimeType () const;
+     *  format that will be used at runtime. For varDecls will return a properly
+     *  formed type. Otherwise returns an empty string. */
+    virtual gcstring getRuntimeTypeName () const;
 
     /** My associated AST, if any.  A Decl may be associated with a
      *  particular AST that corresponds to the declaration of the
@@ -137,6 +138,9 @@ public:
 
     /** True iff I represent a type. */
     virtual bool isType () const;
+
+    /** True iff I represent a type variable. */
+    virtual bool isTypeVar () const;
 
     /** True iff I represent an internally generated type variable
      *  (which should not be included in the output list). */

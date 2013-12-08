@@ -5,6 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -41,7 +42,7 @@ protected:
     /** Top-level code generation routine.  */
     void outerCodeGen (ostream& out) {
         VM = new VirtualMachine (out);
-        out << "#include \"runtime.h\"" << endl;
+        out << "#include \"runtime.h\"" << endl << endl;
         int startDepth = 0;
         gcmap<gcstring, int> names;
         declDepthPreprocess (startDepth);
@@ -71,18 +72,23 @@ protected:
      *  Recursively generates runtime data structures for functions and classes
      *  within the main module. */
     void runtimeDataStructGen (std::ostream& out) {
+        AST::runtimeDataStructGen (out);
         Decl* me = mainModule;
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
-        gcstring container;
+        gcstring memberName, memberTypeName;
+        stringstream body, generics;
         for (int i = 0; i < members.size(); i++) {
             memberDecl = members[i];
-
+            memberName = memberDecl->getRuntimeName();
+            memberTypeName = memberDecl->getRuntimeTypeName();
+            if (memberTypeName != "") {
+                body << "    " << memberTypeName << " "
+                     << memberName << ";" << endl;
+            }
         }
-        AST::runtimeDataStructGen (out);
-        out << "class __main__ {" << endl
-            << "public:" << endl << endl
-            << container
+        out << "struct __main__ {" << endl
+            << body.str()
             << "};" << endl << endl;
     }
 

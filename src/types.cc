@@ -33,13 +33,13 @@ AST::resolveTypes (Decl* context)
     } while (errors == numErrors () &&
              (resolved != resolved0 || ambiguities != ambiguities0));
     if (ambiguities > 0)
-        error (this, 
+        error (this,
                "unresolved overloadings in left side of attribute reference");
     return r;
 }
 
 AST_Ptr
-AST::resolveTypesOuter (Decl* context) 
+AST::resolveTypesOuter (Decl* context)
 {
     AST_Ptr r;
     r = this;
@@ -57,6 +57,12 @@ Type::getType ()
 {
     error (this, "a type may not be used as a value in this dialect");
     return makeVar ();
+}
+
+gcstring
+Type::getRuntimeName ()
+{
+    return "";
 }
 
 int
@@ -153,7 +159,7 @@ Type::unify (Type_Ptr type)
 }
 
 bool
-Type::unifyLists (AST_Ptr L1, AST_Ptr L2, Unwind_Stack& bindings) 
+Type::unifyLists (AST_Ptr L1, AST_Ptr L2, Unwind_Stack& bindings)
 {
     size_t b0 = bindings.size ();
     if (L1->arity () != L2->arity ())
@@ -284,11 +290,11 @@ Type::_freshen ()
         return this;
     }
 
-    AST_Ptr kids[2] = { 
+    AST_Ptr kids[2] = {
         arg0, AST::make_tree (TYPE_LIST, type_args, type_args + type_arity)
     };
     _forward = AST::make_tree (oper ()->syntax (), kids, kids + 2)->asType ();
-    
+
     delete [] type_args;
     return _forward;
 }
@@ -328,7 +334,7 @@ makeFuncType (int n)
     gcvector<AST_Ptr> params;
     for (int i = 0; i < n; i += 1)
         params.push_back(Type::makeVar ());
-    AST_Ptr paramList = 
+    AST_Ptr paramList =
         AST::make_tree (TYPE_LIST, &params[0], &params[params.size()]);
 
     return consTree (FUNCTION_TYPE, Type::makeVar (), paramList)->asType ();
@@ -351,7 +357,7 @@ makeMethodType (int n, Decl* clas)
     params.push_back (clas->asGenericType ());
     for (int i = 1; i < n; i += 1)
         params.push_back(Type::makeVar ());
-    AST_Ptr paramList = 
+    AST_Ptr paramList =
         AST::make_tree (TYPE_LIST, &params[0], &params[params.size()]);
 
     return consTree (FUNCTION_TYPE, Type::makeVar (), paramList)->asType ();
@@ -360,8 +366,14 @@ makeMethodType (int n, Decl* clas)
 /*****  TYPE VARIABLES *****/
 
 class TypeVar_AST : public Type {
+public:
+
+    gcstring getRuntimeName () {
+        return getDecl ()->getRuntimeName ();
+    }
+
 protected:
-    
+
     NODE_CONSTRUCTORS_INIT (TypeVar_AST, Type, _me (NULL));
 
     bool isTypeVariable () {
@@ -392,7 +404,7 @@ protected:
         assert (_binding == NULL && target != NULL);
         Decl* me = getDecl ();
         assert (me != NULL);
-        TypeVar_AST* canonical = 
+        TypeVar_AST* canonical =
             dynamic_cast<TypeVar_AST*> (me->getAst ());
         if (canonical == this) {
             bindings.push (this);
@@ -401,7 +413,7 @@ protected:
         } else
             return canonical->bind (target, bindings);
     }
-    
+
     void unwind () {
         assert (_binding != NULL);
         Decl* me = getDecl ();
@@ -432,7 +444,7 @@ protected:
         Type_Ptr me = binding ();
         if (me == this) {
             if (arity () == 1) {
-                out << "(type_var " << lineNumber () << " " 
+                out << "(type_var " << lineNumber () << " "
                     << child(0)->as_string ();
             } else
                 out << "(type_var 0 $#" << uid;
@@ -546,6 +558,12 @@ NODE_FACTORY (FunctionType_AST, FUNCTION_TYPE);
 /***** CLASSES *****/
 
 class ClassType_AST: public Type {
+public:
+
+    gcstring getRuntimeName () {
+        return getDecl ()->getRuntimeName ();
+    }
+
 protected:
 
     NODE_CONSTRUCTORS (ClassType_AST, Type);
@@ -592,7 +610,7 @@ protected:
         } else {
             addDecl (decl);
         }
-    }        
+    }
 
 };
 
