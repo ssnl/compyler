@@ -18,3 +18,15 @@
 # Sublime Workspace files
 *.sublime-project
 *.sublime-workspace
+
+# Specific compiled files
+apyc
+output.dSYM/*
+src/.depend
+src/apyc-lexer.cc
+src/apyc-lexer.l
+src/apyc-parser.cc
+src/apyc-parser.hh
+src/apyc-parser.output
+src/apyc-parser.y
+src/parser-sentinel
