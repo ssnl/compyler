@@ -350,7 +350,8 @@ protected:
     }
 
     void runtimeDataStructGen (std::ostream& out) {
-        if (isPrimitive(getDecl ()))
+        if (isPrimitive(getDecl ())
+            || getDecl ()->getName () == "__sys__")
             return;
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
