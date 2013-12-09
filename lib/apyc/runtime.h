@@ -23,21 +23,20 @@ typedef void* Label;
  *  to a structure containing all the local variables in the frame during
  *  runtime. */
 typedef struct Frame {
-    Frame* SL;
-    Frame* DL;
+    Frame* sl;
     void* locals;
 } Frame;
 
 /** A call description struct that refers to a call descriptor. Contains the
  *  static link for the call as well as the label to jump to. */
 typedef struct {
-    Frame* SL;
+    Frame* sl;
     Label label;
 } FuncDesc;
 
 extern const vector<Frame> STACK;
 extern const vector<void*> HEAP;
 extern const vector<void*> SM;
-extern const Frame curr_frame;
+extern const Frame cf;
 
 #endif

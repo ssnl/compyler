@@ -201,7 +201,6 @@ VirtualMachine::placeLabel (VMLabel label)
 void
 VirtualMachine::emitRuntime ()
 {
-    code("#include <runtime.h>", 0);
     newline(2);
     code(gcstring("int main (int argc, char *argv[]) {"), 0);
     // main body begins here:
