@@ -386,6 +386,14 @@ public:
      *  stream. */
     void emitEpilogue ();
 
+    /** Outputs the runtime prologue that precedes the body of the main 
+     *  method */
+    void emitRuntimePrologue ();
+
+    /** Outputs the runtime epilogue that succeeds the body of the main 
+     *  method */
+    void emitRuntimeEpilogue ();
+
     /** Creates and returns new code label. */
     VMLabel newLabel ();
 

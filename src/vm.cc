@@ -154,7 +154,7 @@ VirtualMachine::emit (const int& instr, gcstring arg, int arity)
                     argliststr += (argstr + ", ");
                 }
             }
-            code("SM.push(" + arg + "(" + argliststr + "));");
+            code("SM.push(&" + arg + "(" + argliststr + "));");
         break;
 
         default:
@@ -203,9 +203,26 @@ VirtualMachine::emitRuntime ()
 {
     newline(2);
     code(gcstring("int main (int argc, char *argv[]) {"), 0);
+    emitRuntimePrologue();
     // main body begins here:
     __test_codegen();
+    emitRuntimeEpilogue();
     code("}", 0);
+}
+
+void
+VirtualMachine::emitRuntimePrologue ()
+{
+}
+
+void
+VirtualMachine::emitRuntimeEpilogue ()
+{
+    newline(2);
+    comment("runtime epilogue: deleting objects stored on heap");
+    code("for (int i = 0; i < HEAP.size(); i++) {");
+    code("delete HEAP[i];", 8);
+    code("}");
 }
 
 void
@@ -271,7 +288,7 @@ VirtualMachine::__test_codegen()
     comment("z = foo(x, y)");
     emit(PUSH, "cf.locals.x");
     emit(PUSH, "cf.locals.y");
-    emit(PUSH, "cf.locals.foo"); // Yea, I don't know about this
+    emit(PUSH, "cf.locals.foo");
     emit(SETUP_FUNCTION, "cf");
     emit(CALL);
     emit(PUSH, "cf.locals.z");
