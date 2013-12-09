@@ -18,12 +18,6 @@ static const int GTZ = 2;
 static const int PUSH = 3;
 static const int MOVE = 4;
 static const int ALLOC = 5;
-// static const int COMPL = 6;
-// static const int COMPG = 7;
-// static const int COMPLE = 8;
-// static const int COMPGE = 9;
-// static const int COMPE = 10;
-// static const int COMPNE = 11;
 static const int NATIVE = 6;
 static const int SETUP_FUNCTION = 7;
 
