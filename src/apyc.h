@@ -88,11 +88,12 @@ public:
 
     const gcstring& getName () const { return _name; }
 
-    /** Gets my name rewritten in the format that will be used at runtime. */
+    /** Gets my name rewritten in the format that will be used at runtime. For
+     *  type variables returns an empty string. */
     gcstring getRuntimeName () const;
 
     /** Sets up my name rewritten in the format that will be used at runtime,
-     *  using NAMES to disambiguate my name. */
+     *  using NAMES to disambiguate my name. Does nothing for typevars. */
     void setupRuntimeName (gcmap<gcstring, int>& names);
 
     /** My depth value indicating my frame depth, and otherwise -1 to

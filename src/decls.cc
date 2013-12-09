@@ -462,6 +462,13 @@ public:
         return true;
     }
 
+    gcstring getRuntimeName () const {
+        return "";
+    }
+
+    void setupRuntimeName (gcmap<gcstring, int>& names) {
+    }
+
 protected:
 
     bool isInternal () const {
