@@ -73,30 +73,6 @@ VirtualMachine::emit (const int& instr)
             code("*dst = *src;");
         break;
 
-        // case COMPL:
-        //     _emitCompareHelper("<");
-        // break;
-
-        // case COMPG:
-        //     _emitCompareHelper(">");
-        // break;
-
-        // case COMPLE:
-        //     _emitCompareHelper("<=");
-        // break;
-
-        // case COMPGE:
-        //     _emitCompareHelper(">=");
-        // break;
-
-        // case COMPE:
-        //     _emitCompareHelper("==");
-        // break;
-
-        // case COMPNE:
-        //     _emitCompareHelper("!=");
-        // break;
-
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int)"));
@@ -276,17 +252,6 @@ VirtualMachine::tostr (int val)
     sts << val;
     return gcstring(sts.str());
 }
-
-// void
-// VirtualMachine::_emitCompareHelper (string c)
-// {
-//     comment("comparing (" + c + ")");
-//     code("cmp1 = ($ObjectBase*) SM.pop();");
-//     code("cmp2 = ($ObjectBase*) SM.pop();");
-//     code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) " + c + " 0);");
-//     code("HEAP.push(&tmp_alloc);");
-//     code("SM.push(&tmp_alloc);");
-// }
 
 void
 VirtualMachine::__test_codegen()
