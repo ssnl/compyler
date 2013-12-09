@@ -1,3 +1,4 @@
+
 /* -*- mode: C++; c-file-style: "stroustrup"; indent-tabs-mode: nil; -*- */
 
 /* types.cc: AST subclasses related to types. */
@@ -639,5 +640,3 @@ protected:
 };
 
 NODE_FACTORY (TypeList_AST, TYPE_LIST);
-
-

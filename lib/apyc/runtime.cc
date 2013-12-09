@@ -16,7 +16,7 @@ const vector<void*> HEAP;
 const vector<void*> SM;
 
 // Stores the current environment (frame) of execution
-Frame currFrame;
+Frame cf;
 // Stores the static link of a called function
 Frame tmp_slink;
 // Stores newly created frame when calling function
@@ -32,3 +32,6 @@ void* src;
 void* tmp_alloc;
 // Stores arguments of native calls
 void* tmp_arg0, tmp_arg1, tmp_arg2, tmp_arg3;
+
+// Stores the constant Integer value of 0
+$Integer __ZERO__ = new $Integer(0);

@@ -18,13 +18,14 @@ static const int GTZ = 2;
 static const int PUSH = 3;
 static const int MOVE = 4;
 static const int ALLOC = 5;
-static const int COMPL = 6;
-static const int COMPG = 7;
-static const int COMPLE = 8;
-static const int COMPGE = 9;
-static const int COMPE = 10;
-static const int COMPNE = 11;
-static const int NATIVE = 12;
+// static const int COMPL = 6;
+// static const int COMPG = 7;
+// static const int COMPLE = 8;
+// static const int COMPGE = 9;
+// static const int COMPE = 10;
+// static const int COMPNE = 11;
+static const int NATIVE = 6;
+static const int SETUP_FUNCTION = 7;
 
 static gcstring HEAP_TOP = gcstring("");
 
@@ -47,16 +48,16 @@ VirtualMachine::emit (const int& instr)
     switch (instr) {
 
         // e.g. call = (FuncDesc*) SM.pop();
-        //      currFrame = call.frame;
-        //      RETURN_ADDR.push(&&__R__15);
+        //      cf.return_addr = __R__15;
+        //      tmp_slink = call.frame;
         //      goto **(call.label);
         //  __R__15:
         case CALL:
             numRetLabels++;
             comment("calling function");
-            rlabel = "__R__" + numRetLabels;
+            rlabel = "__R__" + tostr(numRetLabels);
             code("call = (FuncDesc*) SM.pop();");
-            code("currFrame.return_addr = " + rlabel);
+            code("cf.return_addr = " + rlabel);
             code("tmp_slink = call.frame;");
             code("goto *(call.label);");
             code(rlabel + ":", 0);
@@ -72,29 +73,29 @@ VirtualMachine::emit (const int& instr)
             code("*dst = *src;");
         break;
 
-        case COMPL:
-            _emitCompareHelper("<");
-        break;
+        // case COMPL:
+        //     _emitCompareHelper("<");
+        // break;
 
-        case COMPG:
-            _emitCompareHelper(">");
-        break;
+        // case COMPG:
+        //     _emitCompareHelper(">");
+        // break;
 
-        case COMPLE:
-            _emitCompareHelper("<=");
-        break;
+        // case COMPLE:
+        //     _emitCompareHelper("<=");
+        // break;
 
-        case COMPGE:
-            _emitCompareHelper(">=");
-        break;
+        // case COMPGE:
+        //     _emitCompareHelper(">=");
+        // break;
 
-        case COMPE:
-            _emitCompareHelper("==");
-        break;
+        // case COMPE:
+        //     _emitCompareHelper("==");
+        // break;
 
-        case COMPNE:
-            _emitCompareHelper("!=");
-        break;
+        // case COMPNE:
+        //     _emitCompareHelper("!=");
+        // break;
 
         default:
             comment("compilation error: argument mismatch in" +
@@ -123,13 +124,13 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             comment("jumping to label " + arg + " if top is 0");
             code("cmp = ($Integer*) SM.pop();");
             // Don't want to initialize a new $Integer(0) every time just for
-            // this purpose; instead make a constant $ZERO = new $Integer(0).
-            code("if (*(cmp).compareTo($ZERO)) { goto " + arg + "; }");
+            // this purpose; instead make a constant __ZERO__ = new $Integer(0).
+            code("if (*(cmp).compareTo(__ZERO__)) { goto " + arg + "; }");
         break;
 
         // arg: gcstring, the data to push onto the stack.
         // if NULL, pushes the top of HEAP
-        // e.g. SM.push(&currFrame.x);
+        // e.g. SM.push(&cf.x);
         case PUSH:
             if (arg.length()) {
                 comment("pushing " + arg + " onto SM");
@@ -147,6 +148,11 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             comment("allocating memory for: " + arg);
             code("tmp_alloc = " + arg + ";");
             code("HEAP.push(&tmp_alloc);");
+        break;
+
+        case SETUP_FUNCTION:
+            comment("setting up static link for FuncDesc");
+            code("((FuncDesc*)SM[SM.size() - 1])->sl = " + arg + ";");
         break;
 
         default:
@@ -191,25 +197,29 @@ VirtualMachine::emit (const int& instr, gcstring arg, int arity)
 void
 VirtualMachine::emitPrologue () 
 {
+    newline();
+    comment(" ~~~ function prologue ~~~ ");
     code("tmp_frame = new Frame;");
     code("tmp_frame.sl = tmp_slink;");
-    code("currFrame = tmp_frame;");
+    code("cf = tmp_frame;");
     code("STACK.push(&tmp_frame);");
 }
 
 void
 VirtualMachine::emitEpilogue () 
 {
+    newline();
+    comment(" ~~~ function epilogue ~~~ ");
     code("delete STACK.pop();");
-    code("currFrame = STACK[STACK.size() - 1];");
-    code("goto *(currFrame.return_addr);");
+    code("cf = STACK[STACK.size() - 1];");
+    code("goto *(cf.return_addr);");
 }
 
 VMLabel
 VirtualMachine::newLabel () 
 {
     numLabels++;
-    return VMLabel("__L__" + numLabels);
+    return VMLabel("__L__" + tostr(numLabels));
 }
 
 void
@@ -222,23 +232,10 @@ void
 VirtualMachine::emitRuntime ()
 {
     code("#include <runtime.h>", 0);
-    newline();
+    newline(2);
     code(gcstring("int main (int argc, char *argv[]) {"), 0);
     // main body begins here:
-    newline(2);
-    comment("x = 5");
-    emit(ALLOC, gcstring("new $Integer(5)"));
-    emit(PUSH, HEAP_TOP);
-    emit(PUSH, gcstring("currFrame.locals.x"));
-    emit(MOVE);
-    newline(2);
-    comment("y = x + 3");
-    emit(PUSH, gcstring("currFrame.locals.x"));
-    emit(ALLOC, gcstring("new $Integer(3)"));
-    emit(PUSH, HEAP_TOP);
-    emit(NATIVE, gcstring("add_int"), 2);
-    emit(PUSH, gcstring("currFrame.locals.y"));
-    emit(MOVE);
+    __test_codegen();
     code("}", 0);
 }
 
@@ -280,13 +277,58 @@ VirtualMachine::tostr (int val)
     return gcstring(sts.str());
 }
 
+// void
+// VirtualMachine::_emitCompareHelper (string c)
+// {
+//     comment("comparing (" + c + ")");
+//     code("cmp1 = ($ObjectBase*) SM.pop();");
+//     code("cmp2 = ($ObjectBase*) SM.pop();");
+//     code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) " + c + " 0);");
+//     code("HEAP.push(&tmp_alloc);");
+//     code("SM.push(&tmp_alloc);");
+// }
+
 void
-VirtualMachine::_emitCompareHelper (string c)
+VirtualMachine::__test_codegen()
 {
-    comment("comparing (" + c + ")");
-    code("cmp1 = ($ObjectBase*) SM.pop();");
-    code("cmp2 = ($ObjectBase*) SM.pop();");
-    code("tmp_alloc = new $Integer(*cmp1.compareTo(*cmp2) " + c + " 0);");
-    code("HEAP.push(&tmp_alloc);");
-    code("SM.push(&tmp_alloc);");
+    newline(2);
+    comment("x = 5");
+    emit(ALLOC, "new $Integer(5)");
+    emit(PUSH, HEAP_TOP);
+    emit(PUSH, "cf.locals.x");
+    emit(MOVE);
+
+    newline(2);
+    comment("y = x + 3");
+    emit(PUSH, "cf.locals.x");
+    emit(ALLOC, "new $Integer(3)");
+    emit(PUSH, HEAP_TOP);
+    emit(NATIVE, "add_int", 2);
+    emit(PUSH, "cf.locals.y");
+    emit(MOVE);
+
+    newline(2);
+    comment("def foo(a, b):");
+    comment("    return a + b");
+    comment("z = foo(x, y)");
+    emit(PUSH, "cf.locals.x");
+    emit(PUSH, "cf.locals.y");
+    emit(PUSH, "cf.locals.foo"); // Yea, I don't know about this
+    emit(SETUP_FUNCTION, "cf");
+    emit(CALL);
+    emit(PUSH, "cf.locals.z");
+    emit(MOVE);
+    newline();
+    comment("function def for foo(a,b)");
+    VMLabel foo = newLabel();
+    placeLabel(foo);
+    emitPrologue();
+    emit(PUSH, "cf.locals.a");
+    emit(MOVE);
+    emit(PUSH, "cf.locals.b");
+    emit(MOVE);
+    emit(PUSH, "cf.locals.a");
+    emit(PUSH, "cf.locals.b");
+    emit(NATIVE, "add_int", 2);
+    emitEpilogue();
 }

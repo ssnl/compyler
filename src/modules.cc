@@ -1,3 +1,4 @@
+
 /* -*- mode: C++; c-file-style: "stroustrup"; indent-tabs-mode: nil; -*- */
 
 /* modules.cc: Describes programs or libraries.  Contains top-level routines. */
@@ -99,4 +100,3 @@ protected:
 };
 
 NODE_FACTORY (Module_AST, MODULE);
-

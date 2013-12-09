@@ -573,4 +573,3 @@ extern AST_Ptr consTree (int syntax, const AST_Ptr& c0, const AST_Ptr& c1,
                          const AST_Ptr& c2, const AST_Ptr& c3);
 
 #endif
-
