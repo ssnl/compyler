@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <set>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -160,27 +161,23 @@ protected:
         child (3)->declNamePreprocess (names);
     }
 
+    /** Generates the runtime data structures for myself and prints them on
+     *  OUT. Creates a templated C struct depending on whether or not there are
+     *  any unbound type variables in me. */
     void runtimeDataStructGen (std::ostream& out) {
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
         gcstring memberName, memberTypeName;
         stringstream body, generics;
-        bool first = true;
+        generics << gatherGenerics ();
         for (int i = 0; i < members.size (); i++) {
             memberDecl = members[i];
             memberName = memberDecl->getRuntimeName ();
             memberTypeName = memberDecl->getRuntimeTypeName ();
-            if (memberTypeName != "") {
+            if (memberTypeName != "")
                 body << "    "
                      << memberTypeName << " " << memberName << ";" << endl;
-            } else if (memberDecl->isTypeVar ()) {
-                if (!first)
-                    generics << ", ";
-                else
-                    first = false;
-                generics << "class " << memberName;
-            }
         }
         if (generics.str() != "")
             out << "template <" << generics.str() << ">" << endl;
@@ -188,6 +185,49 @@ protected:
             << body.str ()
             << "};" << endl << endl;
         AST::runtimeDataStructGen (out);
+    }
+
+private:
+
+    /** Returns the generic types of this definition. Also sets up any type
+     *  variable names that are initially undefined for assignable member
+     *  declarations of this definition. */
+    gcstring gatherGenerics() {
+        Decl* me = getDecl ();
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        Decl* memberDecl;
+        gcstring memberTypeName;
+        stringstream generics;
+        set<gcstring> genericsSet;
+
+        for (int i = 0; i < members.size (); i++) {
+            if (members[i]->assignable ()) {
+                memberDecl = members[i];
+                memberTypeName =
+                    setupRuntimeTypeName (memberDecl, genericsSet.size());
+                if (memberDecl->getType ()->binding ()->isTypeVariable ()
+                    && genericsSet.count (memberTypeName) == 0) {
+                    if (genericsSet.size () != 0)
+                        generics << ", ";
+                    generics << "class " << memberTypeName;
+                    genericsSet.insert (memberTypeName);
+                }
+            }
+        }
+        return generics.str ();
+    }
+
+    /** Simple helper method that sets up the runtime type name of ASSIGNABLE.
+     *  If the type of ASSIGNABLE currently does not have a name, generates a
+     *  name of the form T_<C>. Returns the name of ASSIGNABLE. */
+    gcstring setupRuntimeTypeName (Decl* assignable, int c) {
+        stringstream name;
+        if (assignable->getRuntimeTypeName () == "") {
+            name << "T_" << c;
+            assignable->getType ()->binding ()->getDecl ()->
+                setRuntimeName (name.str ());
+        }
+        return assignable->getRuntimeTypeName ();
     }
 };
 
@@ -243,10 +283,6 @@ protected:
 };
 
 NODE_FACTORY (FormalsList_AST, FORMALS_LIST);
-
-
-
-
 
 /***** CLASS *****/
 
@@ -333,7 +369,9 @@ protected:
         out << "class " << me->getRuntimeName() << " : $Object {" << endl
             << "public:" << endl << endl
             << body.str () << endl
-            << "};" << endl << endl;
+            << "};" << endl
+            <<  me->getRuntimeName () << " $" << me->getRuntimeName () << ";"
+            << endl << endl;
         AST::runtimeDataStructGen (out);
     }
 

@@ -77,7 +77,7 @@ protected:
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
         gcstring memberName, memberTypeName;
-        stringstream body, generics;
+        stringstream body;
         for (int i = 0; i < members.size(); i++) {
             memberDecl = members[i];
             memberName = memberDecl->getRuntimeName();

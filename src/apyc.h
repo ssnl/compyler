@@ -90,7 +90,10 @@ public:
 
     /** Gets my name rewritten in the format that will be used at runtime. For
      *  type variables returns an empty string. */
-    gcstring getRuntimeName () const;
+    gcstring getRuntimeName () const { return _runtimeName; };
+
+    /** Sets my runtime name. */
+    void setRuntimeName (gcstring name) { _runtimeName = name; };
 
     /** Sets up my name rewritten in the format that will be used at runtime,
      *  using NAMES to disambiguate my name. Does nothing for typevars. */

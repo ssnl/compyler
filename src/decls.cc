@@ -112,11 +112,6 @@ void
 Decl::printTypeParams (ostream& out) const {
 }
 
-gcstring
-Decl::getRuntimeName () const {
-    return _runtimeName;
-}
-
 void
 Decl::setupRuntimeName (gcmap<gcstring, int>& names) {
     gcstring originalName = getName ();
@@ -460,13 +455,6 @@ public:
 
     bool isTypeVar () const {
         return true;
-    }
-
-    gcstring getRuntimeName () const {
-        return "";
-    }
-
-    void setupRuntimeName (gcmap<gcstring, int>& names) {
     }
 
 protected:
