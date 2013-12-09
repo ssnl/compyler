@@ -49,12 +49,6 @@ protected:
         declDepthPreprocess (startDepth);
         declNamePreprocess (names);
         runtimeDataStructGen (out);
-
-        // Placeholder Code
-        out << "int main()"
-            << "{" << endl
-            << "    cout << \"Hello, world!\" << endl;" << endl
-            << "}";
     }
 
     /** Creates a new name for every declaration, starting at but not including
