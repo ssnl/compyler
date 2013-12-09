@@ -165,7 +165,7 @@ VirtualMachine::emit (const int& instr, gcstring arg, int arity)
 }
 
 void
-VirtualMachine::emitPrologue () 
+VirtualMachine::emitPrologue ()
 {
     newline();
     comment(" ~~~ function prologue ~~~ ");
@@ -176,7 +176,7 @@ VirtualMachine::emitPrologue ()
 }
 
 void
-VirtualMachine::emitEpilogue () 
+VirtualMachine::emitEpilogue ()
 {
     newline();
     comment(" ~~~ function epilogue ~~~ ");
@@ -186,14 +186,14 @@ VirtualMachine::emitEpilogue ()
 }
 
 VMLabel
-VirtualMachine::newLabel () 
+VirtualMachine::newLabel ()
 {
     numLabels++;
     return VMLabel("__L__" + tostr(numLabels));
 }
 
 void
-VirtualMachine::placeLabel (VMLabel label) 
+VirtualMachine::placeLabel (VMLabel label)
 {
     code(label + ":", 0);
 }

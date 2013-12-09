@@ -49,6 +49,7 @@ protected:
         declDepthPreprocess (startDepth);
         declNamePreprocess (names);
         runtimeDataStructGen (out);
+        VM->emitRuntime();
     }
 
     /** Creates a new name for every declaration, starting at but not including
@@ -82,8 +83,6 @@ protected:
                      << memberName << ";" << endl;
             }
         }
-        VM = new VirtualMachine(out);
-        VM->emitRuntime();
     }
 
     NODE_CONSTRUCTORS (Module_AST, AST_Tree);
