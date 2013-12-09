@@ -83,6 +83,9 @@ protected:
                      << memberName << ";" << endl;
             }
         }
+        out << "struct __main__ {" << endl
+            << body.str ()
+            << "};" << endl << endl;
     }
 
     NODE_CONSTRUCTORS (Module_AST, AST_Tree);

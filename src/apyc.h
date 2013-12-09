@@ -380,19 +380,19 @@ public:
 
     /** Outputs code to handle the start of a function call into my output
      *  stream. */
-    void emitPrologue ();
+    void emitDefPrologue (const gcstring& name);
 
     /** Outputs code to handle the end of a function call into my output
      *  stream. */
-    void emitEpilogue ();
+    void emitDefEpilogue ();
 
-    /** Outputs the runtime prologue that precedes the body of the main 
+    /** Outputs the runtime prologue that precedes the body of the main
      *  method */
-    void emitRuntimePrologue ();
+    void emitMainPrologue ();
 
-    /** Outputs the runtime epilogue that succeeds the body of the main 
+    /** Outputs the runtime epilogue that succeeds the body of the main
      *  method */
-    void emitRuntimeEpilogue ();
+    void emitMainEpilogue ();
 
     /** Creates and returns new code label. */
     VMLabel newLabel ();

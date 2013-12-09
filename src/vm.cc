@@ -19,9 +19,7 @@ static const int PUSH = 3;
 static const int MOVE = 4;
 static const int ALLOC = 5;
 static const int NATIVE = 6;
-static const int SETUP_FUNCTION = 7;
-
-static gcstring HEAP_TOP = gcstring("");
+static const int SETSL = 7;
 
 /** Constants corresponding to runtime data structure variable names. */
 static const gcstring STACK = "STACK";
@@ -41,36 +39,41 @@ VirtualMachine::emit (const int& instr)
     gcstring s1, s2, rlabel;
     switch (instr) {
 
-        // e.g. call = (FuncDesc*) SM.pop();
-        //      cf.return_addr = __R__15;
-        //      tmp_slink = call.frame;
+        // e.g. call = (FuncDesc*) SM.pop_back();
+        //      cf->return_addr = __R__15;
+        //      static_link = call.frame;
         //      goto **(call.label);
         //  __R__15:
         case CALL:
             numRetLabels++;
             comment("calling function");
             rlabel = "__R__" + tostr(numRetLabels);
-            code("call = (FuncDesc*) SM.pop();");
-            code("cf.return_addr = " + rlabel);
-            code("tmp_slink = call.frame;");
-            code("goto *(call.label);");
+            code("call = (FuncDesc*) SM.pop_back();");
+            code("cf->return_addr = " + rlabel);
+            code("static_link = call->frame;");
+            code("goto *(call->label);");
             code(rlabel + ":", 0);
-        break;
+            break;
 
-        // e.g. dst = SM.pop();
-        //      src = SM.pop();
+        // e.g. dst = SM.pop_back();
+        //      src = SM.pop_back();
         //      *dst = *src;
         case MOVE:
             comment("moving second in stack to first in stack");;
-            code("dst = SM.pop();");
-            code("src = SM.pop();");
+            code("dst = SM.pop_back();");
+            code("src = SM.pop_back();");
             code("*dst = *src;");
-        break;
+            break;
+
+        case PUSH:
+            comment("pushing first in HEAP onto SM");
+            code("SM.push_back(HEAP[HEAP.size()-1]);");
+            break;
 
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int)"));
-        break;
+            break;
     }
 }
 
@@ -85,50 +88,45 @@ VirtualMachine::emit (const int& instr, gcstring arg)
         case GOTO:
             comment("jumping to label " + arg);
             code("goto " + arg + ";");
-        break;
+            break;
 
         // arg: gcstring, the name of the label to jump to
-        // e.g. cmp = (int*) SM.pop();
+        // e.g. cmp = (int*) SM.pop_back();
         //      if (*(cmp)==0) goto __L__16;
         case GTZ:
             comment("jumping to label " + arg + " if top is 0");
-            code("cmp = ($Integer*) SM.pop();");
+            code("cmp = ($Integer*) SM.pop_back();");
             // Don't want to initialize a new $Integer(0) every time just for
             // this purpose; instead make a constant __ZERO__ = new $Integer(0).
             code("if (*(cmp).compareTo(__ZERO__)) { goto " + arg + "; }");
-        break;
+            break;
 
         // arg: gcstring, the data to push onto the stack.
         // if NULL, pushes the top of HEAP
-        // e.g. SM.push(&cf.x);
+        // e.g. SM.push_back(((<Type> *) cf->locals)->x);
         case PUSH:
-            if (arg.length()) {
-                comment("pushing " + arg + " onto SM");
-                code("SM.push(&(" + arg + "));");
-            } else {
-                comment("pushing first in HEAP onto SM");
-                code("SM.push(HEAP[HEAP.size()-1]);");
-            }
-        break;
+            comment("pushing " + arg + " onto SM");
+            code("SM.push_back(" + arg + ");");
+            break;
 
         // arg: gcstring, the creation of a new object
         // e.g. tmp_alloc = new $Integer(5);
-        //      HEAP.push(&tmp_alloc);
+        //      HEAP.push_back(&tmp_alloc);
         case ALLOC:
             comment("allocating memory for: " + arg);
             code("tmp_alloc = " + arg + ";");
-            code("HEAP.push(&tmp_alloc);");
-        break;
+            code("HEAP.push_back(tmp_alloc);");
+            break;
 
-        case SETUP_FUNCTION:
+        case SETSL:
             comment("setting up static link for FuncDesc");
             code("((FuncDesc*)SM[SM.size() - 1])->sl = " + arg + ";");
-        break;
+            break;
 
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int, gcstring)"));
-        break;
+            break;
     }
 }
 
@@ -147,42 +145,45 @@ VirtualMachine::emit (const int& instr, gcstring arg, int arity)
             comment("calling " + arg + " (" + tostr(arity) + " params)");
             for (int i = 0; i < arity; i++) {
                 argstr = "tmp_arg" + tostr(i);
-                code(argstr + " = SM.pop();");
+                code(argstr + " = SM.pop_back();");
                 if (i == arity-1) {
                     argliststr += argstr;
                 } else {
                     argliststr += (argstr + ", ");
                 }
             }
-            code("SM.push(&" + arg + "(" + argliststr + "));");
-        break;
+            code("SM.push_back(" + arg + "(" + argliststr + "));");
+            break;
 
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int, gcstring, int)"));
-        break;
+            break;
     }
 }
 
 void
-VirtualMachine::emitPrologue ()
+VirtualMachine::emitDefPrologue (const gcstring& name)
 {
     newline();
     comment(" ~~~ function prologue ~~~ ");
     code("tmp_frame = new Frame;");
-    code("tmp_frame.sl = tmp_slink;");
+    code("tmp_frame->sl = static_link;");
+    code("tmp_frame->locals = new " + name + ";");
     code("cf = tmp_frame;");
-    code("STACK.push(&tmp_frame);");
+    code("STACK.push_back(tmp_frame);");
 }
 
 void
-VirtualMachine::emitEpilogue ()
+VirtualMachine::emitDefEpilogue ()
 {
     newline();
     comment(" ~~~ function epilogue ~~~ ");
-    code("delete STACK.pop();");
+    code("tmp_frame = STACK.pop_back();");
+    code("delete tmp_frame->locals;");
+    code("delete tmp_frame;");
     code("cf = STACK[STACK.size() - 1];");
-    code("goto *(cf.return_addr);");
+    code("goto *(cf->return_addr);");
 }
 
 VMLabel
@@ -202,21 +203,27 @@ void
 VirtualMachine::emitRuntime ()
 {
     newline(2);
-    code(gcstring("int main (int argc, char *argv[]) {"), 0);
-    emitRuntimePrologue();
+    code("int main (int argc, char *argv[]) {", 0);
+    emitMainPrologue();
     // main body begins here:
     __test_codegen();
-    emitRuntimeEpilogue();
+    emitMainEpilogue();
     code("}", 0);
 }
 
 void
-VirtualMachine::emitRuntimePrologue ()
+VirtualMachine::emitMainPrologue ()
 {
+    newline();
+    comment(" ~~~ main prologue ~~~ ");
+    code("tmp_frame = new Frame;");
+    code("tmp_frame->locals = new __main__;");
+    code("cf = tmp_frame;");
+    code("STACK.push_back(tmp_frame);");
 }
 
 void
-VirtualMachine::emitRuntimeEpilogue ()
+VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
@@ -268,42 +275,43 @@ VirtualMachine::__test_codegen()
 {
     newline(2);
     comment("x = 5");
-    emit(ALLOC, "new $Integer(5)");
-    emit(PUSH, HEAP_TOP);
-    emit(PUSH, "cf.locals.x");
+    emit(ALLOC, "new int_0$(5)");
+    emit(PUSH);
+    emit(PUSH, "((__main__ *) cf->locals)->x");
     emit(MOVE);
 
     newline(2);
     comment("y = x + 3");
-    emit(PUSH, "cf.locals.x");
-    emit(ALLOC, "new $Integer(3)");
-    emit(PUSH, HEAP_TOP);
-    emit(NATIVE, "add_int", 2);
-    emit(PUSH, "cf.locals.y");
+    emit(ALLOC, "new int_0$(3)");
+    emit(PUSH);
+    emit(PUSH, "((__main__ *) cf->locals)->x");
+    emit(NATIVE, "__add__int__", 2);
+    emit(PUSH, "((__main__ *) cf->locals)->y");
     emit(MOVE);
 
     newline(2);
     comment("def foo(a, b):");
     comment("    return a + b");
     comment("z = foo(x, y)");
-    emit(PUSH, "cf.locals.x");
-    emit(PUSH, "cf.locals.y");
-    emit(PUSH, "cf.locals.foo");
-    emit(SETUP_FUNCTION, "cf");
+    emit(PUSH, "((__main__ *) cf->locals)->y");
+    emit(PUSH, "((__main__ *) cf->locals)->x");
+    emit(ALLOC, "new FuncDesc(((__main__ *) cf->locals)->foo)");
+    emit(PUSH);
+    emit(SETSL, "cf");
     emit(CALL);
-    emit(PUSH, "cf.locals.z");
+    emit(PUSH, "(__main__ *) cf->locals)->z");
     emit(MOVE);
     newline();
     comment("function def for foo(a,b)");
     VMLabel foo = newLabel();
     placeLabel(foo);
-    emitPrologue();
-    emit(PUSH, "cf.locals.a");
+    emitDefPrologue("foo_0$");
+    emit(PUSH, "((foo_0$ *) cf->locals)->a");
     emit(MOVE);
-    emit(PUSH, "cf.locals.b");
+    emit(PUSH, "((foo_0$ *) cf->locals)->b");
     emit(MOVE);
-    emit(PUSH, "cf.locals.a");
-    emit(PUSH, "cf.locals.b");
-    emit(NATIVE, "add_int", 2);
-    emitEpilogue();
+    emit(PUSH, "((foo_0$ *) cf->locals)->a");
+    emit(PUSH, "((foo_0$ *) cf->locals)->b");
+    emit(NATIVE, "__add__int__", 2);
+    emitDefEpilogue();
 }

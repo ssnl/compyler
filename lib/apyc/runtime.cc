@@ -8,44 +8,47 @@
 
 using namespace std;
 
-// Stores frames during runtime
-const vector<Frame> STACK;
-// Stores references to objects allocated during runtime
-const vector<void*> HEAP;
-// Our runtime stack machine
-const vector<void*> SM;
+/** Stores frames during runtime. */
+vector<Frame*> STACK;
+/** Stores references to objects allocated during runtime. */
+vector<void*> HEAP;
+/** Our runtime stack machine. */
+vector<void*> SM;
 
-// Stores the current environment (frame) of execution
-Frame cf;
-// Stores the static link of a called function
-Frame tmp_slink;
-// Stores newly created frame when calling function
-Frame tmp_frame;
-// Stores function pointer when popped from SM
+/* Temporaries */
+
+/** Stores the current environment (frame) of execution. */
+Frame* cf;
+/** Stores the static link of a called function. */
+Frame* static_link;
+/** Stores newly created frame when calling function. */
+Frame* tmp_frame;
+/** Stores function pointer when popped from SM. */
 FuncDesc* call;
 
-// Stores assignment destination in "dst = src"
+/** Stores assignment destination in "dst = src". */
 void* dst;
-// Stores assignment source in "dst = src"
+/** Stores assignment source in "dst = src". */
 void* src;
-// Stores temp reference to allocated object
+/** Stores temp reference to allocated object. */
 void* tmp_alloc;
-// Stores arguments of native calls
-void* tmp_arg0, tmp_arg1, tmp_arg2, tmp_arg3;
+/** Stores arguments of native calls. */
+void* tmp_arg0;
+void* tmp_arg1;
+void* tmp_arg2;
+void* tmp_arg3;
 
-// Stores the constant Integer value of 0
-$Integer __ZERO__ = new $Integer(0);
+/** Stores the constant Integer value of 0. */
+int_0$* __ZERO__ = new int_0$(0);
 
+/* Class $Object */
 
-
-
-
-// class $Object
 string
 $Object::toString() {return "";}
 
 
-// class bool_0$
+/* Class bool_0$ */
+
 bool_0$*
 bool_0$::operator+ (bool_0$ y) {
     bool_0$* res = new bool_0$(value + y.value);
@@ -129,9 +132,8 @@ bool_0$::toString() {
     return (value) ? "True" : "False";
 }
 
+/* Class int_0$ */
 
-
-// class int_0$
 int_0$*
 int_0$::operator+ (int_0$ y) {
     int_0$* res = new int_0$(value + y.value);
@@ -225,7 +227,8 @@ int_0$::toString() {
 
 
 
-// class str_0$
+/* Class str_0$ */
+
 str_0$*
 str_0$::operator* (int_0$ y) {
     int count = y.getValue();
@@ -280,155 +283,152 @@ str_0$::operator!= (str_0$ y) {
     return res;
 }
 
+/* Runtime routines */
 
-
-
-// Runtime rotuines
-
-void 
+void
 __donotcall__(void* x) {
     throw "Call to unimplemented function.";
 }
 
-int_0$* 
+int_0$*
 __None__() {
     int_0$* res = new int_0$(0);
     return res;
 }
 
-bool_0$* 
+bool_0$*
 __truth__(void* x) {
     bool Bool = (($Object*) x)->asBool();
     return new bool_0$(Bool);
 }
 
-bool_0$* 
+bool_0$*
 __not__(void* x) {
     bool Bool = ((($Object*) x)->asBool());
     return new bool_0$((Bool ? false : true));
 }
 
-int_0$* 
+int_0$*
 __add__int__(void* x, void* y){
     return *(int_0$*)x + *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __sub__int__(void* x, void* y){
     return *(int_0$*)x - *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __mul__int__(void* x, void* y){
     return *(int_0$*)x * *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __floordiv__int__(void* x, void* y){
     return *(int_0$*)x / *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __mod__int__(void* x, void* y) {
     return *(int_0$*)x % *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __pow__int__(void* x, void* y) {
     int t = pow(((int_0$*)x)->getValue(), ((int_0$*)y)->getValue());
     int_0$* res = new int_0$(t);
     return res;
 }
 
-int_0$* 
+int_0$*
 __neg__int__(void* x) {
     return -(*(int_0$*)x);
 }
 
-int_0$* 
+int_0$*
 __pos__int__(void* x) {
     return (int_0$*)x;
 }
 
-bool_0$* 
-__lt__int__(void* x, void* y) { 
+bool_0$*
+__lt__int__(void* x, void* y) {
     return *(int_0$*)x < *(int_0$*)y;
 }
 
-bool_0$* 
-__gt__int__(void* x, void* y) { 
+bool_0$*
+__gt__int__(void* x, void* y) {
     return *(int_0$*)x > *(int_0$*)y;
 }
 
-bool_0$* 
-__le__int__(void* x, void* y) { 
+bool_0$*
+__le__int__(void* x, void* y) {
     return *(int_0$*)x <= *(int_0$*)y;
 }
 
-bool_0$* 
-__ge__int__(void* x, void* y) { 
+bool_0$*
+__ge__int__(void* x, void* y) {
     return *(int_0$*)x >= *(int_0$*)y;
 }
 
-bool_0$* 
-__eq__int__(void* x, void* y) { 
+bool_0$*
+__eq__int__(void* x, void* y) {
     return *(int_0$*)x == *(int_0$*)y;
 }
 
-bool_0$* 
-__ne__int__(void* x, void* y) { 
+bool_0$*
+__ne__int__(void* x, void* y) {
     return *(int_0$*)x != *(int_0$*)y;
 }
 
-int_0$* 
+int_0$*
 __toint__str__(void* x) {
     return new int_0$(atoi(((str_0$*)x)->getValue().c_str()));
 }
 
 // Type string
 
-str_0$* 
+str_0$*
 __add__str__(void* x, void* y) {
     return *(str_0$*)x + *(str_0$*)y;
 }
 
-str_0$* 
+str_0$*
 __lmul__str__(void* x, void* y) {
     return *(str_0$*)x * *(int_0$*)y;
 }
 
-str_0$* 
+str_0$*
 __rmul__str__(void* x, void* y) {
     return *(int_0$*)x * *(str_0$*)y;
 }
 
-bool_0$* 
-__lt__str__(void* x, void* y) { 
+bool_0$*
+__lt__str__(void* x, void* y) {
     return *(str_0$*)x < *(str_0$*)y;
 }
 
-bool_0$* 
-__gt__str__(void* x, void* y) { 
+bool_0$*
+__gt__str__(void* x, void* y) {
     return *(str_0$*)x > *(str_0$*)y;
 }
 
-bool_0$* 
-__le__str__(void* x, void* y) { 
+bool_0$*
+__le__str__(void* x, void* y) {
     return *(str_0$*)x <= *(str_0$*)y;
 }
 
-bool_0$* 
-__ge__str__(void* x, void* y) { 
+bool_0$*
+__ge__str__(void* x, void* y) {
     return *(str_0$*)x >= *(str_0$*)y;
 }
 
-bool_0$* 
-__eq__str__(void* x, void* y) { 
+bool_0$*
+__eq__str__(void* x, void* y) {
     return *(str_0$*)x == *(str_0$*)y;
 }
 
-bool_0$* 
-__ne__str__(void* x, void* y) { 
+bool_0$*
+__ne__str__(void* x, void* y) {
     return *(str_0$*)x != *(str_0$*)y;
 }
 
@@ -532,7 +532,7 @@ int main()
         cout << "passes" << endl;
     }
 
-    
+
     cout << "    __truth__:  ";
     Bool->setValue(true);
     success = true;
@@ -830,7 +830,7 @@ int main()
         x->setValue(-8);
         __getitem__str__(a, x);
         success = false;
-    }  catch (...) {} 
+    }  catch (...) {}
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
@@ -889,13 +889,13 @@ int main()
     a->setValue("");
     success = (__len__str__(a)->getValue() == 0) ? success : false;
     cout << (success ? "passes" : "failed") << endl;
-    failures += (success) ? 0 : 1;    
+    failures += (success) ? 0 : 1;
 
     if (failures == 0)
         cout << "\nAll tests passed, HORAY" << endl;
     else
         cout << "\n" << failures << " tests failed, BOO" << endl;
-    
+
     return 0;
 }
 

@@ -32,6 +32,7 @@ typedef void* Label;
  *  to a structure containing all the local variables in the frame during
  *  runtime. */
 typedef struct Frame {
+    Label ra;
     Frame* sl;
     void* locals;
 } Frame;
@@ -43,12 +44,24 @@ typedef struct {
     Label label;
 } FuncDesc;
 
-extern const vector<Frame> STACK;
-extern const vector<void*> HEAP;
-extern const vector<void*> SM;
-extern const Frame cf;
+extern vector<Frame*> STACK;
+extern vector<void*> HEAP;
+extern vector<void*> SM;
 
+extern Frame* cf;
+extern Frame* static_link;
+extern Frame* tmp_frame;
+extern FuncDesc* call;
+extern void* dst;
+extern void* src;
 
+extern void* tmp_alloc;
+extern void* tmp_arg0;
+extern void* tmp_arg1;
+extern void* tmp_arg2;
+extern void* tmp_arg3;
+
+extern int_0$* __ZERO__;
 
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
@@ -95,10 +108,10 @@ public:
 
     /** Negation */
     bool_0$* operator! ();
-    
+
     /** Comparison */
 
-    bool_0$* operator< (bool_0$ y);    
+    bool_0$* operator< (bool_0$ y);
 
     bool_0$* operator> (bool_0$ y);
 
@@ -152,7 +165,7 @@ public:
 
     /** Comparison */
 
-    bool_0$* operator< (int_0$ y);    
+    bool_0$* operator< (int_0$ y);
 
     bool_0$* operator> (int_0$ y);
 
@@ -163,7 +176,7 @@ public:
     bool_0$* operator== (int_0$ y);
 
     bool_0$* operator!= (int_0$ y);
-    
+
     string toString();
 
     bool asBool() {return (value != 0) ? true : false;}
@@ -190,7 +203,7 @@ public:
 
     /** Comparison */
 
-    bool_0$* operator< (str_0$ y);    
+    bool_0$* operator< (str_0$ y);
 
     bool_0$* operator> (str_0$ y);
 
