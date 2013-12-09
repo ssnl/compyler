@@ -88,9 +88,6 @@ protected:
                      << memberName << ";" << endl;
             }
         }
-        out << "struct __main__ {" << endl
-            << body.str()
-            << "};" << endl << endl;
         VM = new VirtualMachine(out);
         VM->emitRuntime();
     }

@@ -416,8 +416,7 @@ private:
     /** Yeah, necessary for uhh...convenience. */
     gcstring tostr(int val);
 
-    /** Helper for emitting code for COMPARE */
-    void _emitCompareHelper(std::string c);
+    void __test_codegen();
 };
 
 /** VirtualMachine that will be used to compile the code. */
