@@ -338,7 +338,7 @@ public:
     }
 
     gcstring getRuntimeTypeName () const {
-        return "$Object";
+        return "$Object*";
     }
 
 protected:
