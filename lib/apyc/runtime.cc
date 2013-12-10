@@ -13,7 +13,7 @@ vector<Frame*> STACK;
 /** Stores references to objects allocated during runtime. */
 vector<$Object*> HEAP;
 /** Our runtime stack machine. */
-vector<$Object*> SM;
+vector<$Object**> SM;
 
 /* Temporaries */
 
@@ -29,7 +29,7 @@ FuncDesc* call;
 /** Stores assignment destination in "dst = src". */
 $Object** dst;
 /** Stores assignment source in "dst = src". */
-$Object* src;
+$Object** src;
 /** Stores temp reference to allocated object. */
 $Object* tmp_alloc;
 /** Stores the result of a native call. */
@@ -474,4 +474,3 @@ __tostr__(void* x) {
     string str = (($Object*)x)->toString();
     return new str_0$();
 }
-

@@ -36,13 +36,10 @@ typedef struct Frame {
     Frame* sl;
     void* locals;
 } Frame;
-
-/** A call description struct that refers to a call descriptor. Contains the
- *  static link for the call as well as the label to jump to. */
-typedef struct {
-    Frame* sl;
-    Label label;
-} FuncDesc;
+// typedef struct {
+//     Frame* sl;
+//     Label label;
+// } FuncDesc;
 
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
@@ -57,21 +54,26 @@ public:
 
 };
 
-extern vector<Frame*> STACK;
-extern vector<$Object*> HEAP;
-extern vector<$Object*> SM;
+/** A call description struct that refers to a call descriptor. Contains the
+ *  static link for the call as well as the label to jump to. */
+class FuncDesc: public $Object {
+public:
+    Frame* sl;
+    Label label;
 
-extern Frame* cf;
-extern Frame* static_link;
-extern Frame* tmp_frame;
-extern FuncDesc* call;
-extern $Object** dst;
-extern $Object* src;
+    FuncDesc () {
+        sl = NULL;
+        label = NULL;
+    }
 
-extern $Object* tmp_alloc;
-extern $Object* tmp_res;
+    FuncDesc (FuncDesc* fd) {
+        sl = fd->sl;
+        label = fd->label;
+    }
 
-extern int_0$* __ZERO__;
+    string toString() { return string("<function>"); };
+    bool asBool() {return true;}
+};
 
 /** The wrapper class for primitive type bool.*/
 class bool_0$: public $Object {
@@ -216,6 +218,23 @@ public:
 
     bool asBool() {return ((value != "") ? true : false);}
 };
+
+
+extern vector<Frame*> STACK;
+extern vector<$Object*> HEAP;
+extern vector<$Object**> SM;
+
+extern Frame* cf;
+extern Frame* static_link;
+extern Frame* tmp_frame;
+extern FuncDesc* call;
+extern $Object** dst;
+extern $Object** src;
+
+extern $Object* tmp_alloc;
+extern $Object* tmp_res;
+
+extern int_0$* __ZERO__;
 
 
 extern bool_0$ $bool_0$;

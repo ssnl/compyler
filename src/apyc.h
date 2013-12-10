@@ -374,7 +374,94 @@ public:
 
     VirtualMachine (std::ostream& _out);
 
-    /** Outputs an instruction as code to my output stream. */
+    /**
+     * Outputs an instruction as code to my output stream.
+     *
+     * ==============================USAGE==============================
+     *  INSTR FLAG FOLLOWED BY ARGUMENTS AND TEMPLATE OF GENERATED CODE
+     *
+     * POP
+     *     SM.pop_back();
+     *
+     *
+     * PUSH (0 arguments)
+     *     SM.push_back( &HEAP[HEAP.size()-1] );
+     *
+     *
+     * MOVE
+     *     dst = SM.back();
+     *     SM.pop_back();
+     *     src = SM.back();
+     *     SM.pop_back();
+     *     *dst = *src;
+     *     SM.push_back(dst);
+     *
+     *
+     * GOTO
+     *     arg: the name of the label to jump to
+     *
+     *     goto <arg>;
+     *
+     *
+     * GTZ
+     *     arg: gcstring, the name of the label to jump to
+     *
+     *     cmp = (int*) SM.back();
+     *     SM.pop_back();
+     *     if (*(cmp)==0) goto <arg>;
+     *
+     *
+     * PUSH (1 argument)
+     *     arg: gcstring, the data to push onto the stack.
+     *
+     *     SM.push_back( & <arg> );
+     *
+     *
+     * CALL
+     *     arg: gcstring, the function's runtime name
+     *
+     *     call = (FuncDesc*) (*SM.back());
+     *     SM.pop_back();
+     *     cf->ra = &&__<arg>__;
+     *     static_link = call->sl;
+     *     goto __<arg>__;
+     *     __R__15:
+     *
+     *
+     * ALLOC
+     *     arg: gcstring, the expression for creating the new object
+     *
+     *     tmp_alloc = <arg>;
+     *         HEAP.push_back(tmp_alloc);
+     *
+     *
+     * SETSL
+     *     arg: gcstring, the name of the static frame from cf
+     *
+     *     ((FuncDesc*)(*SM[SM.size() - 1]))->sl = <arg>;
+     *
+     *
+     * SETLBL
+     *     arg: gcstring, the name of the label of the FuncDesc
+     *
+     *     ((FuncDesc*)(*SM[SM.size() - 1]))->label = &&__<arg>__;
+     *
+     *
+     * NATIVE
+     *     arg1: gcstring, the name of the native function
+     *     arg2: int, the number of params the native function takes
+     *
+     *     tmp_res = <arg1> (
+     *       *SM[SM.size()-1],
+     *       *SM[SM.size()-2],
+     *       ...
+     *       *SM[SM.size()-<arg2>]);
+     *     SM.pop_back();
+     *     SM.pop_back();
+     *       ...
+     *     SM.pop_back();
+     *     SM.push_back( &tmp_res );
+     **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
     void emit (const int& instr, gcstring arg1, int arg2);
@@ -427,6 +514,7 @@ private:
     /** Yeah, necessary for uhh...convenience. */
     gcstring tostr(int val);
 
+    /** Testing purposes only */
     void __test_codegen();
 };
 
