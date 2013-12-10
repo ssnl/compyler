@@ -83,9 +83,7 @@ public:
     virtual string className() {return "Object";}
 
     /** Check equality between THIS and OTHER. */
-    virtual bool equals($Object other) {
-        return ((other.className() == "Object") ? true : false);
-    }
+    virtual bool equals(void* other) {return this == other;}
 
     /** If applicable, return the size of THIS. */
     virtual int size() {return 0;}
@@ -162,6 +160,10 @@ public:
 
     string toString(bool contained=false);
 
+    string className() {return "bool";}
+
+    bool equals(void* other);
+
     bool asBool() {return value;}
 };
 
@@ -217,6 +219,10 @@ public:
 
     string toString(bool contained=false);
 
+    string className() {return "int";}
+
+    bool equals(void* other);
+
     bool asBool() {return (value != 0) ? true : false;}
 };
 
@@ -254,6 +260,10 @@ public:
     bool_0$* operator!= (str_0$ y);
 
     string toString(bool contained=false);
+
+    string className() {return "str";}
+
+    bool equals(void* other);
 
     bool asBool() {return ((value != "") ? true : false);}
 
@@ -300,6 +310,10 @@ public:
 
     string toString(bool contained=false);
 
+    string className() {return "range";}
+
+    bool equals(void* other);
+
     bool asBool() {return ((start == 0 && end == 0) ? false : true);}
 };
 
@@ -326,6 +340,10 @@ public:
 
     int size() {return value.size();}
 
+    string className() {return "list";}
+
+    bool equals(void* other);
+
     bool asBool() {return ((value.size() != 0) ? true : false);}
 
 };
@@ -346,9 +364,11 @@ public:
 
     int size() {return tupleSize;}
 
-    string className();
-
     string toString(bool contained=false);
+
+    string className() {return "tuple";}
+
+    bool equals(void* other);
 
     bool asBool() {return ((size() != 0) ? true : false);}
 };
@@ -366,9 +386,10 @@ public:
 
     virtual bool contains(void* key) {return false;}
 
-    virtual int size() {return value.size();}
+    bool equals(void* other);
 
-    virtual bool asBool() {return (value.empty()? false : true);}
+    string className() {return "dict";}
+
 };
 
 /** The wrapper class for primitive type dict with key type int.*/
@@ -473,6 +494,10 @@ void __donotcall__(void* x);
 
 int_0$* __None__();
 
+bool_0$* __is__(void* x, void* y);
+
+bool_0$* __isnot__(void* x, void* y);
+
 
 // Type bool
 bool_0$* __truth__(void* x);
@@ -569,6 +594,7 @@ int_0$* __len__dict__(void* D);
 bool_0$* __contains__dict__(void* x, void* D);
 
 bool_0$* __notcontains__dict__(void* x, void* D);
+
 
 
 #endif

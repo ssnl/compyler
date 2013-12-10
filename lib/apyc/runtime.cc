@@ -134,6 +134,14 @@ bool_0$::toString(bool contained) {
     return (value) ? "True" : "False";
 }
 
+bool
+bool_0$::equals(void* other) {
+    if ((($Object*) other)->className() != "bool")
+        return false;
+    else
+        return getValue() == ((bool_0$*) other)->getValue();
+}
+
 /* Class int_0$ */
 
 int_0$*
@@ -227,6 +235,13 @@ int_0$::toString(bool contained) {
     return ss.str();
 }
 
+bool
+int_0$::equals(void* other) {
+    if ((($Object*) other)->className() != "int")
+        return false;
+    else
+        return getValue() == ((int_0$*) other)->getValue();
+}
 
 
 /* Class str_0$ */
@@ -298,6 +313,14 @@ str_0$::toString(bool contained) {
         return value;
 }
 
+bool
+str_0$::equals(void* other) {
+    if ((($Object*) other)->className() != "str")
+        return false;
+    else
+        return getValue() == ((str_0$*) other)->getValue();
+}
+
 /* Class range_0$ */
 
 string
@@ -310,6 +333,11 @@ range_0$::toString(bool contained) {
         ss << start << ", " << end;
     ss << ")";
     return ss.str();
+}
+
+bool
+range_0$::equals(void* other) {
+    return this == other;
 }
 
 /* Class list_0$ */
@@ -364,16 +392,12 @@ list_0$::toString(bool contained) {
     return ss.str();
 }
 
+bool
+list_0$::equals(void* other) {
+    return this == other;
+}
 
 /* Class tuple_0$ */
-
-string
-tuple_0$::className() {
-    stringstream ss;
-    ss << "tuple";
-    ss << size();
-    return ss.str();
-}
 
 string
 tuple_0$::toString(bool contained) {
@@ -389,6 +413,11 @@ tuple_0$::toString(bool contained) {
     }
     ss << ")";
     return ss.str();
+}
+
+bool
+tuple_0$::equals(void* other) {
+    return this == other;
 }
 
 /* Class dict_0$ and its subclasses */
@@ -430,6 +459,12 @@ dict_int_0$::toString(bool contained) {
     }
     ss << "}";
     return ss.str();
+}
+
+/* class dict_0$ and its subclasses */
+bool
+dict_0$::equals(void* other) {
+    return this == other;
 }
 
 // dict with string as key
@@ -650,6 +685,19 @@ __None__() {
 }
 
 bool_0$*
+__is__(void* x, void* y) {
+    bool b = (($Object*) x)->equals(y);
+    return new bool_0$(b);
+}
+
+bool_0$*
+__isnot__(void* x, void* y) {
+    bool b = (($Object*) x)->equals(y);
+    return new bool_0$((b ? false : true));
+}
+
+
+bool_0$*
 __truth__(void* x) {
     bool Bool = (($Object*) x)->asBool();
     return new bool_0$(Bool);
@@ -660,6 +708,8 @@ __not__(void* x) {
     bool Bool = ((($Object*) x)->asBool());
     return new bool_0$((Bool ? false : true));
 }
+
+
 
 range_0$*
 __xrange__(void* low, void* high) {
@@ -675,6 +725,7 @@ __len__range__(void* r) {
     int rLen = ((range_0$*) r)->size();
     return new int_0$(rLen);
 }
+
 
 
 int_0$*
@@ -1087,7 +1138,7 @@ int main()
     failures += (success) ? 0 : 1;
 
 
-    cout << "\nTesting runtime routines for bool, int, and misc.:" << endl;
+    cout << "\nTesting miscellaneous runtime routines:" << endl;
     cout << "    __donotcall___:  ";
     try {
         void* x = 0;
@@ -1098,6 +1149,76 @@ int main()
         cout << "passes" << endl;
     }
 
+
+    cout << "    __None__:  ";
+    success = true;
+    success = (__None__()->getValue() == 0) ? success : false;
+    success = (__None__()->className() == "int") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __is__:  ";
+    success = true;
+    success = (__is__(new int_0$(2), new int_0$(2))->getValue() == true) ? success : false;
+    success = (__is__(new int_0$(2), new int_0$(3))->getValue() == false) ? success : false;
+    success = (__is__(new str_0$("hi"), new str_0$("hi"))->getValue() == true) ? success : false;
+    success = (__is__(new str_0$("hi"), new str_0$("hello"))->getValue() == false) ? success : false;
+    success = (__is__(new bool_0$(true), new bool_0$(true))->getValue() == true) ? success : false;
+    success = (__is__(new bool_0$(true), new bool_0$(false))->getValue() == false) ? success : false;
+    success = (__is__(new list_0$(), new list_0$())->getValue() == false) ? success : false;
+    l->clear();
+    list_0$* l2 = l;
+    success = (__is__(l, l2)->getValue() == true) ? success : false;
+    x->setValue(10);
+    l->push(x);
+    l2 = new list_0$();
+    l2->push(x);
+    success = (__is__(l, l2)->getValue() == false) ? success : false;
+    l2->clear();
+    l2->push(new int_0$(10));
+    success = (__is__(l, l2)->getValue() == false) ? success : false;
+    l2->push(new int_0$(2));
+    x->setValue(1);
+    success = (__is__(__getitem__list__(l2, x), __getitem__list__(l2, x))->getValue() == true) ? success : false;
+    success = (__is__(__getitem__list__(l2, x), __getitem__list__(l2, new int_0$(1)))->getValue() == true) ? success : false;
+    x->setValue(0);
+    y->setValue(2);
+    success = (__is__(__getslice__list__(l2, x, y), __getslice__list__(l2, x, y))->getValue() == false) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __isnot__:  ";
+    success = true;
+    success = (__isnot__(new int_0$(2), new int_0$(2))->getValue() == false) ? success : false;
+    success = (__isnot__(new int_0$(2), new int_0$(3))->getValue() == true) ? success : false;
+    success = (__isnot__(new str_0$("hi"), new str_0$("hi"))->getValue() == false) ? success : false;
+    success = (__isnot__(new str_0$("hi"), new str_0$("hello"))->getValue() == true) ? success : false;
+    success = (__isnot__(new bool_0$(true), new bool_0$(true))->getValue() == false) ? success : false;
+    success = (__isnot__(new bool_0$(true), new bool_0$(false))->getValue() == true) ? success : false;
+    success = (__isnot__(new list_0$(), new list_0$())->getValue() == true) ? success : false;
+    l->clear();
+    l2 = l;
+    success = (__isnot__(l, l2)->getValue() == false) ? success : false;
+    x->setValue(10);
+    l->push(x);
+    l2 = new list_0$();
+    l2->push(x);
+    success = (__isnot__(l, l2)->getValue() == true) ? success : false;
+    l2->clear();
+    l2->push(new int_0$(10));
+    success = (__isnot__(l, l2)->getValue() == true) ? success : false;
+    l2->push(new int_0$(2));
+    x->setValue(1);
+    success = (__isnot__(__getitem__list__(l2, x), __getitem__list__(l2, x))->getValue() == false) ? success : false;
+    success = (__isnot__(__getitem__list__(l2, x), __getitem__list__(l2, new int_0$(1)))->getValue() == false) ? success : false;
+    x->setValue(0);
+    y->setValue(2);
+    success = (__isnot__(__getslice__list__(l2, x, y), __getslice__list__(l2, x, y))->getValue() == true) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+
+    cout << "\nTesting runtime routines for bool:" << endl;
 
     cout << "    __truth__:  ";
     Bool->setValue(true);
@@ -1132,6 +1253,9 @@ int main()
     success = (__not__(a)->getValue()) ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
+
+
+    cout << "\nTesting runtime routines for int:" << endl;
 
     cout << "    __add__int__: ";
     success = true;

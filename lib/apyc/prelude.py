@@ -258,9 +258,9 @@ def __notcontains__(x::str, D::dict of [str, $b])::bool:
 
 # # General
 
-# def __is__(x, y)::bool:
-#     native "__is__"
+def __is__(x, y)::bool:
+    native "__is__"
 
-# def __isnot__(x, y)::bool:
-#     native "__isnot__"
+def __isnot__(x, y)::bool:
+    native "__isnot__"
 
