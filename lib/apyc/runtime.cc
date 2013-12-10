@@ -357,6 +357,33 @@ list_0$::toString() {
 }
 
 
+/* Class tuple_0$ */
+
+string
+tuple_0$::className() {
+    stringstream ss;
+    ss << "tuple";
+    ss << size();
+    return ss.str();
+}
+
+string
+tuple_0$::toString() {
+    int s = size();
+    stringstream ss;
+    ss << "(";
+    if (s == 1)
+        ss << getItem(0)->toString() << ",";
+    else if (s > 1)
+        ss << getItem(0)->toString();
+    for (int i = 1; i < s; i++) {
+        ss << ", "<< getItem(i)->toString();
+    }
+    ss << ")";
+    return ss.str();
+}
+
+
 /* Runtime routines */
 
 void
@@ -679,6 +706,28 @@ int main()
     l->setItem(1, new int_0$(10));
     success = (((int_0$*)l->getItem(1))->getValue() == 10) ? success : false;
     success = (l->toString() == "[1, 10, 3]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    class tuple_0$: ";
+    tuple_0$ t0T, t1T(1), t3T(3);
+    tuple_0$* t0 = &t0T;
+    tuple_0$* t1 = &t1T;
+    tuple_0$* t3 = &t3T;
+    success = true;
+    success = (t0->size() == 0) ? success : false;
+    success = (t0->toString() == "()") ? success : false;
+    t1->push(new str_0$("1-element tuple"));
+    success = (t1->size() == 1) ? success : false;
+    success = (t1->toString() == "(1-element tuple,)") ? success : false;
+    t3->push(new str_0$("Hi"));
+    t3->push(new int_0$(15));
+    l->clear();
+    l->push(new int_0$(1));
+    l->push(new int_0$(2));
+    t3->push(l);
+    success = (t3->size() == 3) ? success : false;
+    success = (t3->toString() == "(Hi, 15, [1, 2])") ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 

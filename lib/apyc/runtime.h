@@ -328,11 +328,36 @@ public:
 
 };
 
+/** The wrapper class for primitive type tuple0.*/
+class tuple_0$: public $Object {
+protected:
+    vector<$Object*> value;
+    int tupleSize;
+public:
+    tuple_0$ () : tupleSize(0) {}
+    
+    tuple_0$ (int s) : tupleSize(s) {}
+
+    void push($Object* item) {value.push_back(item);}
+
+    $Object* getItem(int k) {return value[k];}
+
+    int size() {return tupleSize;}
+
+    string className();
+
+    string toString();
+
+    bool asBool() {return ((size() != 0) ? true : false);}
+};
+
+
 extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
 extern str_0$ $str_0$;
 extern range_0$ $range_0$;
-
+extern list_0$ $list_0$;
+extern tuple_0$ $tuple_0$;
 
 void __donotcall__(void* x);
 
