@@ -31,9 +31,9 @@ class list of [$T]:
     def __init__(self::list of [$T]):
         native "__donotcall__"
 
-# class dict of [$Key, $Value]:
-#     def __init__(self::dict of [$Key, $Value]):
-#         native "__donotcall__"
+class dict of [$Key, $Value]:
+    def __init__(self::dict of [$Key, $Value]):
+        native "__donotcall__"
 
 class tuple0:
     def __init__(self::tuple0):
@@ -217,43 +217,43 @@ def __argv__()::list of str:
 
 # # Type dict
 
-# def __getitem__(D::dict of [int, $b], x::int)::$b:
-#     native "__getitem__dict__"
+def __getitem__(D::dict of [int, $b], x::int)::$b:
+    native "__getitem__dict__int__"
 
-# def __getitem__(D::dict of [bool, $b], x::bool)::$b:
-#     native "__getitem__dict__"
+def __getitem__(D::dict of [bool, $b], x::bool)::$b:
+    native "__getitem__dict__bool__"
 
-# def __getitem__(D::dict of [str, $b], x::str)::$b:
-#     native "__getitem__dict__"
+def __getitem__(D::dict of [str, $b], x::str)::$b:
+    native "__getitem__dict__str__"
 
-# def len(D::dict of [int, $b])::int:
-#     native "__len__dict__"
+def len(D::dict of [int, $b])::int:
+    native "__len__dict__"
 
-# def len(D::dict of [bool, $b])::int:
-#     native "__len__dict__"
+def len(D::dict of [bool, $b])::int:
+    native "__len__dict__"
 
-# def len(D::dict of [str, $b])::int:
-#     native "__len__dict__"
+def len(D::dict of [str, $b])::int:
+    native "__len__dict__"
 
-# # Backwards from regular Python
-# def __contains__(x::int, D::dict of [int, $b])::bool:
-#     native "__contains__dict__"
+# Backwards from regular Python
+def __contains__(x::int, D::dict of [int, $b])::bool:
+    native "__contains__dict__"
 
-# def __contains__(x::bool, D::dict of [bool, $b])::bool:
-#     native "__contains__dict__"
+def __contains__(x::bool, D::dict of [bool, $b])::bool:
+    native "__contains__dict__"
 
-# def __contains__(x::str, D::dict of [str, $b])::bool:
-#     native "__contains__dict__"
+def __contains__(x::str, D::dict of [str, $b])::bool:
+    native "__contains__dict__"
 
-# # Backwards from regular Python
-# def __notcontains__(x::int, D::dict of [int, $b])::bool:
-#     native "__notcontains__dict__"
+# Backwards from regular Python
+def __notcontains__(x::int, D::dict of [int, $b])::bool:
+    native "__notcontains__dict__"
 
-# def __notcontains__(x::bool, D::dict of [bool, $b])::bool:
-#     native "__notcontains__dict__"
+def __notcontains__(x::bool, D::dict of [bool, $b])::bool:
+    native "__notcontains__dict__"
 
-# def __notcontains__(x::str, D::dict of [str, $b])::bool:
-#     native "__notcontains__dict__"
+def __notcontains__(x::str, D::dict of [str, $b])::bool:
+    native "__notcontains__dict__"
 
 
 # # General

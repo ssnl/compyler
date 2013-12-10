@@ -12,6 +12,7 @@
 #include <vector>
 #include <sstream>
 #include <cstdarg>
+#include <map>
 
 // To use pow()
 #include <math.h>
@@ -352,6 +353,84 @@ public:
     bool asBool() {return ((size() != 0) ? true : false);}
 };
 
+/** Base class wrapper for primitive type dict. */
+class dict_0$: public $Object {
+protected:
+    map<int, $Object*> value;
+public:
+    dict_0$ () : value() {}
+
+    virtual $Object* get(void* key) {return this;}
+
+    virtual void set(void* key, $Object* item) {}
+
+    virtual bool contains(void* key) {return false;}
+
+    virtual int size() {return value.size();}
+
+    virtual bool asBool() {return (value.empty()? false : true);}
+};
+
+/** The wrapper class for primitive type dict with key type int.*/
+class dict_int_0$: public dict_0$ {
+protected:
+    map<int, $Object*> value;
+public:
+    dict_int_0$ () : value() {}
+
+    $Object* get(void* key);
+
+    void set(void* key, $Object* item);
+
+    bool contains(void* key);
+
+    int size() {return value.size();}
+
+    string toString(bool contained=false);
+
+    bool asBool() {return (value.empty()? false : true);}
+};
+
+/** The wrapper class for primitive type dict with key type string.*/
+class dict_str_0$: public dict_0$ {
+protected:
+    map<string, $Object*> value;
+public:
+    dict_str_0$ () : value() {}
+
+    $Object* get(void* key);
+
+    void set(void* key, $Object* item);
+
+    bool contains(void* key);
+
+    int size() {return value.size();}
+
+    string toString(bool contained=false);
+
+    bool asBool() {return (value.empty()? false : true);}
+};
+
+/** The wrapper class for primitive type dict with key type bool.*/
+class dict_bool_0$: public dict_0$ {
+protected:
+    map<bool, $Object*> value;
+public:
+    dict_bool_0$ () : value() {}
+
+    $Object* get(void* key);
+
+    void set(void* key, $Object* item);
+
+    bool contains(void* key);
+
+    int size() {return value.size();}
+
+    string toString(bool contained=false);
+
+    bool asBool() {return (value.empty()? false : true);}
+};
+
 
 extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
@@ -373,6 +452,20 @@ list_0$* __list__empty__();
 
 list_0$* __list__(void* count, void* x, ...);
 
+dict_int_0$* __dict__empty__int__();
+
+dict_str_0$* __dict__empty__str__();
+
+dict_bool_0$* __dict__empty__bool__();
+
+/** Allocator for dict. The x is not used, the key-value pairs should be
+  * in the variable list.
+  */
+dict_int_0$* __dict__int__(void* count, void* x, ...);
+
+dict_str_0$* __dict__str__(void* count, void* x, ...);
+
+dict_bool_0$* __dict__bool__(void* count, void* x, ...);
 
 // Miscellaneous routines
 
@@ -461,5 +554,21 @@ list_0$* __getslice__list__(void* S, void* L, void* U);
 int_0$* __len__list__(void* S);
 
 list_0$* __argv__();
+
+
+// Type dict
+
+$Object* __getitem__dict__int__(void* D, void* x);
+
+$Object* __getitem__dict__bool__(void* D, void* x);
+
+$Object* __getitem__dict__str__(void* D, void* x);
+
+int_0$* __len__dict__(void* D);
+
+bool_0$* __contains__dict__(void* x, void* D);
+
+bool_0$* __notcontains__dict__(void* x, void* D);
+
 
 #endif

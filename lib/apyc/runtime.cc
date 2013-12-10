@@ -391,6 +391,126 @@ tuple_0$::toString(bool contained) {
     return ss.str();
 }
 
+/* Class dict_0$ and its subclasses */
+
+// dict with int as key
+$Object*
+dict_int_0$::get(void* dictKey) {
+    int key = ((int_0$*) dictKey)->getValue();
+    return value[key];
+}
+
+void
+dict_int_0$::set(void* dictKey, $Object* item) {
+    int key = ((int_0$*) dictKey)->getValue();
+    value[key] = item;
+}
+
+bool
+dict_int_0$::contains(void* dictKey) {
+    int key = ((int_0$*) dictKey)->getValue();
+    if (value.find(key) != value.end()) {
+        return true;
+    }
+    return false;
+}
+
+string
+dict_int_0$::toString(bool contained) {
+    int s = size();
+    stringstream ss;
+    ss << "{";
+    int count = 0;
+    for (map<int, $Object*>::iterator it = value.begin();
+                it != value.end(); it++) {
+        count++;
+        ss << it->first << ": " << it->second->toString(true);
+        if (count < s)
+            ss << ", ";
+    }
+    ss << "}";
+    return ss.str();
+}
+
+// dict with string as key
+$Object*
+dict_str_0$::get(void* dictKey) {
+    string key = ((str_0$*) dictKey)->getValue();
+    return value[key];
+}
+
+void
+dict_str_0$::set(void* dictKey, $Object* item) {
+    string key = ((str_0$*) dictKey)->getValue();
+    value[key] = item;
+}
+
+bool
+dict_str_0$::contains(void* dictKey) {
+    string key = ((str_0$*) dictKey)->getValue();
+    if (value.find(key) != value.end()) {
+        return true;
+    }
+    return false;
+}
+
+string
+dict_str_0$::toString(bool contained) {
+    int s = size();
+    stringstream ss;
+    ss << "{";
+    int count = 0;
+    for (map<string, $Object*>::iterator it = value.begin();
+                it != value.end(); it++) {
+        count++;
+        ss << "\"" << it->first << "\": " << it->second->toString(true);
+        if (count < s)
+            ss << ", ";
+    }
+    ss << "}";
+    return ss.str();
+}
+
+// dict with bool as key
+$Object*
+dict_bool_0$::get(void* dictKey) {
+    bool key = ((bool_0$*) dictKey)->getValue();
+    return value[key];
+}
+
+void
+dict_bool_0$::set(void* dictKey, $Object* item) {
+    bool key = ((bool_0$*) dictKey)->getValue();
+    value[key] = item;
+}
+
+bool
+dict_bool_0$::contains(void* dictKey) {
+    bool key = ((bool_0$*) dictKey)->getValue();
+    if (value.find(key) != value.end()) {
+        return true;
+    }
+    return false;
+}
+
+string
+dict_bool_0$::toString(bool contained) {
+    int s = size();
+    stringstream ss;
+    ss << "{";
+    int count = 0;
+    for (map<bool, $Object*>::iterator it = value.begin();
+                it != value.end(); it++) {
+        count++;
+        ss << (it->first ? "True" : "False");
+        ss << ": " << it->second->toString(true);
+        if (count < s)
+            ss << ", ";
+    }
+    ss << "}";
+    return ss.str();
+}
+
 
 /* Allocators for list_0$, tuple_0$, and dict_0$ */
 tuple_0$*
@@ -444,7 +564,77 @@ __list__(void* count, void* x, ...) {
     return res;
 }
 
+dict_int_0$*
+__dict__empty__int__() {
+    return new dict_int_0$();
+}
 
+dict_str_0$*
+__dict__empty__str__() {
+    return new dict_str_0$();
+}
+
+dict_bool_0$*
+__dict__empty__bool__() {
+    return new dict_bool_0$();
+}
+
+dict_int_0$*
+__dict__int__(void* count, void* x, ...) {
+    int argcount = ((int_0$*) count)->getValue();
+    dict_int_0$* res = new dict_int_0$();
+
+    va_list arguments;
+    va_start (arguments, x);
+
+    int_0$* key;
+
+    for (int i = 0; i < argcount; i++) {
+        key = va_arg(arguments, int_0$*);
+        res->set(key, va_arg (arguments, $Object*));
+    }
+
+    va_end (arguments);
+    return res;
+}
+
+dict_str_0$*
+__dict__str__(void* count, void* x, ...) {
+    int argcount = ((int_0$*) count)->getValue();
+    dict_str_0$* res = new dict_str_0$();
+
+    va_list arguments;
+    va_start (arguments, x);
+
+    str_0$* key;
+
+    for (int i = 0; i < argcount; i++) {
+        key = va_arg(arguments, str_0$*);
+        res->set(key, va_arg (arguments, $Object*));
+    }
+
+    va_end (arguments);
+    return res;
+}
+
+dict_bool_0$*
+__dict__bool__(void* count, void* x, ...) {
+    int argcount = ((int_0$*) count)->getValue();
+    dict_bool_0$* res = new dict_bool_0$();
+
+    va_list arguments;
+    va_start (arguments, x);
+
+    bool_0$* key;
+
+    for (int i = 0; i < argcount; i++) {
+        key = va_arg(arguments, bool_0$*);
+        res->set(key, va_arg (arguments, $Object*));
+    }
+
+    va_end (arguments);
+    return res;
+}
 
 /* Runtime routines */
 
@@ -687,6 +877,43 @@ __argv__() {
     return res;
 }
 
+
+// Type dict
+
+$Object*
+__getitem__dict__int__(void* D, void* x) {
+    return ((dict_int_0$*) D)->get(x);
+}
+
+$Object*
+__getitem__dict__str__(void* D, void* x) {
+    return ((dict_str_0$*) D)->get(x);
+}
+
+$Object*
+__getitem__dict__bool__(void* D, void* x) {
+    return ((dict_bool_0$*) D)->get(x);
+}
+
+int_0$*
+__len__dict__(void* D) {
+    int s = ((dict_0$*) D)->size();
+    return new int_0$(s);
+}
+
+bool_0$*
+__contains__dict__(void* x, void* D) {
+    bool b = ((dict_0$*) D)->contains(x);
+    return new bool_0$(b);
+}
+
+bool_0$*
+__notcontains__dict__(void* x, void* D) {
+    bool b = ((dict_0$*) D)->contains(x);
+    return new bool_0$((b ? false : true));
+}
+
+
 int main()
 {
     int failures = 0;
@@ -793,9 +1020,30 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
-
+    cout << "    class dict_0$: ";
+    dict_int_0$ diT;
+    dict_0$* d = &diT;
+    success = true;
+    success = (d->toString() == "{}") ? success : false;
+    success = (d->size() == 0) ? success : false;
+    d->set(new int_0$(1), new str_0$("hi"));
+    d->set(new int_0$(2), new str_0$("hello"));
+    success = (d->size() == 2) ? success : false;
+    success = (d->toString() == "{1: \"hi\", 2: \"hello\"}") ? success : false;
+    success = ((d->get(new int_0$(2)))->toString() == "hello") ? success : false;
+    dict_str_0$ dsT;
+    d = &dsT;
+    success = (d->toString() == "{}") ? success : false;
+    success = (d->size() == 0) ? success : false;
+    d->set(new str_0$("hi"), new bool_0$(true));
+    success = (d->toString() == "{\"hi\": True}") ? success : false;
+    success = (d->size() == 1) ? success : false;
+    success = ((d->get(new str_0$("hi")))->toString() == "True") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
     cout << "\nTesting allocators for list, tuple, and dict:" << endl;
     cout << "    allocator for tuple: ";
+    success = true;
     success = (__tuple0__()->size() == 0) ? success : false;
     x->setValue(15);
     success = (__tuple1__(x)->toString() == "(15,)") ? success : false;
@@ -806,6 +1054,7 @@ int main()
     failures += (success) ? 0 : 1;
 
     cout << "    allocator for list: ";
+    success = true;
     success = (__list__empty__()->size() == 0) ? success : false;
     success = (__list__empty__()->toString() == "[]") ? success : false;
     x->setValue(0);
@@ -814,6 +1063,26 @@ int main()
     a->setValue("LOL");
     b->setValue("Hi");
     success = (__list__(x, a, b, new str_0$("yes"))->toString() == "[\"LOL\", \"Hi\", \"yes\"]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    allocator for dict: ";
+    success = true;
+    success = (__dict__empty__int__()->size() == 0) ? success : false;
+    success = (__dict__empty__int__()->toString() == "{}") ? success : false;
+    success = (__dict__empty__str__()->size() == 0) ? success : false;
+    success = (__dict__empty__str__()->toString() == "{}") ? success : false;
+    success = (__dict__empty__bool__()->size() == 0) ? success : false;
+    success = (__dict__empty__bool__()->toString() == "{}") ? success : false;
+    d = __dict__empty__bool__();
+    d->set(new bool_0$(false), new int_0$(9));
+    success = (d->toString() == "{False: 9}") ? success : false;
+    x->setValue(2);
+    d = __dict__str__(x, x, new str_0$("One"), new int_0$(1), new str_0$("Two"), new int_0$(2));
+    success = (d->toString() == "{\"One\": 1, \"Two\": 2}") ? success : false;
+    x->setValue(1);
+    d = __dict__int__(x, x, new int_0$(1), new int_0$(1));
+    success = (d->toString() == "{1: 1}") ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
@@ -1303,6 +1572,64 @@ int main()
     x->setValue(7);
     y->setValue(10);
     success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+
+
+    cout << "\nTesting runtime routines for list:" << endl;
+
+    cout << "    __getitem__dict__:  ";
+    success = true;
+    x->setValue(2);
+    d = __dict__str__(x, x, new str_0$("One"), new int_0$(1), new str_0$("Two"), new int_0$(2));
+    success = (__getitem__dict__str__(d, new str_0$("Two"))->toString() == "2") ? success : false;
+    x->setValue(3);
+    d = __dict__int__(x, x, new int_0$(1), new int_0$(1), new int_0$(2), new int_0$(2), new int_0$(3), new int_0$(3));
+    success = (__getitem__dict__int__(d, new int_0$(2))->toString() == "2") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __len__dict__:  ";
+    success = true;
+    x->setValue(2);
+    d = __dict__str__(x, x, new str_0$("One"), new int_0$(1), new str_0$("Two"), new int_0$(2));
+    success = (__len__dict__(d)->getValue() == 2) ? success : false;
+    d->set(new str_0$(""), new int_0$(0));
+    success = (__len__dict__(d)->getValue() == 3) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+
+    cout << "    __contains__dict__:  ";
+    success = true;
+    success = (__contains__dict__(new str_0$("Two"), d)->getValue() == true) ? success : false;
+    success = (__contains__dict__(new str_0$("Three"), d)->getValue() == false) ? success : false;
+    x->setValue(2);
+    d = __dict__int__(x, x, new int_0$(1), new int_0$(1), new int_0$(2), new int_0$(2));
+    success = (__contains__dict__(new int_0$(1), d)->getValue() == true) ? success : false;
+    success = (__contains__dict__(new int_0$(-1), d)->getValue() == false) ? success : false;
+    x->setValue(1);
+    d = __dict__bool__(x, x, new bool_0$(false), new int_0$(1));
+    success = (__contains__dict__(new bool_0$(false), d)->getValue() == true) ? success : false;
+    success = (__contains__dict__(new bool_0$(true), d)->getValue() == false) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __notcontains__dict__:  ";
+    success = true;
+    x->setValue(2);
+    d = __dict__str__(x, x, new str_0$("One"), new int_0$(1), new str_0$("Two"), new int_0$(2));
+    success = (__notcontains__dict__(new str_0$("Two"), d)->getValue() == false) ? success : false;
+    success = (__notcontains__dict__(new str_0$("Three"), d)->getValue() == true) ? success : false;
+    x->setValue(2);
+    d = __dict__int__(x, x, new int_0$(1), new int_0$(1), new int_0$(2), new int_0$(2));
+    success = (__notcontains__dict__(new int_0$(1), d)->getValue() == false) ? success : false;
+    success = (__notcontains__dict__(new int_0$(-1), d)->getValue() == true) ? success : false;
+    x->setValue(1);
+    d = __dict__bool__(x, x, new bool_0$(false), new int_0$(1));
+    success = (__notcontains__dict__(new bool_0$(false), d)->getValue() == false) ? success : false;
+    success = (__notcontains__dict__(new bool_0$(true), d)->getValue() == true) ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
