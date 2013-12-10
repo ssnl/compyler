@@ -46,7 +46,7 @@ int_0$* __ZERO__ = new int_0$(0);
 /* Class $Object */
 
 string
-$Object::toString() {return "";}
+$Object::toString(bool contained) {return "";}
 
 
 /* Class bool_0$ */
@@ -130,7 +130,7 @@ bool_0$::operator!= (bool_0$ y) {
 }
 
 string
-bool_0$::toString() {
+bool_0$::toString(bool contained) {
     return (value) ? "True" : "False";
 }
 
@@ -221,7 +221,7 @@ int_0$::operator!= (int_0$ y) {
 }
 
 string
-int_0$::toString() {
+int_0$::toString(bool contained) {
     stringstream ss;
     ss << value;
     return ss.str();
@@ -290,10 +290,18 @@ str_0$::size() {
     return value.length();
 }
 
+string
+str_0$::toString(bool contained) {
+    if (contained)
+        return "\"" + value + "\"";
+    else
+        return value;
+}
+
 /* Class range_0$ */
 
 string
-range_0$::toString() {
+range_0$::toString(bool contained) {
     stringstream ss;
     ss << "range(";
     if (start == 0)
@@ -343,15 +351,15 @@ list_0$::getSlice(int L, int U) {
 }
 
 string
-list_0$::toString() {
+list_0$::toString(bool contained) {
     stringstream ss;
     ss << "[";
     int s = size();
     for (int i = 0; i < s - 1; i++) {
-        ss << getItem(i)->toString() << ", ";
+        ss << getItem(i)->toString(true) << ", ";
     }
     if (s > 0)
-        ss << getItem(s-1)->toString();
+        ss << getItem(s-1)->toString(true);
     ss << "]";
     return ss.str();
 }
@@ -368,20 +376,74 @@ tuple_0$::className() {
 }
 
 string
-tuple_0$::toString() {
+tuple_0$::toString(bool contained) {
     int s = size();
     stringstream ss;
     ss << "(";
     if (s == 1)
-        ss << getItem(0)->toString() << ",";
+        ss << getItem(0)->toString(true) << ",";
     else if (s > 1)
-        ss << getItem(0)->toString();
+        ss << getItem(0)->toString(true);
     for (int i = 1; i < s; i++) {
-        ss << ", "<< getItem(i)->toString();
+        ss << ", "<< getItem(i)->toString(true);
     }
     ss << ")";
     return ss.str();
 }
+
+
+/* Allocators for list_0$, tuple_0$, and dict_0$ */
+tuple_0$*
+__tuple0__() {
+    return new tuple_0$();
+}
+
+tuple_0$*
+__tuple1__(void* x) {
+    tuple_0$* res = new tuple_0$(1);
+    res->push(($Object*)x);
+    return res;
+}
+
+tuple_0$*
+__tuple2__(void* x, void* y) {
+    tuple_0$* res = new tuple_0$(2);
+    res->push(($Object*)x);
+    res->push(($Object*)y);
+    return res;
+}
+
+tuple_0$*
+__tuple3__(void* x, void* y, void* z) {
+    tuple_0$* res = new tuple_0$(3);
+    res->push(($Object*)x);
+    res->push(($Object*)y);
+    res->push(($Object*)z);
+    return res;
+}
+
+list_0$*
+__list__empty__() {
+    return new list_0$();
+}
+
+list_0$*
+__list__(void* count, void* x, ...) {
+    int argcount = ((int_0$*) count)->getValue();
+    list_0$* res = new list_0$();
+
+    va_list arguments;
+    va_start (arguments, x);
+
+    res->push(($Object*) x);
+    for (int i = 0; i < argcount; i++) {
+        res->push(va_arg (arguments, $Object*));
+    }
+
+    va_end (arguments);
+    return res;
+}
+
 
 
 /* Runtime routines */
@@ -719,7 +781,7 @@ int main()
     success = (t0->toString() == "()") ? success : false;
     t1->push(new str_0$("1-element tuple"));
     success = (t1->size() == 1) ? success : false;
-    success = (t1->toString() == "(1-element tuple,)") ? success : false;
+    success = (t1->toString() == "(\"1-element tuple\",)") ? success : false;
     t3->push(new str_0$("Hi"));
     t3->push(new int_0$(15));
     l->clear();
@@ -727,7 +789,31 @@ int main()
     l->push(new int_0$(2));
     t3->push(l);
     success = (t3->size() == 3) ? success : false;
-    success = (t3->toString() == "(Hi, 15, [1, 2])") ? success : false;
+    success = (t3->toString() == "(\"Hi\", 15, [1, 2])") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+
+    cout << "\nTesting allocators for list, tuple, and dict:" << endl;
+    cout << "    allocator for tuple: ";
+    success = (__tuple0__()->size() == 0) ? success : false;
+    x->setValue(15);
+    success = (__tuple1__(x)->toString() == "(15,)") ? success : false;
+    a->setValue("LOL");
+    Bool->setValue(true);
+    success = (__tuple3__(x, a, Bool)->toString() == "(15, \"LOL\", True)") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    allocator for list: ";
+    success = (__list__empty__()->size() == 0) ? success : false;
+    success = (__list__empty__()->toString() == "[]") ? success : false;
+    x->setValue(0);
+    success = (__list__(x, x)->toString() == "[0]") ? success : false;
+    x->setValue(2);
+    a->setValue("LOL");
+    b->setValue("Hi");
+    success = (__list__(x, a, b, new str_0$("yes"))->toString() == "[\"LOL\", \"Hi\", \"yes\"]") ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
@@ -1158,7 +1244,7 @@ int main()
     success = (__len__list__(l)->getValue() == 2) ? success : false;
     l->push(new str_0$("Hello"));
     success = (__len__list__(l)->getValue() == 3) ? success : false;
-    success = (l->toString() == "[, Hi, Hello]") ? success : false;
+    success = (l->toString() == "[\"\", \"Hi\", \"Hello\"]") ? success : false;
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 

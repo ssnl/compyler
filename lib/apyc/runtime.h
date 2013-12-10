@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <cstdarg>
 
 // To use pow()
 #include <math.h>
@@ -72,7 +73,7 @@ public:
     $Object () {}
 
     /** Return a string representation of THIS.*/
-    virtual string toString();
+    virtual string toString(bool contained=false);
 
     /** Return a boolean value that represents THIS. */
     virtual bool asBool() {return true;}
@@ -158,7 +159,7 @@ public:
 
     bool_0$* operator!= (bool_0$ y);
 
-    string toString();
+    string toString(bool contained=false);
 
     bool asBool() {return value;}
 };
@@ -213,7 +214,7 @@ public:
 
     bool_0$* operator!= (int_0$ y);
 
-    string toString();
+    string toString(bool contained=false);
 
     bool asBool() {return (value != 0) ? true : false;}
 };
@@ -251,7 +252,7 @@ public:
 
     bool_0$* operator!= (str_0$ y);
 
-    string toString() {return value;}
+    string toString(bool contained=false);
 
     bool asBool() {return ((value != "") ? true : false);}
 
@@ -296,7 +297,7 @@ public:
 
     int size() { return end - start;}
 
-    string toString();
+    string toString(bool contained=false);
 
     bool asBool() {return ((start == 0 && end == 0) ? false : true);}
 };
@@ -320,7 +321,7 @@ public:
 
     void clear() {value.clear();}
 
-    string toString();
+    string toString(bool contained=false);
 
     int size() {return value.size();}
 
@@ -335,7 +336,7 @@ protected:
     int tupleSize;
 public:
     tuple_0$ () : tupleSize(0) {}
-    
+
     tuple_0$ (int s) : tupleSize(s) {}
 
     void push($Object* item) {value.push_back(item);}
@@ -346,7 +347,7 @@ public:
 
     string className();
 
-    string toString();
+    string toString(bool contained=false);
 
     bool asBool() {return ((size() != 0) ? true : false);}
 };
@@ -358,6 +359,22 @@ extern str_0$ $str_0$;
 extern range_0$ $range_0$;
 extern list_0$ $list_0$;
 extern tuple_0$ $tuple_0$;
+
+// Allocators for list_0$, tuple_0$, and dict_0$
+tuple_0$* __tuple0__();
+
+tuple_0$* __tuple1__(void* x);
+
+tuple_0$* __tuple2__(void* x, void* y);
+
+tuple_0$* __tuple3__(void* x, void* y, void* z);
+
+list_0$* __list__empty__();
+
+list_0$* __list__(void* count, void* x, ...);
+
+
+// Miscellaneous routines
 
 void __donotcall__(void* x);
 
