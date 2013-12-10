@@ -37,6 +37,35 @@ typedef struct Frame {
     void* locals;
 } Frame;
 
+/** A call description struct that refers to a call descriptor. Contains the
+ *  static link for the call as well as the label to jump to. */
+typedef struct {
+    Frame* sl;
+    Label label;
+} FuncDesc;
+
+extern int argcount;
+extern char** args;
+
+extern vector<Frame*> STACK;
+extern vector<void*> HEAP;
+extern vector<void*> SM;
+
+extern Frame* cf;
+extern Frame* static_link;
+extern Frame* tmp_frame;
+extern FuncDesc* call;
+extern void* dst;
+extern void* src;
+
+extern void* tmp_alloc;
+extern void* tmp_arg0;
+extern void* tmp_arg1;
+extern void* tmp_arg2;
+extern void* tmp_arg3;
+
+extern int_0$* __ZERO__;
+
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
 public:
@@ -55,6 +84,9 @@ public:
     virtual bool equals($Object other) {
         return ((other.className() == "Object") ? true : false);
     }
+
+    /** If applicable, return the size of THIS. */
+    virtual int size() {return 0;}
 
 };
 
@@ -222,6 +254,8 @@ public:
     string toString() {return value;}
 
     bool asBool() {return ((value != "") ? true : false);}
+
+    int size();
 };
 
 
@@ -260,13 +294,39 @@ public:
 
     int getHigh() {return end;}
 
-    int length() { return end - start;}
+    int size() { return end - start;}
 
     string toString();
 
     bool asBool() {return ((start == 0 && end == 0) ? false : true);}
 };
 
+/** The wrapper class for primitive type list.*/
+class list_0$: public $Object {
+protected:
+    vector<$Object*> value;
+public:
+    list_0$ () : value() {}
+
+    vector<$Object*> getValue() {return value;}
+
+    void push($Object* item) {value.push_back(item);}
+
+    void setItem(int k, $Object* item) {value[k] = item;}
+
+    $Object* getItem(int k);
+
+    list_0$* getSlice(int L, int U);
+
+    void clear() {value.clear();}
+
+    string toString();
+
+    int size() {return value.size();}
+
+    bool asBool() {return ((value.size() != 0) ? true : false);}
+
+};
 
 extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
@@ -348,5 +408,16 @@ str_0$* __getslice__str__(void* s, void* start, void* end);
 int_0$* __len__str__(void* s);
 
 str_0$* __tostr__(void* x);
+
+
+// Type list
+
+$Object* __getitem__list__(void* S, void* k);
+
+list_0$* __getslice__list__(void* S, void* L, void* U);
+
+int_0$* __len__list__(void* S);
+
+list_0$* __argv__();
 
 #endif

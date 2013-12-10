@@ -8,6 +8,11 @@
 
 using namespace std;
 
+/** Stores the number of arguments passed to the generated program. */
+int argcount;
+/** Stores the arguments passed to the generated program. */
+char** args;
+
 /** Stores frames during runtime. */
 vector<Frame*> STACK;
 /** Stores references to objects allocated during runtime. */
@@ -280,6 +285,11 @@ str_0$::operator!= (str_0$ y) {
     return res;
 }
 
+int
+str_0$::size() {
+    return value.length();
+}
+
 /* Class range_0$ */
 
 string
@@ -291,6 +301,58 @@ range_0$::toString() {
     else
         ss << start << ", " << end;
     ss << ")";
+    return ss.str();
+}
+
+/* Class list_0$ */
+
+$Object*
+list_0$::getItem(int k) {
+    int s = size();
+    if (k < -s || k >= s)
+        throw "IndexError: list index out of range";
+    else if (k < 0)
+        k += s;
+    return value[k];
+}
+
+list_0$*
+list_0$::getSlice(int L, int U) {
+    int s = size();
+    if (L >= U || L >= s) {
+        return new list_0$();
+    }
+    if (L < -s) {
+        L = 0;
+    } else if (L < 0) {
+        L += s;
+    }
+    if (U < -s) {
+        U = 0;
+    } else if (U < 0) {
+        U += s;
+    }
+    if (U > s) {
+        U = s;
+    }
+    list_0$* res = new list_0$();
+    for (int i = L; i < U; i++) {
+        res->push(getItem(i));
+    }
+    return res;
+}
+
+string
+list_0$::toString() {
+    stringstream ss;
+    ss << "[";
+    int s = size();
+    for (int i = 0; i < s - 1; i++) {
+        ss << getItem(i)->toString() << ", ";
+    }
+    if (s > 0)
+        ss << getItem(s-1)->toString();
+    ss << "]";
     return ss.str();
 }
 
@@ -331,7 +393,7 @@ __xrange__(void* low, void* high) {
 
 int_0$*
 __len__range__(void* r) {
-    int rLen = ((range_0$*) r)->length();
+    int rLen = ((range_0$*) r)->size();
     return new int_0$(rLen);
 }
 
@@ -496,14 +558,44 @@ __getslice__str__(void* s, void* start, void* end) {
 
 int_0$*
 __len__str__(void* s) {
-    string str = ((str_0$*)s)->getValue();
-    return new int_0$(str.length());
+    return new int_0$(((str_0$*) s)->size());
 }
 
 str_0$*
 __tostr__(void* x) {
     string str = (($Object*)x)->toString();
     return new str_0$();
+}
+
+
+// Type list
+
+$Object*
+__getitem__list__(void* S, void* k) {
+    int index = ((int_0$*) k)->getValue();
+    return ((list_0$*) S)->getItem(index);
+}
+
+list_0$*
+__getslice__list__(void* S, void* L, void* U) {
+    int l = ((int_0$*) L)->getValue();
+    int u = ((int_0$*) U)->getValue();
+    return ((list_0$*) S)->getSlice(l, u);
+}
+
+int_0$*
+__len__list__(void* S) {
+    int s = ((list_0$*) S)->size();
+    return new int_0$(s);
+}
+
+list_0$*
+__argv__() {
+    list_0$* res = new list_0$();
+    for (int i = 0; i < argcount; i++) {
+        res->push(new str_0$(args[i]));
+    }
+    return res;
 }
 
 int main()
@@ -567,8 +659,31 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
+    cout << "    class list_0$: ";
+    list_0$ lT;
+    list_0$* l = &lT;
+    success = true;
+    success = (l->size() == 0) ? success : false;
+    success = (l->toString() == "[]") ? success : false;
+    l->push(new int_0$(1));
+    success = (l->toString() == "[1]") ? success : false;
+    l->push(new int_0$(2));
+    success = (l->toString() == "[1, 2]") ? success : false;
+    l->push(new int_0$(3));
+    success = (l->size() == 3) ? success : false;
+    success = (l->toString() == "[1, 2, 3]") ? success : false;
+    success = (((int_0$*)l->getItem(0))->getValue() == 1) ? success : false;
+    success = (((int_0$*)l->getItem(1))->getValue() == 2) ? success : false;
+    success = (((int_0$*)l->getItem(2))->getValue() == 3) ? success : false;
+    success = (((int_0$*)l->getItem(-2))->getValue() == 2) ? success : false;
+    l->setItem(1, new int_0$(10));
+    success = (((int_0$*)l->getItem(1))->getValue() == 10) ? success : false;
+    success = (l->toString() == "[1, 10, 3]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
 
-    cout << "\nTesting runtime routines for bool, int, and string:" << endl;
+
+    cout << "\nTesting runtime routines for bool, int, and misc.:" << endl;
     cout << "    __donotcall___:  ";
     try {
         void* x = 0;
@@ -938,6 +1053,9 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
+
+    cout << "\nTesting runtime routines for range:" << endl;
+
     cout << "    __xrange__:  ";
     success = true;
     x->setValue(0);
@@ -976,8 +1094,82 @@ int main()
     r->setHigh(-1);
     success = (__len__range__(r)->getValue() == 2) ? success : false;
     cout << (success ? "passes" : "failed") << endl;
-    failures += (success) ? 0 : 1;    
+    failures += (success) ? 0 : 1;
 
+
+
+    cout << "\nTesting runtime routines for list:" << endl;
+
+    cout << "    __len__list__:  ";
+    success = true;
+    l->clear();
+    success = (__len__list__(l)->getValue() == 0) ? success : false;
+    l->push(new str_0$());
+    l->push(new str_0$("Hi"));
+    success = (__len__list__(l)->getValue() == 2) ? success : false;
+    l->push(new str_0$("Hello"));
+    success = (__len__list__(l)->getValue() == 3) ? success : false;
+    success = (l->toString() == "[, Hi, Hello]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __getitem__list__:  ";
+    success = true;
+    x->setValue(0);
+    success = (((str_0$*)__getitem__list__(l, x))->getValue() == "") ? success : false;
+    x->setValue(1);
+    success = (((str_0$*)__getitem__list__(l, x))->getValue() == "Hi") ? success : false;
+    x->setValue(-1);
+    success = (((str_0$*)__getitem__list__(l, x))->getValue() == "Hello") ? success : false;
+    x->setValue(-3);
+    success = (((str_0$*)__getitem__list__(l, x))->getValue() == "") ? success : false;
+    try {
+        x->setValue(-4);
+        __getitem__list__(l, x);
+        success = false;
+    } catch (...) {}
+    try {
+        x->setValue(3);
+        __getitem__list__(l, x);
+        success = false;
+    } catch (...) {}
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __getslice__list__:  ";
+    success = true;
+    l->clear();
+    l->push(new int_0$(1));
+    l->push(new int_0$(2));
+    l->push(new int_0$(3));
+    l->push(new int_0$(4));
+    l->push(new int_0$(5));
+    x->setValue(0);
+    y->setValue(2);
+    success = (l->size() == 5) ? success : false;
+    success = ((__getslice__list__(l, x, y))->size() == 2) ? success : false;
+    success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
+    x->setValue(-5);
+    success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
+    x->setValue(-6);
+    success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
+    y->setValue(-2);
+    success = ((__getslice__list__(l, x, y))->toString() == "[1, 2, 3]") ? success : false;
+    x->setValue(2);
+    y->setValue(3);
+    success = ((__getslice__list__(l, x, y))->toString() == "[3]") ? success : false;
+    y->setValue(2);
+    success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    y->setValue(1);
+    success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    x->setValue(5);
+    y->setValue(6);
+    success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    x->setValue(7);
+    y->setValue(10);
+    success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
 
 
     if (failures == 0)

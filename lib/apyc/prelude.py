@@ -27,9 +27,9 @@ class range:
 #     def __init__(self::file):
 #         native "__donotcall__"
 
-# class list of [$T]:
-#     def __init__(self::list of [$T]):
-#         native "__donotcall__"
+class list of [$T]:
+    def __init__(self::list of [$T]):
+        native "__donotcall__"
 
 # class dict of [$Key, $Value]:
 #     def __init__(self::dict of [$Key, $Value]):
@@ -170,17 +170,17 @@ def tostr(x)::str:
 
 # Type list
 
-# def __getitem__(S::list of $a, k::int)::$a:
-#     native "__getitem__list__"
+def __getitem__(S::list of $a, k::int)::$a:
+    native "__getitem__list__"
 
-# def __getslice__(S::list of $a, L::int, U::int)::list of $a:
-#     native "__getslice__list__"
+def __getslice__(S::list of $a, L::int, U::int)::list of $a:
+    native "__getslice__list__"
 
-# def len(S::list of $a)::int:
-#     native "__len__list__"
+def len(S::list of $a)::int:
+    native "__len__list__"
 
-# def __argv__()::list of str:
-#     native "__argv__"
+def __argv__()::list of str:
+    native "__argv__"
 
 # # Type file
 
