@@ -20,6 +20,7 @@ using namespace std;
 class bool_0$;
 class int_0$;
 class str_0$;
+class range_0$;
 
 /* Runtime Data Structures */
 
@@ -44,8 +45,16 @@ public:
     /** Return a string representation of THIS.*/
     virtual string toString();
 
-    /** Return a boolean value that represents THIS */
+    /** Return a boolean value that represents THIS. */
     virtual bool asBool() {return true;}
+
+    /** Return the class name. Helper method for equals(). */
+    virtual string className() {return "Object";}
+
+    /** Check equality between THIS and OTHER. */
+    virtual bool equals($Object other) {
+        return ((other.className() == "Object") ? true : false);
+    }
 
 };
 
@@ -121,6 +130,7 @@ public:
 
     bool asBool() {return value;}
 };
+
 
 
 /** The wrapper class for primitive type int.*/
@@ -231,10 +241,37 @@ extern $Object* tmp_res;
 
 extern int_0$* __ZERO__;
 
+/** The wrapper class for primitive type range.*/
+class range_0$: public $Object {
+protected:
+    int start, end;
+public:
+    range_0$ () : start(0), end(0) {}
+
+    range_0$ (int high) : start(0), end(high) {}
+
+    range_0$ (int low, int high) : start(low), end(high) {}
+
+    void setLow(int low) {start = low;}
+
+    void setHigh(int high) {end = high;}
+
+    int getLow() {return start;}
+
+    int getHigh() {return end;}
+
+    int length() { return end - start;}
+
+    string toString();
+
+    bool asBool() {return ((start == 0 && end == 0) ? false : true);}
+};
+
 
 extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
 extern str_0$ $str_0$;
+extern range_0$ $range_0$;
 
 
 void __donotcall__(void* x);
@@ -242,15 +279,17 @@ void __donotcall__(void* x);
 int_0$* __None__();
 
 
-// type bool
+// Type bool
 bool_0$* __truth__(void* x);
 
 bool_0$* __not__(void* x);
 
-// __xrange__
+// Type range
+range_0$* __xrange__(void* low, void* high);
 
-// __len__range__
+int_0$* __len__range__(void* r);
 
+// Type int
 int_0$* __add__int__(void* x, void* y);
 
 int_0$* __sub__int__(void* x, void* y);
