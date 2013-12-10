@@ -377,15 +377,15 @@ public:
     /** Outputs an instruction as code to my output stream. */
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
-    void emit (const int& instr, gcstring arg, int arity);
+    void emit (const int& instr, gcstring arg1, int arg2);
 
     /** Outputs code to handle the start of a function call into my output
      *  stream. */
-    void emitDefPrologue (const gcstring& name);
+    void emitDefPrologue (gcstring name);
 
     /** Outputs code to handle the end of a function call into my output
      *  stream. */
-    void emitDefEpilogue ();
+    void emitDefEpilogue (gcstring name);
 
     /** Outputs the runtime prologue that precedes the body of the main
      *  method */
