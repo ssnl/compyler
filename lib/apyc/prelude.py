@@ -19,9 +19,9 @@ class bool:
     def __init__(self::bool):
         native "__donotcall__"
 
-# class range:
-#     def __init__(self::range):
-#         native "__donotcall__"
+class range:
+    def __init__(self::range):
+        native "__donotcall__"
 
 # class file:
 #     def __init__(self::file):
@@ -72,11 +72,11 @@ False::bool = truth(0)
 
 # Type range
 
-# def xrange(low::int, high::int)::range:
-#     native "__xrange__"
+def xrange(low::int, high::int)::range:
+    native "__xrange__"
 
-# def len(r::range)::int:
-#     native "__len__range__"
+def len(r::range)::int:
+    native "__len__range__"
 
 # Type int
 
