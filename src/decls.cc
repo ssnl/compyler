@@ -338,7 +338,7 @@ public:
     }
 
     gcstring getRuntimeTypeName () const {
-        return getType ()->binding ()->getRuntimeName ();
+        return "$Object";
     }
 
 protected:

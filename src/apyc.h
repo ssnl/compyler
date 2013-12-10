@@ -123,8 +123,9 @@ public:
     virtual void setType (Type_Ptr type);
 
     /** Gets the name of the type of the entity I represent rewritten in the
-     *  format that will be used at runtime. For varDecls will return a properly
-     *  formed type. Otherwise returns an empty string. */
+     *  format that will be used at runtime. Always returns $Object, since types
+     *  have already been determined at compile time, and all declarations will
+     *  extend $Object. */
     virtual gcstring getRuntimeTypeName () const;
 
     /** My associated AST, if any.  A Decl may be associated with a
