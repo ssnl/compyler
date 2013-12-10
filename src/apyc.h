@@ -398,6 +398,9 @@ public:
     /** Creates and returns new code label. */
     VMLabel newLabel ();
 
+    /** Creates and returns new code label. */
+    VMLabel newLabel (gcstring name);
+
     /** Given a code label, inserts the label into the code in the output
       * stream. */
     void placeLabel (VMLabel label);

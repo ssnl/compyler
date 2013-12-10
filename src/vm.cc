@@ -198,6 +198,12 @@ VirtualMachine::newLabel ()
     return VMLabel("__L__" + tostr(numLabels));
 }
 
+VMLabel
+VirtualMachine::newLabel (gcstring s)
+{
+    return VMLabel(s);
+}
+
 void
 VirtualMachine::placeLabel (VMLabel label)
 {
@@ -232,6 +238,8 @@ VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
+    VMLabel exitLabel = newLabel("__EXIT__");
+    placeLabel(exitLabel);
     code("for (int i = 0; i < HEAP.size(); i++) {");
     code("// delete HEAP[i];", 8); // TODO cast to base object ptr
     code("}");
@@ -306,6 +314,7 @@ VirtualMachine::__test_codegen()
     emit(CALL);
     emit(PUSH, "((__main__*) cf->locals)->z");
     emit(MOVE, "int_0$");
+    emit(GOTO, "__EXIT__");
     newline();
     comment("function def for foo(a,b)");
     VMLabel foo = newLabel();
