@@ -257,7 +257,7 @@ bool_0$*
 str_0$::operator> (str_0$ y) {
     bool_0$* res = new bool_0$(value > y.value);
     return res;
-}
+}vr
 
 bool_0$*
 str_0$::operator<= (str_0$ y) {
