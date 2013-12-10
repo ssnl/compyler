@@ -11,9 +11,9 @@ using namespace std;
 /** Stores frames during runtime. */
 vector<Frame*> STACK;
 /** Stores references to objects allocated during runtime. */
-vector<void*> HEAP;
+vector<$Object*> HEAP;
 /** Our runtime stack machine. */
-vector<void*> SM;
+vector<$Object*> SM;
 
 /* Temporaries */
 
@@ -27,16 +27,13 @@ Frame* tmp_frame;
 FuncDesc* call;
 
 /** Stores assignment destination in "dst = src". */
-void* dst;
+$Object** dst;
 /** Stores assignment source in "dst = src". */
-void* src;
+$Object* src;
 /** Stores temp reference to allocated object. */
-void* tmp_alloc;
-/** Stores arguments of native calls. */
-void* tmp_arg0;
-void* tmp_arg1;
-void* tmp_arg2;
-void* tmp_arg3;
+$Object* tmp_alloc;
+/** Stores the result of a native call. */
+$Object* tmp_res;
 
 /** Stores the constant Integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);

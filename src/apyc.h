@@ -396,10 +396,10 @@ public:
     void emitMainEpilogue ();
 
     /** Creates and returns new code label. */
-    VMLabel newLabel ();
+    VMLabel newLabel (gcstring id="L");
 
     /** Creates and returns new code label. */
-    VMLabel newLabel (gcstring name);
+    VMLabel asLabel (gcstring name);
 
     /** Given a code label, inserts the label into the code in the output
       * stream. */
@@ -423,7 +423,6 @@ private:
 
     std::ostream& out;
     int numLabels;
-    int numRetLabels;
 
     /** Yeah, necessary for uhh...convenience. */
     gcstring tostr(int val);

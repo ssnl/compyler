@@ -44,25 +44,6 @@ typedef struct {
     Label label;
 } FuncDesc;
 
-extern vector<Frame*> STACK;
-extern vector<void*> HEAP;
-extern vector<void*> SM;
-
-extern Frame* cf;
-extern Frame* static_link;
-extern Frame* tmp_frame;
-extern FuncDesc* call;
-extern void* dst;
-extern void* src;
-
-extern void* tmp_alloc;
-extern void* tmp_arg0;
-extern void* tmp_arg1;
-extern void* tmp_arg2;
-extern void* tmp_arg3;
-
-extern int_0$* __ZERO__;
-
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
 public:
@@ -75,6 +56,22 @@ public:
     virtual bool asBool() {return true;}
 
 };
+
+extern vector<Frame*> STACK;
+extern vector<$Object*> HEAP;
+extern vector<$Object*> SM;
+
+extern Frame* cf;
+extern Frame* static_link;
+extern Frame* tmp_frame;
+extern FuncDesc* call;
+extern $Object** dst;
+extern $Object* src;
+
+extern $Object* tmp_alloc;
+extern $Object* tmp_res;
+
+extern int_0$* __ZERO__;
 
 /** The wrapper class for primitive type bool.*/
 class bool_0$: public $Object {

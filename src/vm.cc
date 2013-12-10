@@ -30,30 +30,25 @@ void
 VirtualMachine::emit (const int& instr)
 {
     newline();
-    gcstring s1, s2, rlabel;
     switch (instr) {
-
-        // e.g. call = (FuncDesc*) SM.back();
-        //      SM.pop_back();
-        //      cf->ra = __R__15;
-        //      static_link = call.frame;
-        //      goto **(call.label);
-        //  __R__15:
-        case CALL:
-            numRetLabels++;
-            comment("calling function");
-            rlabel = "__R__" + tostr(numRetLabels);
-            code("call = (FuncDesc*) SM.back();");
-            code("SM.pop_back();");
-            code("cf->ra = &&" + rlabel + ";");
-            code("static_link = call->sl;");
-            code("goto *(call->label);");
-            code(rlabel + ":", 0);
-            break;
 
         case PUSH:
             comment("pushing first in HEAP onto SM");
             code("SM.push_back(HEAP[HEAP.size()-1]);");
+            break;
+
+        // e.g. dst = SM.back();
+        //      SM.pop_back();
+        //      src = SM.back();
+        //      SM.pop_back();
+        //      *(($Object*) dst) = *(($Object*) src);
+        case MOVE:
+            comment("moving second in stack to first in stack");
+            code("dst = SM.back();");
+            code("SM.pop_back();");
+            code("src = SM.back();");
+            code("SM.pop_back();");
+            code("*(($Object*) dst) = *(($Object*) src);");
             break;
 
         default:
@@ -66,6 +61,8 @@ VirtualMachine::emit (const int& instr)
 void
 VirtualMachine::emit (const int& instr, gcstring arg)
 {
+    gcstring rlabel;
+
     newline();
     switch (instr) {
 
@@ -97,19 +94,23 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("SM.push_back(&" + arg + ");");
             break;
 
-        // arg: gcstring, the type of dst
-        // e.g. dst = SM.back();
+        // arg: gcstring, the function's runtime name
+        // e.g. call = (FuncDesc*) SM.back();
         //      SM.pop_back();
-        //      src = SM.back();
-        //      SM.pop_back();
-        //      *((int_0$*)dst) = *((int_0$*)src);
-        case MOVE:
-            comment("moving second in stack to first in stack");
-            code("dst = SM.back();");
+        //      cf->ra = __R__15;
+        //      static_link = call.frame;
+        //      goto **(call.label);
+        //  __R__15:
+        case CALL:
+            comment("calling function");
+            rlabel = newLabel("R");
+            code("call = (FuncDesc*) SM.back();");
             code("SM.pop_back();");
-            code("src = SM.back();");
-            code("SM.pop_back();");
-            code("*((" + arg + "*)dst) = *((" + arg + "*)src);");
+            code("cf->ra = &&" + rlabel + ";");
+            code("static_link = call->sl;");
+            code("goto " + asLabel(arg) + ";");
+            newline();
+            code(rlabel + ":", 0);
             break;
 
         // arg: gcstring, the creation of a new object
@@ -137,26 +138,24 @@ void
 VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
 {
     newline();
-    gcstring argliststr = "";
-    gcstring argstr;
-
     switch (instr) {
 
         // arg1: gcstring*, the name of the native function
         // arg2: int, the number of params the native function takes
         case NATIVE:
             comment("calling " + arg1 + " (" + tostr(arg2) + " params)");
-            for (int i = 0; i < arg2; i++) {
-                argstr = "tmp_arg" + tostr(i);
-                code(argstr + " = SM.back();");
-                code("SM.pop_back();");
-                if (i == arg2-1) {
-                    argliststr += argstr;
+            code("tmp_res = " + arg1 + "(");
+            for (int i = 1; i <= arg2; i++) {
+                if (i != arg2) {
+                    code("SM[SM.size()-" + tostr(i) + "],", 8);
                 } else {
-                    argliststr += (argstr + ", ");
+                    code("SM[SM.size()-" + tostr(i) + "]);", 8);
                 }
             }
-            code("SM.push_back(" + arg1 + "(" + argliststr + "));");
+            for (int _ = 0; _ < arg2; _++) {
+                code("SM.pop_back();");
+            }
+            code("SM.push_back(tmp_res);");
             break;
 
         default:
@@ -192,16 +191,16 @@ VirtualMachine::emitDefEpilogue (gcstring name)
 }
 
 VMLabel
-VirtualMachine::newLabel ()
+VirtualMachine::newLabel (gcstring id)
 {
     numLabels++;
-    return VMLabel("__L__" + tostr(numLabels));
+    return VMLabel(asLabel(id) + tostr(numLabels));
 }
 
 VMLabel
-VirtualMachine::newLabel (gcstring s)
+VirtualMachine::asLabel (gcstring s)
 {
-    return VMLabel(s);
+    return VMLabel("__" + s + "__");
 }
 
 void
@@ -238,10 +237,10 @@ VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
-    VMLabel exitLabel = newLabel("__EXIT__");
+    VMLabel exitLabel = asLabel("EXIT");
     placeLabel(exitLabel);
     code("for (int i = 0; i < HEAP.size(); i++) {");
-    code("// delete HEAP[i];", 8); // TODO cast to base object ptr
+    code("delete (($Object*) HEAP[i]);", 8); // TODO cast to base object ptr
     code("}");
 }
 
@@ -291,7 +290,7 @@ VirtualMachine::__test_codegen()
     emit(ALLOC, "new int_0$(5)");
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->x");
-    emit(MOVE, "int_0$");
+    emit(MOVE);
 
     newline(2);
     comment("y = x + 3");
@@ -300,7 +299,7 @@ VirtualMachine::__test_codegen()
     emit(PUSH, "((__main__*) cf->locals)->x");
     emit(NATIVE, "__add__int__", 2);
     emit(PUSH, "((__main__*) cf->locals)->y");
-    emit(MOVE, "int_0$");
+    emit(MOVE);
 
     newline(2);
     comment("def foo(a, b):");
@@ -311,19 +310,19 @@ VirtualMachine::__test_codegen()
     emit(ALLOC, "new FuncDesc(((__main__*) cf->locals)->foo_0$)");
     emit(PUSH);
     emit(SETSL, "cf");
-    emit(CALL);
+    emit(CALL, "foo_0$");
     emit(PUSH, "((__main__*) cf->locals)->z");
-    emit(MOVE, "int_0$");
+    emit(MOVE);
     emit(GOTO, "__EXIT__");
     newline();
     comment("function def for foo(a,b)");
-    VMLabel foo = newLabel();
-    placeLabel(foo);
+    VMLabel lbl = asLabel("foo_0$");
+    placeLabel(lbl);
     emitDefPrologue("foo_0$");
     emit(PUSH, "((foo_0$*) cf->locals)->a");
-    emit(MOVE, "int_0$");
+    emit(MOVE);
     emit(PUSH, "((foo_0$*) cf->locals)->b");
-    emit(MOVE, "int_0$");
+    emit(MOVE);
     emit(PUSH, "((foo_0$*) cf->locals)->a");
     emit(PUSH, "((foo_0$*) cf->locals)->b");
     emit(NATIVE, "__add__int__", 2);
