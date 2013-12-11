@@ -66,15 +66,25 @@ protected:
         //VM->emitRuntime();
     }
 
-    /** Creates a new name for every declaration, starting at but not including
-     *  the module, and recursively iterating to its children. Determines the
-     *  new name using NAMES to create a unique identifier. */
+    /** Sets the depth of all my member declarations to be CURRDEPTH, and
+     *  recursively preprocesses the depths of any definitions within me. */
+    void declDepthPreprocess (int& currDepth) {
+        Decl* me = mainModule;
+        Decl_Vector members = me->getEnviron ()->get_members ();
+        for (int i = 0; i < members.size (); i++)
+            members[i]->setDepth(currDepth);
+        me->setDepth(currDepth);
+        AST::declDepthPreprocess(currDepth);
+    }
+
+    /** Creates a new name for all my member declarations, starting at but not
+     *  including the module, and recursively iterating to its children.
+     *  Determines the new name using NAMES to create a unique identifier. */
     void declNamePreprocess (gcmap<gcstring, int>& names) {
         Decl* me = mainModule;
         Decl_Vector members = me->getEnviron ()->get_members ();
-        for (int i = 0; i < members.size (); i++) {
+        for (int i = 0; i < members.size (); i++)
             members[i]->setupRuntimeName(names);
-        }
         AST::declNamePreprocess (names);
     }
 

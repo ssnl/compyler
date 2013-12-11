@@ -253,11 +253,3 @@ DB(Decl* d)
 {
     d->print(cerr);
 }
-
-/* Personal debugging routines */
-
-int
-DB_Depth(Decl* d)
-{
-    return d->getDepth();
-}
