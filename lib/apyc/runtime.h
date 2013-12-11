@@ -20,10 +20,20 @@
 
 using namespace std;
 
+class $Object;
 class bool_0$;
 class int_0$;
 class str_0$;
 class range_0$;
+class list_0$;
+class tuple_0$;
+class dict_0$;
+class dict_int_0$;
+class dict_str_0$;
+class dict_bool_0$;
+class file_0$;
+
+class FuncDesc;
 
 /* Runtime Data Structures */
 
@@ -40,32 +50,19 @@ typedef struct Frame {
     void* locals;
 } Frame;
 
-/** A call description struct that refers to a call descriptor. Contains the
- *  static link for the call as well as the label to jump to. */
-typedef struct {
-    Frame* sl;
-    Label label;
-} FuncDesc;
-
-extern int argcount;
-extern char** args;
-
 extern vector<Frame*> STACK;
-extern vector<void*> HEAP;
-extern vector<void*> SM;
+extern vector<$Object*> HEAP;
+extern vector<$Object**> SM;
 
 extern Frame* cf;
 extern Frame* static_link;
 extern Frame* tmp_frame;
 extern FuncDesc* call;
-extern void* dst;
-extern void* src;
+extern $Object** dst;
+extern $Object** src;
 
-extern void* tmp_alloc;
-extern void* tmp_arg0;
-extern void* tmp_arg1;
-extern void* tmp_arg2;
-extern void* tmp_arg3;
+extern $Object* tmp_alloc;
+extern $Object* tmp_res;
 
 extern int_0$* __ZERO__;
 
@@ -271,22 +268,6 @@ public:
     int size();
 };
 
-
-extern vector<Frame*> STACK;
-extern vector<$Object*> HEAP;
-extern vector<$Object**> SM;
-
-extern Frame* cf;
-extern Frame* static_link;
-extern Frame* tmp_frame;
-extern FuncDesc* call;
-extern $Object** dst;
-extern $Object** src;
-
-extern $Object* tmp_alloc;
-extern $Object* tmp_res;
-
-extern int_0$* __ZERO__;
 
 /** The wrapper class for primitive type range.*/
 class range_0$: public $Object {

@@ -20,7 +20,7 @@
 *.sublime-workspace
 
 # Specific compiled files
-apyc
+./apyc
 output.dSYM/*
 src/.depend
 src/apyc-lexer.cc
