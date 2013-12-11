@@ -480,7 +480,15 @@ protected:
 
     void exprCodeGen (int depth) {
         if (child (0)->isTargetList ()) {
-
+            int tuplesize = child (0)->arity ();
+            child (1)->exprCodeGen (depth);
+            VM->emit (EXPAND, tuplesize);
+            for_each_child (c, child (0)) {
+                c->exprCodeGen (depth);
+                VM->emit (MOVE);
+            } end_for;
+            VM->emit (POP);
+            child (0)->exprCodeGen (depth);
         } else {
             child (1)->exprCodeGen (depth);
             child (0)->exprCodeGen (depth);
