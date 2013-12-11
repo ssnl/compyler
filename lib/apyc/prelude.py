@@ -23,9 +23,9 @@ class range:
     def __init__(self::range):
         native "__donotcall__"
 
-# class file:
-#     def __init__(self::file):
-#         native "__donotcall__"
+class file:
+    def __init__(self::file):
+        native "__donotcall__"
 
 class list of [$T]:
     def __init__(self::list of [$T]):
@@ -182,40 +182,40 @@ def len(S::list of $a)::int:
 def __argv__()::list of str:
     native "__argv__"
 
-# # Type file
+# Type file
 
-# def open(name::str)::file:
-#     native "__open1__"
+def open(name::str)::file:
+    native "__open1__"
 
-# def open(name::str, mode::str)::file:
-#     native "__open2__"
+def open(name::str, mode::str)::file:
+    native "__open2__"
 
-# def close(f::file):
-#     native "__close__"
+def close(f::file):
+    native "__close__"
 
-# def __standard_file__(k::int):
-#     native "__standard_file__"
+def __standard_file__(k::int):
+    native "__standard_file__"
 
-# def readline(f::file)::str:
-#     native "__readline__"
+def readline(f::file)::str:
+    native "__readline__"
 
-# def read(f::file)::str:
-#     native "__read__"
+def read(f::file)::str:
+    native "__read__"
 
-# # The module sys.
-# # (We fake this with an instance of a class, using instance variables instead
-# # of module members.)
+# The module sys.
+# (We fake this with an instance of a class, using instance variables instead
+# of module members.)
 
-# class __sys__:
-#     stdin::file = __standard_file__(0)
-#     stdout::file = __standard_file__(1)
-#     stderr::file = __standard_file__(2)
+class __sys__:
+    stdin::file = __standard_file__(0)
+    stdout::file = __standard_file__(1)
+    stderr::file = __standard_file__(2)
 
-#     argv::list of str = __argv__()
+    argv::list of str = __argv__()
 
-# sys::__sys__ = __sys__()
+sys::__sys__ = __sys__()
 
-# # Type dict
+# Type dict
 
 def __getitem__(D::dict of [int, $b], x::int)::$b:
     native "__getitem__dict__int__"

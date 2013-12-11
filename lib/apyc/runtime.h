@@ -13,6 +13,7 @@
 #include <sstream>
 #include <cstdarg>
 #include <map>
+#include <stdio.h>
 
 // To use pow()
 #include <math.h>
@@ -452,6 +453,29 @@ public:
     bool asBool() {return (value.empty()? false : true);}
 };
 
+/** The wrapper class for primitive type file.*/
+class file_0$: public $Object {
+protected:
+    FILE* value;
+public:
+    file_0$ () {}
+
+    file_0$ (FILE* f) : value(f) {}
+
+    FILE* getValue() {return value;}
+
+    void close() {fclose(value);}
+
+    int size() {return -1;}
+
+    string toString();
+
+    string className() {return "file";}
+
+    bool asBool() {return true;}
+
+    bool equals(void* other);
+};
 
 extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
@@ -459,6 +483,11 @@ extern str_0$ $str_0$;
 extern range_0$ $range_0$;
 extern list_0$ $list_0$;
 extern tuple_0$ $tuple_0$;
+extern dict_0$ $dict_0$;
+extern file_0$ $file_0$;
+
+// Standard input, output, and error
+extern file_0$ STDIN, STDOUT, STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
 tuple_0$* __tuple0__();
@@ -594,6 +623,21 @@ int_0$* __len__dict__(void* D);
 bool_0$* __contains__dict__(void* x, void* D);
 
 bool_0$* __notcontains__dict__(void* x, void* D);
+
+
+// Type file
+
+file_0$* __open1__(void* name);
+
+file_0$* __open2__(void* name, void* mode);
+
+void __close__(void* file);
+
+str_0$* __readline__(void* file);
+
+str_0$* __read__(void* file);
+
+file_0$* __standard_file__(void* k);
 
 
 

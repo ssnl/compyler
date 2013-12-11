@@ -547,6 +547,22 @@ dict_bool_0$::toString(bool contained) {
 }
 
 
+/* Class file */
+
+string
+file_0$::toString() {
+    stringstream ss;
+    ss << this;
+    return ss.str();
+}
+
+bool
+file_0$::equals(void* other) {
+    return this == other;
+}
+
+
+
 /* Allocators for list_0$, tuple_0$, and dict_0$ */
 tuple_0$*
 __tuple0__() {
@@ -673,6 +689,8 @@ __dict__bool__(void* count, void* x, ...) {
 
 /* Runtime routines */
 
+// Miscellaneous
+
 void
 __donotcall__(void* x) {
     throw "Call to unimplemented function.";
@@ -697,6 +715,8 @@ __isnot__(void* x, void* y) {
 }
 
 
+// Type bool
+
 bool_0$*
 __truth__(void* x) {
     bool Bool = (($Object*) x)->asBool();
@@ -710,6 +730,7 @@ __not__(void* x) {
 }
 
 
+// Type range
 
 range_0$*
 __xrange__(void* low, void* high) {
@@ -727,6 +748,7 @@ __len__range__(void* r) {
 }
 
 
+// Type int
 
 int_0$*
 __add__int__(void* x, void* y){
@@ -962,6 +984,87 @@ bool_0$*
 __notcontains__dict__(void* x, void* D) {
     bool b = ((dict_0$*) D)->contains(x);
     return new bool_0$((b ? false : true));
+}
+
+
+// Type file
+
+file_0$*
+__open1__(void* name) {
+    string fName = ((str_0$*) name)->getValue();
+    FILE* f;
+    f = fopen(fName.c_str(), "r");
+    if (f == NULL) {
+        stringstream ss;
+        ss << "IOError: file \"" << fName << "\" cannot be opened";
+        throw ss.str();
+    }
+    file_0$* res = new file_0$(f);
+    return res;
+}
+
+file_0$*
+__open2__(void* name, void* mode) {
+    string fName = ((str_0$*) name)->getValue();
+    string fMode = ((str_0$*) mode)->getValue();
+    FILE* f;
+    f = fopen(fName.c_str(), fMode.c_str());
+    if (f == NULL) {
+        stringstream ss;
+        ss << "IOError: file \"" << fName << "\" cannot be opened";
+        throw ss.str();
+    }
+    file_0$* res = new file_0$(f);
+    return res;
+}
+
+void
+__close__(void* file) {
+    ((file_0$*) file)->close();
+}
+
+str_0$*
+__readline__(void* file) {
+    FILE* f = ((file_0$*) file)->getValue();
+    char c;
+    stringstream ss;
+    ss.str("");
+    c = (char) fgetc(f);
+    while (c != '\n' && c != EOF) {
+        ss << c;
+        c = (char) fgetc(f);
+    }
+    str_0$* res = new str_0$(ss.str());
+    return res;
+}
+
+str_0$*
+__read__(void* file) {
+    FILE* f = ((file_0$*) file)->getValue();
+    char c;
+    stringstream ss;
+    ss.str("");
+    c = (char) fgetc(f);
+    while (c != EOF) {
+        ss << c;
+        c = (char) fgetc(f);
+    }
+    str_0$* res = new str_0$(ss.str());
+    return res;
+}
+
+// The file wrappers for stdin, stdout, and stderr.
+file_0$ STDIN(stdin), STDOUT(stdout), STDERR(stderr);
+
+file_0$*
+__standard_file__(void* K) {
+    int k = ((int_0$*) K)->getValue();
+    if (k == 0)
+        return &STDIN;
+    else if (k == 1)
+        return &STDOUT;
+    else
+        return &STDERR;
 }
 
 
@@ -1757,6 +1860,42 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
+
+    cout << "\nTesting runtime routines for file:" << endl;
+    cout << "    __open1__, __open2__, __readline__, and __read__:  ";
+    success = true;
+    file_0$* f;
+    FILE* fp;
+    a->setValue("aTest.txt");
+    b->setValue("w");
+    f = __open2__(a, b);
+    fp = f->getValue();
+    fputs("Hello World,\nI am penguin.\nThis is Earth.\nHappy times.", fp);
+    __close__(f);
+    f = __open1__(a);
+    success = (__readline__(f)->getValue() == "Hello World,") ? success : false;
+    success = (__readline__(f)->getValue() == "I am penguin.") ? success : false;
+    success = (__read__(f)->getValue() == "This is Earth.\nHappy times.") ? success : false;
+    success = (__readline__(f)->getValue() == "") ? success : false;
+    success = (__read__(f)->getValue() == "") ? success : false;
+    __close__(f);
+    b->setValue("r+");
+    f = __open1__(a);
+    success = (__readline__(f)->getValue() == "Hello World,") ? success : false;
+    __close__(f);
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __standard_file__:  ";
+    success = true;
+    x->setValue(0);
+    success = (__standard_file__(x)->getValue() == stdin) ? success : false;
+    x->setValue(1);
+    success = (__standard_file__(x)->getValue() == stdout) ? success : false;
+    x->setValue(2);
+    success = (__standard_file__(x)->getValue() == stderr) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
 
     if (failures == 0)
         cout << "\nAll tests passed, HORAY" << endl;
