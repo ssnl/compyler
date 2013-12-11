@@ -194,16 +194,16 @@ protected:
         gcstring expr;
         gcstring runtimeName = getDecl ()->getRuntimeName ();
         gcstring frameName;
-        if (getDecl ()->getContainer ()) {
+        if (getDecl ()->getContainer ()->getContainer () != NULL) {
             frameName = getDecl ()->getContainer ()->getRuntimeName();
         } else {
             frameName = "__main__";
         }
-        int myDepth = getDecl ()->getDepth () + 1;
+        int myDepth = getDecl ()->getDepth ();
 
         gcstring frameString = VM->staticLinkStr (myDepth, depth);
         expr += VM->typeCastStr (frameName + "*", frameString);
-        expr += VM->fieldAccessStr (expr, runtimeName);
+        expr = VM->fieldAccessStr (expr, runtimeName);
 
         VM->emit (PUSH, expr);
     }
