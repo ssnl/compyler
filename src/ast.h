@@ -96,6 +96,9 @@ public:
      *  is a value of type C and ID is a method defined in C.). */
     virtual bool isBoundMethod ();
 
+    /** True if I represent a "target list." */
+    virtual bool isTargetList ();
+
     /** Do outer-level semantic analysis on me---all scope and type
      *  analysis that applies to definitions and statements that are
      *  not nested inside classes or function definitions.  Modifies
@@ -208,6 +211,9 @@ public:
 
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
+
+    /** Generate code for me if [...] */
+    virtual void classCodeGen (int depth);
 
     /** Generate code for me if I am a definition, by recursively generating
      *  code for all definitions within me before generating code for the

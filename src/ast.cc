@@ -120,6 +120,12 @@ AST::isBoundMethod ()
     return false;
 }
 
+bool
+AST::isTargetList ()
+{
+    return false;
+}
+
 extern void DBcheck(const char*, const AST_Ptr&);
 
 /** Default collects declarations and resolves in the current
@@ -251,6 +257,11 @@ AST::convertNone (bool)
 
 void
 AST::outerCodeGen (ostream&)
+{
+}
+
+void
+AST::classCodeGen (int depth)
 {
 }
 

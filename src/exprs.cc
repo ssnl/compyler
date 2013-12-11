@@ -68,7 +68,7 @@ class Callable : public Typed_Tree {
 protected:
 
     NODE_BASE_CONSTRUCTORS (Callable, Typed_Tree);
-    
+
     /** Returns the expression representing the quantity that is
      *  called to evaluate this expression. */
     virtual AST_Ptr calledExpr () = 0;
@@ -152,8 +152,8 @@ protected:
             initArgs.push_back (consTree (NEW, callable));
             for (int i = 0; i < numActuals (); i += 1)
                 initArgs.push_back (actualParam (i));
-            
-            AST_Ptr init = consTree(ATTRIBUTEREF, callable, 
+
+            AST_Ptr init = consTree(ATTRIBUTEREF, callable,
                                     make_id ("__init__", loc ()));
             return consTree (CALL1, init,
                              AST::make_tree (EXPR_LIST,
@@ -235,7 +235,7 @@ protected:
         replace (2*k, expr);
     }
 
-};    
+};
 
 NODE_FACTORY (Binop_AST, BINOP);
 
@@ -295,7 +295,7 @@ class Unop_AST : public Callable {
         replace (2*k + 1, expr);
     }
 
-};    
+};
 
 NODE_FACTORY (Unop_AST, UNOP);
 
@@ -330,8 +330,8 @@ protected:
 };
 
 NODE_FACTORY (Subscription_AST, SUBSCRIPTION);
-    
-    
+
+
 /***** SLICING *****/
 
 /** E1[E2:E3] */
@@ -362,7 +362,7 @@ protected:
 };
 
 NODE_FACTORY (Slicing_AST, SLICING);
-    
+
 
 /***** EMPTY_INTEGER *****/
 
@@ -471,7 +471,7 @@ protected:
         child (0)->checkNoBoundMethodValues ();
         if (getDecl () != NULL && getDecl ()->isMethod ())
             error (this, "bound method value outside a call");
-    }    
+    }
 
 };
 
@@ -497,7 +497,7 @@ protected:
         if (!setType (tupleType))
             error (this, "type mismatch on tuple");
         return this;
-    }        
+    }
 
 };
 
@@ -515,6 +515,10 @@ protected:
         for_each_child (c, this) {
             c->addTargetDecls (enclosing);
         } end_for;
+    }
+
+    bool isTargetList () {
+        return true;
     }
 
     AST_Ptr convertNone (bool) {
@@ -554,7 +558,7 @@ protected:
         if (!setType (listType))
             error (this, "type mismatch on list display");
         return this;
-    }    
+    }
 
 };
 
@@ -629,7 +633,7 @@ protected:
 
     NODE_CONSTRUCTORS (IfExpr_AST, BalancedExpr);
 
-};              
+};
 
 
 NODE_FACTORY (IfExpr_AST, IF_EXPR);

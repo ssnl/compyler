@@ -193,8 +193,13 @@ protected:
         // e.g. ((__main__*) cf->sl->sl) -> x
         gcstring expr;
         gcstring runtimeName = getDecl ()->getRuntimeName ();
-        gcstring frameName = getDecl ()->getContainer ()->getRuntimeName();
-        int myDepth = getDecl ()->getDepth ();
+        gcstring frameName;
+        if (getDecl ()->getContainer ()) {
+            frameName = getDecl ()->getContainer ()->getRuntimeName();
+        } else {
+            frameName = "__main__";
+        }
+        int myDepth = getDecl ()->getDepth () + 1;
 
         gcstring frameString = VM->staticLinkStr (myDepth, depth);
         expr += VM->typeCastStr (frameName + "*", frameString);

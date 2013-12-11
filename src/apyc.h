@@ -473,6 +473,7 @@ public:
      **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
+    void emit (const int& instr, int arg);
     void emit (const int& instr, gcstring arg1, int arg2);
 
     /** Outputs code to handle the start of a function call into my output

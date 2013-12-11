@@ -106,6 +106,19 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" + arg + ";");
             break;
 
+        default:
+            comment("compilation error: argument mismatch in" +
+                string("VirtualMachine::emit(int, gcstring)"));
+            break;
+    }
+}
+
+void
+VirtualMachine::emit (const int& instr, int arg)
+{
+    newline();
+    switch (instr) {
+
         case EXPAND:
             comment("expanding tuple into " + tostr(arg) + " elements");
             code("tmp_tup = ($Object*) *(SM.back());");
@@ -117,8 +130,9 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         default:
             comment("compilation error: argument mismatch in" +
-                string("VirtualMachine::emit(int, gcstring)"));
+                string("VirtualMachine::emit(int, int)"));
             break;
+
     }
 }
 
@@ -262,8 +276,8 @@ VirtualMachine::code (gcstring s, int indent)
 gcstring
 VirtualMachine::staticLinkStr (int depth1, int depth2)
 {
-    stringstream res;
     if (depth1 <= depth2) {
+        stringstream res;
         res << "cf";
         for (int i = depth1; i < depth2; i++) {
             res << "->sl";

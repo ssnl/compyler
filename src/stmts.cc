@@ -461,6 +461,20 @@ protected:
         return this;
     }
 
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
+        VM->emit (POP);
+    }
+
+    void exprCodeGen (int depth) {
+        if (child (0)->isTargetList ()) {
+
+        } else {
+            child (1)->exprCodeGen (depth);
+            child (0)->exprCodeGen (depth);
+            VM->emit (MOVE);
+        }
+    }
 };
 
 NODE_FACTORY (Assign_AST, ASSIGN);
