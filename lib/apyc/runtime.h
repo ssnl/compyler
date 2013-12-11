@@ -492,11 +492,11 @@ dict_bool_0$* __dict__empty__bool__();
 /** Allocator for dict. The x is not used, the key-value pairs should be
   * in the variable list.
   */
-dict_int_0$* __dict__int__(void* count, void* x, ...);
+dict_int_0$* __dict__int__(void* count, ...);
 
-dict_str_0$* __dict__str__(void* count, void* x, ...);
+dict_str_0$* __dict__str__(void* count, ...);
 
-dict_bool_0$* __dict__bool__(void* count, void* x, ...);
+dict_bool_0$* __dict__bool__(void* count, ...);
 
 // Miscellaneous routines
 

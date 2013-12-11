@@ -691,12 +691,12 @@ __dict__empty__bool__() {
 }
 
 dict_int_0$*
-__dict__int__(void* count, void* x, ...) {
+__dict__int__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_int_0$* res = new dict_int_0$();
 
     va_list arguments;
-    va_start (arguments, x);
+    va_start (arguments, count);
 
     int_0$* key;
 
@@ -711,12 +711,12 @@ __dict__int__(void* count, void* x, ...) {
 }
 
 dict_str_0$*
-__dict__str__(void* count, void* x, ...) {
+__dict__str__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_str_0$* res = new dict_str_0$();
 
     va_list arguments;
-    va_start (arguments, x);
+    va_start (arguments, count);
 
     str_0$* key;
 
@@ -731,12 +731,12 @@ __dict__str__(void* count, void* x, ...) {
 }
 
 dict_bool_0$*
-__dict__bool__(void* count, void* x, ...) {
+__dict__bool__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_bool_0$* res = new dict_bool_0$();
 
     va_list arguments;
-    va_start (arguments, x);
+    va_start (arguments, count);
 
     bool_0$* key;
 
