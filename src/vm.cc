@@ -106,6 +106,17 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" + arg + ";");
             break;
 
+        case EXPTUP:
+            comment("expanding tuple into " + tostr(arg) + " elements");
+            code("tmp_tup = ($Object*) *(SM.back());");
+            code("SM.pop_back();");
+            code("for (int i = " + tostr(arg) + " - 1; i >= 0; i--) {");
+            code("tmp_alloc = new int_0$(i);",8);
+            code("HEAP.push_back(tmp_alloc);",8);
+            code("SM.push_back( &__getitem__tup__(tmp_tup, tmp_alloc) );", 8);
+            code("}")
+            break;
+
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int, gcstring)"));
