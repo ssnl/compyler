@@ -617,6 +617,20 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
+    cout << "    __tostr__:  ";
+    success = true;
+    x->setValue(100);
+    success = (__tostr__(x)->getValue() == "100") ? success : false;
+    a->setValue("World");
+    success = (__tostr__(a)->getValue() == "World") ? success : false;
+    l->clear();
+    l->push(new int_0$(1));
+    l->push(new int_0$(2));
+    l->push(new int_0$(3));
+    success = (__tostr__(l)->getValue() == "[1, 2, 3]") ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
 
     cout << "\nTesting runtime routines for range:" << endl;
 
