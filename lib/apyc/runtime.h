@@ -17,7 +17,6 @@
 
 using namespace std;
 
-
 class bool_0$;
 class int_0$;
 class str_0$;
@@ -36,10 +35,6 @@ typedef struct Frame {
     Frame* sl;
     void* locals;
 } Frame;
-// typedef struct {
-//     Frame* sl;
-//     Label label;
-// } FuncDesc;
 
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {

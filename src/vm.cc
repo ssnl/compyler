@@ -31,18 +31,30 @@ VirtualMachine::VirtualMachine (ostream& _out)
 void
 VirtualMachine::emit (const int& instr)
 {
+    gcstring rlabel;
+
     newline();
     switch (instr) {
-
-
         case POP:
-            comment("popping first in SM");
+            comment("popping top of SM");
             code("SM.pop_back();");
             break;
 
         case PUSH:
-            comment("pushing first in HEAP onto SM");
+            comment("pushing top of HEAP onto SM");
             code("SM.push_back( &HEAP[HEAP.size()-1] );");
+            break;
+
+        case CALL:
+            comment("calling function");
+            rlabel = newLabel("R");
+            code("call = (FuncDesc*) (*SM.back());");
+            code("SM.pop_back();");
+            code("cf->ra = &&" + rlabel + ";");
+            code("static_link = call->sl;");
+            code("goto *(call->label);");
+            newline();
+            code(rlabel + ":", 0);
             break;
 
         case MOVE:
@@ -71,34 +83,23 @@ VirtualMachine::emit (const int& instr, gcstring arg)
     switch (instr) {
 
         case GOTO:
-            comment("jumping to label " + arg);
+            comment("jumping to " + arg);
             code("goto " + arg + ";");
             break;
 
         case GTZ:
-            comment("jumping to label " + arg + " if top is 0");
-            code("cmp = (int_0$*) SM.back();");
+            comment("jumping to " + arg + " if top is 0");
+            code("cmp = ((int_0$*) *SM.back());");
             code("SM.pop_back();");
             // Don't want to initialize a new int_0$(0) every time just for
             // this purpose; instead make a constant __ZERO__ = new int_0$(0).
-            code("if ((*cmp).compareTo(__ZERO__)) { goto " + arg + "; }");
+            code("if (cmp->getValue() == __ZERO__->getValue()) { goto " +
+                arg + "; }");
             break;
 
         case PUSH:
             comment("pushing " + arg + " onto SM");
             code("SM.push_back( &" + arg + " );");
-            break;
-
-        case CALL:
-            comment("calling function");
-            rlabel = newLabel("R");
-            code("call = (FuncDesc*) (*SM.back());");
-            code("SM.pop_back();");
-            code("cf->ra = &&" + rlabel + ";");
-            code("static_link = call->sl;");
-            code("goto " + asLabel(arg) + ";");
-            newline();
-            code(rlabel + ":", 0);
             break;
 
         case ALLOC:
@@ -114,8 +115,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         case SETLBL:
             comment("setting up label for FuncDesc");
-            code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" +
-                asLabel(arg) + ";");
+            code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" + arg + ";");
             break;
 
         default:
@@ -265,6 +265,33 @@ VirtualMachine::code (gcstring s, int indent)
 }
 
 gcstring
+VirtualMachine::staticLinkStr (int depth1, int depth2)
+{
+    stringstream res;
+    if (depth1 <= depth2) {
+        res << "cf";
+        for (int i = depth1; i < depth2; i++) {
+            res << "->sl";
+        }
+        return res.str();
+    } else {
+        return "you dun goofed, depth1 > depth2";
+    }
+}
+
+gcstring
+VirtualMachine::fieldAccessStr (gcstring expr, gcstring field, gcstring acc)
+{
+    return expr + acc + field;
+}
+
+gcstring
+VirtualMachine::typeCastStr (gcstring type, gcstring expr)
+{
+    return "((" + type + ") " + expr + ")";
+}
+
+gcstring
 VirtualMachine::tostr (int val)
 {
     stringstream ss;
@@ -279,14 +306,14 @@ VirtualMachine::__test_codegen()
     VMLabel lbl = asLabel("foo_0$");
     placeLabel(lbl);
     emitDefPrologue("foo_0$");
-    emit(PUSH, "((foo_0$*) cf->locals)->a");
+    emit(PUSH, "((foo_0$*) cf->locals)->a_0$");
     emit(MOVE);
     emit(POP);
-    emit(PUSH, "((foo_0$*) cf->locals)->b");
+    emit(PUSH, "((foo_0$*) cf->locals)->b_0$");
     emit(MOVE);
     emit(POP);
-    emit(PUSH, "((foo_0$*) cf->locals)->a");
-    emit(PUSH, "((foo_0$*) cf->locals)->b");
+    emit(PUSH, "((foo_0$*) cf->locals)->a_0$");
+    emit(PUSH, "((foo_0$*) cf->locals)->b_0$");
     emit(NATIVE, "__add__int__", 2);
     emitDefEpilogue("foo_0$");
 
@@ -297,7 +324,7 @@ VirtualMachine::__test_codegen()
     comment("x = 5");
     emit(ALLOC, "new int_0$(5)");
     emit(PUSH);
-    emit(PUSH, "((__main__*) cf->locals)->x");
+    emit(PUSH, "((__main__*) cf->locals)->x_0$");
     emit(MOVE);
     emit(POP);
 
@@ -305,9 +332,9 @@ VirtualMachine::__test_codegen()
     comment("y = x + 3");
     emit(ALLOC, "new int_0$(3)");
     emit(PUSH);
-    emit(PUSH, "((__main__*) cf->locals)->x");
+    emit(PUSH, "((__main__*) cf->locals)->x_0$");
     emit(NATIVE, "__add__int__", 2);
-    emit(PUSH, "((__main__*) cf->locals)->y");
+    emit(PUSH, "((__main__*) cf->locals)->y_0$");
     emit(MOVE);
     emit(POP);
 
@@ -319,18 +346,18 @@ VirtualMachine::__test_codegen()
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->foo_0$");
     emit(MOVE);
-    emit(SETLBL, "foo_0$");
+    emit(SETLBL, asLabel("foo_0$"));
     emit(POP);
 
     newline(2);
     comment("z = foo(x, y)");
-    emit(PUSH, "((__main__*) cf->locals)->y");
-    emit(PUSH, "((__main__*) cf->locals)->x");
+    emit(PUSH, "((__main__*) cf->locals)->y_0$");
+    emit(PUSH, "((__main__*) cf->locals)->x_0$");
     emit(ALLOC, "new FuncDesc( ((FuncDesc*)((__main__*) cf->locals)->foo_0$) )");
     emit(PUSH);
     emit(SETSL, "cf");
-    emit(CALL, "foo_0$");
-    emit(PUSH, "((__main__*) cf->locals)->z");
+    emit(CALL);
+    emit(PUSH, "((__main__*) cf->locals)->z_0$");
     emit(MOVE);
     emit(POP);
 }
