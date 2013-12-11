@@ -461,6 +461,15 @@ public:
      * rslt: A new element is added to the top of the STACK MACHINE. New
      *       elements may also be added to the HEAP depending on whether or not
      *       the NATIVE call allocates any new objects.
+     * ------------------------------------------------------------
+     * inst: EXPAND ARITY
+     * args: ARITY (gcstring) the arity of the tuple being expanded
+     * desc: Assuming that there is a tuple at the top of the STACK MACHINE
+     *       with size ARITY, pops this tuple off the STACK MACHINE and expands
+     *       its elements, placing them in backwards order at the top of the
+     *       STACK MACHINE.
+     * rslt: ARITY elements are added to the top of the STACK MACHINE,
+     *       corresponding to the items that were in the tuple.
      **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
@@ -540,8 +549,9 @@ const int PUSH = 3;
 const int POP = 4;
 const int MOVE = 5;
 const int ALLOC = 6;
-const int NTVCALL = 7;
+const int NTV = 7;
 const int SETSL = 8;
 const int SETLBL = 9;
+const int EXPAND = 10;
 
 #endif

@@ -63,6 +63,7 @@ extern $Object** src;
 
 extern $Object* tmp_alloc;
 extern $Object* tmp_res;
+extern $Object* tmp_tup;
 
 extern int_0$* __ZERO__;
 

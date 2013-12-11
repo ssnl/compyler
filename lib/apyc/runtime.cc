@@ -39,6 +39,8 @@ $Object** src;
 $Object* tmp_alloc;
 /** Stores the result of a native call. */
 $Object* tmp_res;
+/** Stores a tuple to be expanded. */
+$Object* tmp_tup;
 
 /** Stores the constant Integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);

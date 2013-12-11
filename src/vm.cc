@@ -106,15 +106,13 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" + arg + ";");
             break;
 
-        case EXPTUP:
+        case EXPAND:
             comment("expanding tuple into " + tostr(arg) + " elements");
             code("tmp_tup = ($Object*) *(SM.back());");
             code("SM.pop_back();");
             code("for (int i = " + tostr(arg) + " - 1; i >= 0; i--) {");
-            code("tmp_alloc = new int_0$(i);",8);
-            code("HEAP.push_back(tmp_alloc);",8);
-            code("SM.push_back( &__getitem__tup__(tmp_tup, tmp_alloc) );", 8);
-            code("}")
+            code("SM.push_back( &(((tuple_0$*)tmp_tup)->getItem(i)) );", 8);
+            code("}");
             break;
 
         default:
@@ -130,7 +128,7 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
     newline();
     switch (instr) {
 
-        case NTVCALL:
+        case NTV:
             comment("calling " + arg1 + " (" + tostr(arg2) + " params)");
             code("tmp_res = " + arg1 + "(");
             for (int i = 1; i <= arg2; i++) {
@@ -312,7 +310,7 @@ VirtualMachine::__test_codegen()
     emit(POP);
     emit(PUSH, "((foo_0$*) cf->locals)->a_0$");
     emit(PUSH, "((foo_0$*) cf->locals)->b_0$");
-    emit(NTVCALL, "__add__int__", 2);
+    emit(NTV, "__add__int__", 2);
     emitDefEpilogue("foo_0$");
 
     newline(2);
@@ -331,7 +329,7 @@ VirtualMachine::__test_codegen()
     emit(ALLOC, "new int_0$(3)");
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->x_0$");
-    emit(NTVCALL, "__add__int__", 2);
+    emit(NTV, "__add__int__", 2);
     emit(PUSH, "((__main__*) cf->locals)->y_0$");
     emit(MOVE);
     emit(POP);
