@@ -532,4 +532,16 @@ private:
 /** VirtualMachine that will be used to compile the code. */
 extern VirtualMachine* VM;
 
+/** Virtual machine instructions indicating which of command to emit. */
+const int FCALL = 0;
+const int GOTO = 1;
+const int GTZ = 2;
+const int PUSH = 3;
+const int POP = 4;
+const int MOVE = 5;
+const int ALLOC = 6;
+const int NTVCALL = 7;
+const int SETSL = 8;
+const int SETLBL = 9;
+
 #endif

@@ -11,18 +11,6 @@ using namespace std;
 
 static const bool DEBUG_OUT = true;
 
-/** Virtual machine instructions indicating which of command to emit. */
-static const int CALL = 0;
-static const int GOTO = 1;
-static const int GTZ = 2;
-static const int PUSH = 3;
-static const int POP = 4;
-static const int MOVE = 5;
-static const int ALLOC = 6;
-static const int NATIVE = 7;
-static const int SETSL = 8;
-static const int SETLBL = 9;
-
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
 {
@@ -45,7 +33,7 @@ VirtualMachine::emit (const int& instr)
             code("SM.push_back( &HEAP[HEAP.size()-1] );");
             break;
 
-        case CALL:
+        case FCALL:
             comment("calling function");
             rlabel = newLabel("R");
             code("call = (FuncDesc*) (*SM.back());");
@@ -131,7 +119,7 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
     newline();
     switch (instr) {
 
-        case NATIVE:
+        case NTVCALL:
             comment("calling " + arg1 + " (" + tostr(arg2) + " params)");
             code("tmp_res = " + arg1 + "(");
             for (int i = 1; i <= arg2; i++) {
@@ -202,26 +190,22 @@ void
 VirtualMachine::emitRuntime ()
 {
     newline(2);
-    code("int main (int argc, char *argv[]) {", 0);
     emitMainPrologue();
     // main body begins here:
     __test_codegen();
     emitMainEpilogue();
-    code("}", 0);
 }
 
 void
 VirtualMachine::emitMainPrologue ()
 {
+    code("int main (int argc, char *argv[]) {", 0);
     newline();
     comment("runtime prologue: set up __main__ frame");
     code("tmp_frame = new Frame;");
     code("tmp_frame->locals = new __main__;");
     code("cf = tmp_frame;");
     code("STACK.push_back(tmp_frame);");
-
-    newline(2);
-    emit(GOTO, asLabel("START"));
 }
 
 void
@@ -229,9 +213,11 @@ VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
+    code("cout << \"Heap size: \" << HEAP.size() << endl;");
     code("for (int i = 0; i < HEAP.size(); i++) {");
     code("delete (($Object*) HEAP[i]);", 8);
     code("}");
+    code("}", 0);
 }
 
 void
@@ -302,6 +288,7 @@ VirtualMachine::tostr (int val)
 void
 VirtualMachine::__test_codegen()
 {
+    emit(GOTO, asLabel("START"));
     comment("function def for foo(a,b)");
     VMLabel lbl = asLabel("foo_0$");
     placeLabel(lbl);
@@ -314,7 +301,7 @@ VirtualMachine::__test_codegen()
     emit(POP);
     emit(PUSH, "((foo_0$*) cf->locals)->a_0$");
     emit(PUSH, "((foo_0$*) cf->locals)->b_0$");
-    emit(NATIVE, "__add__int__", 2);
+    emit(NTVCALL, "__add__int__", 2);
     emitDefEpilogue("foo_0$");
 
     newline(2);
@@ -333,11 +320,10 @@ VirtualMachine::__test_codegen()
     emit(ALLOC, "new int_0$(3)");
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->x_0$");
-    emit(NATIVE, "__add__int__", 2);
+    emit(NTVCALL, "__add__int__", 2);
     emit(PUSH, "((__main__*) cf->locals)->y_0$");
     emit(MOVE);
     emit(POP);
-
 
     newline(2);
     comment("def foo(a, b):");
@@ -356,7 +342,7 @@ VirtualMachine::__test_codegen()
     emit(ALLOC, "new FuncDesc( ((FuncDesc*)((__main__*) cf->locals)->foo_0$) )");
     emit(PUSH);
     emit(SETSL, "cf");
-    emit(CALL);
+    emit(FCALL);
     emit(PUSH, "((__main__*) cf->locals)->z_0$");
     emit(MOVE);
     emit(POP);

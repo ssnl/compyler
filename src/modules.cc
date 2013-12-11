@@ -49,7 +49,21 @@ protected:
         declDepthPreprocess (startDepth);
         declNamePreprocess (names);
         runtimeDataStructGen (out);
-        VM->emitRuntime();
+
+        VMLabel start = VM->asLabel("START");
+        VM->emitMainPrologue();
+        VM->emit(GOTO, start);
+        for_each_child (c, this) {
+            c->defCodeGen (startDepth);
+        } end_for;
+        VM->newline(2);
+        VM->placeLabel(start);
+        for_each_child (c, this) {
+            c->stmtCodeGen (startDepth);
+        } end_for;
+
+        VM->emitMainEpilogue();
+        //VM->emitRuntime();
     }
 
     /** Creates a new name for every declaration, starting at but not including

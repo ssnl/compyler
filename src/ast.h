@@ -209,6 +209,19 @@ public:
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
 
+    /** Generate code for me if I am a definition, by recursively generating
+     *  code for all definitions within me before generating code for the
+     *  statements within me. */
+    virtual void defCodeGen (int depth);
+
+    /** Generate code for me and all expressions within me, leaving the stack
+     *  machine unchanged afterwards. */
+    virtual void stmtCodeGen (int depth);
+
+    /** Generate code for me assuming I am within an expression, leaving the
+     *  result of my evaluation at the top of the stack machine. */
+    virtual void exprCodeGen (int depth);
+
     /** Generates runtime data structures for modules, functions, and classes
      *  and prints them on OUT. */
     virtual void runtimeDataStructGen (std::ostream& out);

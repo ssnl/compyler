@@ -7,6 +7,7 @@
 #include <cctype>
 #include <iostream>
 #include <cerrno>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -84,7 +85,7 @@ protected:
 
     TOKEN_BASE_CONSTRUCTORS_INIT (Typed_Token, AST_Token, _type (NULL));
 
-};    
+};
 
 /** Represents an integer literal. */
 class Int_Token : public Typed_Token {
@@ -96,6 +97,15 @@ protected:
     }
 
     TOKEN_CONSTRUCTORS(Int_Token, Typed_Token);
+
+    void exprCodeGen (int depth) {
+        // e.g. new int_0$ (5)
+        stringstream ss;
+        ss << "new " << intDecl->getRuntimeName () << " (";
+        ss << as_string () << ")";
+        VM->emit (ALLOC, ss.str ());
+        VM->emit (PUSH);
+    }
 
     Int_Token* post_make () {
         gcstring text = as_string ();
@@ -166,7 +176,7 @@ protected:
         if (undefinable (name)) {
             error (this, "attempt to redefine %s", name.c_str ());
             return;
-        }       
+        }
         Decl* old = enclosing->getEnviron ()->find_immediate (name);
         if (old == NULL) {
             addDecl (enclosing->addVarDecl(this));
@@ -177,7 +187,21 @@ protected:
         } else {
             addDecl (old);
         }
-    }   
+    }
+
+    void exprCodeGen (int depth) {
+        // e.g. ((__main__*) cf->sl->sl) -> x
+        gcstring expr;
+        gcstring runtimeName = getDecl ()->getRuntimeName ();
+        gcstring frameName = getDecl ()->getContainer ()->getRuntimeName();
+        int myDepth = getDecl ()->getDepth ();
+
+        gcstring frameString = VM->staticLinkStr (myDepth, depth);
+        expr += VM->typeCastStr (frameName + "*", frameString);
+        expr += VM->fieldAccessStr (expr, runtimeName);
+
+        VM->emit (PUSH, expr);
+    }
 
     AST_Ptr resolveSimpleIds (const Environ* env) {
         gcstring name = as_string ();
@@ -298,7 +322,7 @@ TOKEN_FACTORY(Id_Token, ID);
 /** Represents a string. */
 class String_Token : public Typed_Token {
 private:
-    
+
     String_Token* post_make () {
         if (syntax () == RAWSTRING) {
             literal_text = gcstring (as_chars (), text_size ());
@@ -325,8 +349,8 @@ private:
                     case '\'': v = '\''; break;
                     case '"': case '\\': v = s[i-1]; break;
                     case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': 
-                    { 
+                    case '5': case '6': case '7':
+                    {
                         v = s[i-1] - '0';
                         for (int j = 0; j < 2; j += 1) {
                             if ('0' > s[i] || s[i] > '7')
@@ -337,7 +361,7 @@ private:
                         break;
                     }
                     case 'x': {
-                        if (i+2 > text_size () || 
+                        if (i+2 > text_size () ||
                             !isxdigit (s[i]) || !isxdigit (s[i+1])) {
                             error (s, "bad hexadecimal escape sequence");
                             break;
@@ -349,7 +373,7 @@ private:
                     }
                 } else
                     v = s[i-1];
-                literal_text += (char) v;        
+                literal_text += (char) v;
             }
         }
         return this;
@@ -372,6 +396,14 @@ private:
         return literal_text;
     }
 
+    void exprCodeGen (int depth) {
+        // e.g. new str_0$ ("hi")
+        gcstring expr = "new " + strDecl->getRuntimeName () + " (";
+        expr += "\"" + as_string () + "\")";
+        VM->emit (ALLOC, expr);
+        VM->emit (PUSH);
+    }
+
     void append_text(const gcstring& s) {
         literal_text += s;
     }
@@ -379,7 +411,7 @@ private:
     Type_Ptr computeType () {
         return strDecl->asType ();
     }
-        
+
     TOKEN_CONSTRUCTORS(String_Token, Typed_Token);
     static const String_Token raw_factory;
 
@@ -392,6 +424,6 @@ TOKEN_FACTORY(String_Token, STRING);
  *  to use for RAWSTRING tokens produced by the lexer.  (The
  *  TOKEN_FACTORY macro above registers String_Token as the class for
  *  non-raw STRING tokens as well.)
- */ 
+ */
 const String_Token String_Token::raw_factory (RAWSTRING);
 

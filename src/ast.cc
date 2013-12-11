@@ -255,6 +255,21 @@ AST::outerCodeGen (ostream&)
 }
 
 void
+AST::defCodeGen (int depth)
+{
+}
+
+void
+AST::stmtCodeGen (int depth)
+{
+}
+
+void
+AST::exprCodeGen (int depth)
+{
+}
+
+void
 AST::runtimeDataStructGen (ostream& out)
 {
     for_each_child (c, this) {
