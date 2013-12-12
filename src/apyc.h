@@ -441,6 +441,11 @@ public:
      *       the value of 0.
      * rslt: The top of the STACK MACHINE is removed.
      * ------------------------------------------------------------
+     * inst: GTE LBL
+     * args: LBL (gcstring) the name of the label to jump to
+     * desc: Jumps to LBL iff the top of the STACK MACHINE's size is 0.
+     * rslt: The top of the STACK MACHINE is removed.
+     * ------------------------------------------------------------
      * inst: ALLOC OBJ
      * args: OBJ (gcstring) the name of the expression to create the object
      * desc: Allocates OBJ, assuming that OBJ is a constructing expression that
@@ -552,6 +557,16 @@ public:
     /** Outputs a newline into my output stream. */
     void newline (int num=1);
 
+    /** Methods for modifying the nested for loop level counter. */
+    void incrForNestLvl ();
+    void decrForNestLvl ();
+    int getForNestLvl ();
+
+    /** Methods for modifying the indent shift counter. */
+    void incrIndentShift ();
+    void decrIndentShift ();
+    int getIndentShift ();
+
     /** Given two depths, depth1 <= depth2, creates a string that follows
      *  (depth2 - depth1) static links from the current frame. */
     gcstring staticLinkStr (int depth1, int depth2);
@@ -563,13 +578,15 @@ public:
      *  type. */
     gcstring typeCastStr (gcstring type, gcstring expr);
 
+    /** Yeah, necessary for uhh...convenience. */
+    gcstring tostr(int val);
+
 private:
 
     std::ostream& out;
     int numLabels;
-
-    /** Yeah, necessary for uhh...convenience. */
-    gcstring tostr(int val);
+    int indentShift;
+    int forNestLvl;
 
     /** Testing purposes only */
     void __test_codegen();

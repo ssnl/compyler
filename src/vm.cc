@@ -14,8 +14,7 @@ static const bool DEBUG_DATA = true;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
-{
-}
+{}
 
 void
 VirtualMachine::emit (const int& instr)
@@ -88,6 +87,13 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             code("tmp_cmp = SM.back();");
             code("SM.pop_back();");
             code("if (!tmp_cmp->get()->asBool()) { goto " + arg + "; }");
+            break;
+
+        case GTE:
+            comment("jumping to " + arg + " if size of top is 0");
+            code("cmp = (($Object*) *SM.back());");
+            code("SM.pop_back();");
+            code("if (!cmp->size()) { goto " + arg + "; }");
             break;
 
         case PUSH:
@@ -319,7 +325,7 @@ VirtualMachine::comment (gcstring s, int indent)
 {
     if (DEBUG_OUT) {
         string indentstr = "";
-        for (int i = 0; i < indent; i++) {
+        for (int i = 0; i < indent + indentShift; i++) {
             indentstr += " ";
         }
         out << indentstr << "/* " << s << " */" << endl;
@@ -338,7 +344,7 @@ void
 VirtualMachine::code (gcstring s, int indent)
 {
     string indentstr = "";
-    for (int i = 0; i < indent; i++) {
+    for (int i = 0; i < indent + indentShift; i++) {
         indentstr += " ";
     }
     out << indentstr << s << endl;
@@ -377,6 +383,42 @@ VirtualMachine::tostr (int val)
     stringstream ss;
     ss << val;
     return gcstring(ss.str());
+}
+
+void
+VirtualMachine::incrForNestLvl ()
+{
+    forNestLvl += 1;
+}
+
+void
+VirtualMachine::decrForNestLvl ()
+{
+    forNestLvl -= 1;
+}
+
+int
+VirtualMachine::getForNestLvl ()
+{
+    return forNestLvl;
+}
+
+void
+VirtualMachine::incrIndentShift ()
+{
+    indentShift += 4;
+}
+
+void
+VirtualMachine::decrIndentShift ()
+{
+    indentShift -= 4;
+}
+
+int
+VirtualMachine::getIndentShift ()
+{
+    return indentShift;
 }
 
 void
