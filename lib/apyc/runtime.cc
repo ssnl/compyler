@@ -45,6 +45,9 @@ $Object* tmp_tup;
 /** Stores the constant Integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);
 
+
+
+
 /* Class $Object */
 
 string
@@ -347,6 +350,27 @@ str_0$::operator!= (str_0$ y) {
 int
 str_0$::size() {
     return value.length();
+}
+
+str_0$*
+str_0$::getSlice(int startIndex, int endIndex) {
+    string str = getValue();
+    int strLen = str.length();
+    if (endIndex < 0) {
+        endIndex += strLen;
+    }
+    if (startIndex >= strLen || startIndex < -strLen) {
+        throw "IndexError: string index out of range";
+    } else if (startIndex < 0) {
+        startIndex += strLen;
+    }
+    int s = endIndex - startIndex;
+    if (endIndex < 0 || s < 0) {
+        s = 0;
+    }
+    str_0$* res = new str_0$(str.substr(startIndex, s));
+    HEAP.push_back(res);
+    return res;
 }
 
 string
@@ -971,26 +995,19 @@ __getitem__str__(void* s, void* k) {
 }
 
 str_0$*
-__getslice__str__(void* s, void* start, void* end) {
+__getslice__str__(void* s, void* start) {
     string str = ((str_0$*)s)->getValue();
     int strLen = str.length();
     int startIndex = ((int_0$*)start)->getValue();
+    int endIndex = strLen;
+    return ((str_0$*) s)->getSlice(startIndex, endIndex);
+}
+
+str_0$*
+__getslice__str__(void* s, void* start, void* end) {
+    int startIndex = ((int_0$*)start)->getValue();
     int endIndex = ((int_0$*)end)->getValue();
-    if (endIndex < 0) {
-        endIndex += strLen;
-    }
-    if (startIndex >= strLen || startIndex < -strLen) {
-        throw "IndexError: string index out of range";
-    } else if (startIndex < 0) {
-        startIndex += strLen;
-    }
-    int size = endIndex - startIndex;
-    if (endIndex < 0 || size < 0) {
-        size = 0;
-    }
-    str_0$* res = new str_0$(str.substr(startIndex, size));
-    HEAP.push_back(res);
-    return res;
+    return ((str_0$*) s)->getSlice(startIndex, endIndex);
 }
 
 int_0$*
@@ -1015,6 +1032,13 @@ $Object*
 __getitem__list__(void* S, void* k) {
     int index = ((int_0$*) k)->getValue();
     return ((list_0$*) S)->getItem(index);
+}
+
+list_0$*
+__getslice__list__(void* S, void* L) {
+    int l = ((int_0$*) L)->getValue();
+    int u = ((list_0$*) S)->size();
+    return ((list_0$*) S)->getSlice(l, u);
 }
 
 list_0$*

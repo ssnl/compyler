@@ -94,6 +94,7 @@ public:
 class FuncDesc: public $Object {
 public:
     Frame* sl;
+
     Label label;
 
     FuncDesc () {
@@ -107,6 +108,7 @@ public:
     }
 
     string toString() { return string("<function>"); };
+
     bool asBool() {return true;}
 };
 
@@ -257,6 +259,8 @@ public:
     bool_0$* operator== (str_0$ y);
 
     bool_0$* operator!= (str_0$ y);
+
+    str_0$* getSlice(int start, int end);
 
     string toString(bool contained=false);
 
@@ -459,14 +463,14 @@ public:
     bool equals(void* other);
 };
 
-extern bool_0$ $bool_0$;
+//extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
-extern str_0$ $str_0$;
-extern range_0$ $range_0$;
-extern list_0$ $list_0$;
-extern tuple_0$ $tuple_0$;
-extern dict_0$ $dict_0$;
-extern file_0$ $file_0$;
+//extern str_0$ $str_0$;
+//extern range_0$ $range_0$;
+//extern list_0$ $list_0$;
+//extern tuple_0$ $tuple_0$;
+//extern dict_0$ $dict_0$;
+//extern file_0$ $file_0$;
 
 // Standard input, output, and error
 extern file_0$ STDIN, STDOUT, STDERR;
@@ -574,6 +578,8 @@ bool_0$* __ne__str__(void* x, void* y);
 
 str_0$* __getitem__str__(void* s, void* k);
 
+str_0$* __getslice__str__(void* s, void* start);
+
 str_0$* __getslice__str__(void* s, void* start, void* end);
 
 int_0$* __len__str__(void* s);
@@ -584,6 +590,8 @@ str_0$* __tostr__(void* x);
 // Type list
 
 $Object* __getitem__list__(void* S, void* k);
+
+list_0$* __getslice__list__(void* S, void* L);
 
 list_0$* __getslice__list__(void* S, void* L, void* U);
 

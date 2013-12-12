@@ -566,17 +566,21 @@ int main()
     x->setValue(0);
     y->setValue(1);
     success = (__getslice__str__(a, x, y)->getValue() == "a") ? success : false;
+    success = (__getslice__str__(a, x)->getValue() == "abcdefg") ? success : false;
+    success = (__getslice__str__(a, y)->getValue() == "bcdefg") ? success : false;
     y->setValue(2);
     success = (__getslice__str__(a, x, y)->getValue() == "ab") ? success : false;
     y->setValue(7);
     success = (__getslice__str__(a, x, y)->getValue() == "abcdefg") ? success : false;
     y->setValue(-1);
     success = (__getslice__str__(a, x, y)->getValue() == "abcdef") ? success : false;
+    success = (__getslice__str__(a, y)->getValue() == "g") ? success : false;
     y->setValue(6);
     success = (__getslice__str__(a, x, y)->getValue() == "abcdef") ? success : false;
     x->setValue(2);
     y->setValue(5);
     success = (__getslice__str__(a, x, y)->getValue() == "cde") ? success : false;
+    success = (__getslice__str__(a, y)->getValue() == "fg") ? success : false;
     y->setValue(-3);
     success = (__getslice__str__(a, x, y)->getValue() == "cd") ? success : false;
     y->setValue(9);
@@ -727,8 +731,10 @@ int main()
     success = (l->size() == 5) ? success : false;
     success = ((__getslice__list__(l, x, y))->size() == 2) ? success : false;
     success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
+    success = ((__getslice__list__(l, x))->toString() == "[1, 2, 3, 4, 5]") ? success : false;
     x->setValue(-5);
     success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
+    success = ((__getslice__list__(l, x))->toString() == "[1, 2, 3, 4, 5]") ? success : false;
     x->setValue(-6);
     success = ((__getslice__list__(l, x, y))->toString() == "[1, 2]") ? success : false;
     y->setValue(-2);
@@ -736,6 +742,7 @@ int main()
     x->setValue(2);
     y->setValue(3);
     success = ((__getslice__list__(l, x, y))->toString() == "[3]") ? success : false;
+    success = ((__getslice__list__(l, x))->toString() == "[3, 4, 5]") ? success : false;
     y->setValue(2);
     success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
     y->setValue(1);
@@ -743,6 +750,7 @@ int main()
     x->setValue(5);
     y->setValue(6);
     success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
+    success = ((__getslice__list__(l, x))->toString() == "[]") ? success : false;
     x->setValue(7);
     y->setValue(10);
     success = ((__getslice__list__(l, x, y))->toString() == "[]") ? success : false;
