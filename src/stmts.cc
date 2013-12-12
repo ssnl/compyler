@@ -236,7 +236,7 @@ protected:
         VM->emitDefPrologue (defname);
         // bind params to variables
         for_each_child (c, child (1)) {
-            c->stmtCodeGen (depth + 1);
+            c->exprCodeGen (depth + 1);
             VM->emit (MOVE);
             VM->emit (POP);
         } end_for;
