@@ -479,6 +479,10 @@ protected:
             error (this, "bound method value outside a call");
     }
 
+    void exprCodeGen (int depth) {
+        child (0)->exprCodeGen (depth);
+    }
+
 };
 
 NODE_FACTORY (AttributeRef_AST, ATTRIBUTEREF);

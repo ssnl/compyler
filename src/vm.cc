@@ -197,6 +197,24 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
 }
 
 void
+VirtualMachine::emit (const int& instr, gcstring arg1, gcstring arg2)
+{
+    newline();
+    switch (instr) {
+
+        case FIELD:
+            comment("getting field " + arg2 + " for instance of type " + arg1);
+            code("tmp_res = ((" + arg1 + "*)(*SM[SM.size() - 1]))->" + arg2);
+            break;
+
+        default:
+            comment("compilation error: argument mismatch in" +
+                string("VirtualMachine::emit(int, gcstring, int)"));
+            break;
+    }
+}
+
+void
 VirtualMachine::emitDefPrologue (gcstring name)
 {
     newline();

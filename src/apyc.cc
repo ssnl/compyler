@@ -199,6 +199,7 @@ main (int argc, char* argv[])
         if (maxPhase <= 2) {
             openStdout (coutName);
             tree->print (cout, 0);
+            cout << endl;
             outputDecls (cout);
             closeStdout ();
         } else {
