@@ -575,6 +575,22 @@ protected:
         return this;
     }
 
+    void exprCodeGen(int depth) {
+        if (arity() == 0) {
+            VM->emit(NTV, "__list__empty__", 0)
+        } else {
+            for_each_child_reverse(c, this) {
+                c->exprCodeGen(depth);
+            } end_for;
+            stringstream ss;
+            ss << "new " << intDecl->getRuntimeName () << " (";
+            ss << (arity()-1) << ")";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+            VM->emit(NTV, "__list__", arity()+1);
+        }
+    }
+
 };
 
 NODE_FACTORY (ListDisplay_AST, LIST_DISPLAY);
