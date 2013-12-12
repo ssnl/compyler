@@ -724,6 +724,12 @@ protected:
 
     NODE_CONSTRUCTORS (Or_AST, BalancedExpr);
 
+    void exprCodeGen (int depth) {
+        child (1)->exprCodeGen (depth);
+        child (0)->exprCodeGen (depth);
+        VM->emit(NTV, "__or__", 2);
+    }
+
 };
 
 NODE_FACTORY (Or_AST, OR);
