@@ -307,6 +307,11 @@ protected:
 
     NODE_CONSTRUCTORS (Native_AST, AST_Tree);
 
+    void stmtCodeGen (int depth) {
+        int argc = getContainer ()->getType ()->numParams();
+        VM->emit(NTV, child (0)->as_string (), argc);
+    }
+
     void containerPreprocess (Decl* container) {
         container->setNative(true);
         AST::containerPreprocess (container);

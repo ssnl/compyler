@@ -10,7 +10,7 @@
 using namespace std;
 
 static const bool DEBUG_OUT = true;
-static const bool DEBUG_DATA = false;
+static const bool DEBUG_DATA = true;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -239,6 +239,7 @@ VirtualMachine::asLabel (gcstring s)
 void
 VirtualMachine::placeLabel (VMLabel label)
 {
+    newline();
     code(label + ":", 0);
 }
 

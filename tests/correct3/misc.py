@@ -9,5 +9,3 @@
 # y = a.x     # just a normal attrref
 # a.foo() # rewritten as a call
 # A.foo   # rewritten to simply foo
-def foo(x, y):
-  native "__add__"
