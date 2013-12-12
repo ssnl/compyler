@@ -693,6 +693,17 @@ protected:
 
     NODE_CONSTRUCTORS (IfExpr_AST, BalancedExpr);
 
+    void exprCodeGen (int depth) {
+        VMLabel elseLbl = VM->newLabel ("ELSE");
+        VMLabel exitLbl = VM->newLabel ("EXIT");
+        child (0)->exprCodeGen (depth);
+        VM->emit (GTZ, elseLbl);
+        child (1)->exprCodeGen (depth);
+        VM->emit (GOTO, exitLbl);
+        VM->placeLabel (elseLbl);
+        child (2)->exprCodeGen (depth);
+        VM->placeLabel (exitLbl);
+    }
 };
 
 
