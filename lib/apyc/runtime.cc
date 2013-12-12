@@ -16,9 +16,9 @@ char** args;
 /** Stores frames during runtime. */
 vector<Frame*> STACK;
 /** Stores references to objects allocated during runtime. */
-vector<$Object*> HEAP;
+vector<$Reference*> HEAP;
 /** Our runtime stack machine. */
-vector<$Object**> SM;
+vector<$Reference*> SM;
 
 /* Temporaries */
 
@@ -32,21 +32,18 @@ Frame* tmp_frame;
 FuncDesc* call;
 
 /** Stores assignment destination in "dst = src". */
-$Object** dst;
+$Reference* dst;
 /** Stores assignment source in "dst = src". */
-$Object** src;
+$Reference* src;
 /** Stores temp reference to allocated object. */
-$Object* tmp_alloc;
+$Reference* tmp_alloc;
 /** Stores the result of a native call. */
-$Object* tmp_res;
+$Reference* tmp_res;
 /** Stores a tuple to be expanded. */
-$Object* tmp_tup;
+tuple_0$* tmp_tup;
 
 /** Stores the constant Integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);
-
-
-
 
 /* Class $Object */
 
@@ -59,91 +56,91 @@ $Object::toString(bool contained) {return "";}
 bool_0$*
 bool_0$::operator+ (bool_0$ y) {
     bool_0$* res = new bool_0$(value + y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator- (bool_0$ y) {
     bool_0$* res = new bool_0$(value - y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator* (bool_0$ y) {
     bool_0$* res = new bool_0$(value * y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator/ (bool_0$ y) {
     bool_0$* res = new bool_0$(value / y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator% (bool_0$ y) {
     bool_0$* res = new bool_0$(value % y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator- () {
     bool_0$* res = new bool_0$(-value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator! () {
     bool_0$* res = new bool_0$(!value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator< (bool_0$ y) {
     bool_0$* res = new bool_0$(value < y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator> (bool_0$ y) {
     bool_0$* res = new bool_0$(value > y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator<= (bool_0$ y) {
     bool_0$* res = new bool_0$(value <= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator>= (bool_0$ y) {
     bool_0$* res = new bool_0$(value >= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator== (bool_0$ y) {
     bool_0$* res = new bool_0$(value == y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 bool_0$::operator!= (bool_0$ y) {
     bool_0$* res = new bool_0$(value != y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -162,24 +159,24 @@ bool_0$::equals(void* other) {
 
 /* Class int_0$ */
 
-int_0$*
+$Reference*
 int_0$::operator+ (int_0$ y) {
-    int_0$* res = new int_0$(value + y.value);
-    HEAP.push_back(res);
+    $Reference* res = new $Reference(new int_0$(value + y.value));
+    // HEAP.push_back(res);
     return res;
 }
 
 int_0$*
 int_0$::operator- (int_0$ y) {
     int_0$* res = new int_0$(value - y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 int_0$*
 int_0$::operator* (int_0$ y) {
     int_0$* res = new int_0$(value * y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -189,77 +186,77 @@ int_0$::operator* (str_0$ y) {
     str_0$* res;
     if (count <= 0) {
         res = new str_0$();
-        HEAP.push_back(res);
+        // HEAP.push_back(res);
         return res;
     }
     string s = y.getValue();
     for (int i = 0; i < count - 1; i++)
         s = s + y.getValue();
     res = new str_0$(s);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 int_0$*
 int_0$::operator/ (int_0$ y) {
     int_0$* res = new int_0$(value / y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 int_0$*
 int_0$::operator% (int_0$ y) {
     int_0$* res = new int_0$(value % y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 int_0$*
 int_0$::operator- () {
     int_0$* res = new int_0$(-value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator< (int_0$ y) {
     bool_0$* res = new bool_0$(value < y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator> (int_0$ y) {
     bool_0$* res = new bool_0$(value > y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator<= (int_0$ y) {
     bool_0$* res = new bool_0$(value <= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator>= (int_0$ y) {
     bool_0$* res = new bool_0$(value >= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator== (int_0$ y) {
     bool_0$* res = new bool_0$(value == y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 int_0$::operator!= (int_0$ y) {
     bool_0$* res = new bool_0$(value != y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -287,63 +284,63 @@ str_0$::operator* (int_0$ y) {
     str_0$* res;
     if (count <= 0) {
         res = new str_0$();
-        HEAP.push_back(res);
+        // HEAP.push_back(res);
         return res;
     }
     string s = value;
     for (int i = 0; i < count - 1; i++)
         s = s + value;
     res = new str_0$(s);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 str_0$*
 str_0$::operator+ (str_0$ y) {
     str_0$* res = new str_0$(value + y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator< (str_0$ y) {
     bool_0$* res = new bool_0$(value < y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator> (str_0$ y) {
     bool_0$* res = new bool_0$(value > y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator<= (str_0$ y) {
     bool_0$* res = new bool_0$(value <= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator>= (str_0$ y) {
     bool_0$* res = new bool_0$(value >= y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator== (str_0$ y) {
     bool_0$* res = new bool_0$(value == y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 bool_0$*
 str_0$::operator!= (str_0$ y) {
     bool_0$* res = new bool_0$(value != y.value);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -369,7 +366,7 @@ str_0$::getSlice(int startIndex, int endIndex) {
         s = 0;
     }
     str_0$* res = new str_0$(str.substr(startIndex, s));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -426,7 +423,7 @@ list_0$::getSlice(int L, int U) {
     list_0$* res;
     if (L >= U || L >= s) {
         res = new list_0$();
-        HEAP.push_back(res);
+        // HEAP.push_back(res);
         return res;
     }
     if (L < -s) {
@@ -446,7 +443,7 @@ list_0$::getSlice(int L, int U) {
     for (int i = L; i < U; i++) {
         res->push(getItem(i));
     }
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -639,7 +636,7 @@ file_0$::equals(void* other) {
 tuple_0$*
 __tuple0__() {
     tuple_0$* res = new tuple_0$();
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -647,7 +644,7 @@ tuple_0$*
 __tuple1__(void* x) {
     tuple_0$* res = new tuple_0$(1);
     res->push(($Object*)x);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -656,7 +653,7 @@ __tuple2__(void* x, void* y) {
     tuple_0$* res = new tuple_0$(2);
     res->push(($Object*)x);
     res->push(($Object*)y);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -666,14 +663,14 @@ __tuple3__(void* x, void* y, void* z) {
     res->push(($Object*)x);
     res->push(($Object*)y);
     res->push(($Object*)z);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 list_0$*
 __list__empty__() {
     list_0$* res = new list_0$();
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -691,28 +688,28 @@ __list__(void* count, void* x, ...) {
     }
 
     va_end (arguments);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 dict_int_0$*
 __dict__empty__int__() {
     dict_int_0$* res = new dict_int_0$();
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 dict_str_0$*
 __dict__empty__str__() {
     dict_str_0$* res = new dict_str_0$();
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 dict_bool_0$*
 __dict__empty__bool__() {
     dict_bool_0$* res = new dict_bool_0$();
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -732,7 +729,7 @@ __dict__int__(void* count, ...) {
     }
 
     va_end (arguments);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -752,7 +749,7 @@ __dict__str__(void* count, ...) {
     }
 
     va_end (arguments);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -772,7 +769,7 @@ __dict__bool__(void* count, ...) {
     }
 
     va_end (arguments);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -788,7 +785,7 @@ __donotcall__(void* x) {
 int_0$*
 __None__() {
     int_0$* res = new int_0$(0);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -796,7 +793,7 @@ bool_0$*
 __is__(void* x, void* y) {
     bool b = (($Object*) x)->equals(y);
     bool_0$* res = new bool_0$(b);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -804,7 +801,7 @@ bool_0$*
 __isnot__(void* x, void* y) {
     bool b = (($Object*) x)->equals(y);
     bool_0$* res = new bool_0$((b ? false : true));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -832,7 +829,7 @@ bool_0$*
 __truth__(void* x) {
     bool Bool = (($Object*) x)->asBool();
     bool_0$* res = new bool_0$(Bool);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -840,7 +837,7 @@ bool_0$*
 __not__(void* x) {
     bool Bool = ((($Object*) x)->asBool());
     bool_0$* res = new bool_0$((Bool ? false : true));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -854,7 +851,7 @@ __xrange__(void* low, void* high) {
     if (end < start)
         end = start;
     range_0$* res = new range_0$(start, end);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -862,16 +859,16 @@ int_0$*
 __len__range__(void* r) {
     int rLen = ((range_0$*) r)->size();
     int_0$* res = new int_0$(rLen);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
 
 // Type int
 
-int_0$*
-__add__int__(void* x, void* y){
-    return *(int_0$*)x + *(int_0$*)y;
+$Reference*
+__add__int__($Reference* x, $Reference* y){
+    return *((int_0$*)x->get()) + *((int_0$*)y->get());
 }
 
 int_0$*
@@ -898,7 +895,7 @@ int_0$*
 __pow__int__(void* x, void* y) {
     int t = pow(((int_0$*)x)->getValue(), ((int_0$*)y)->getValue());
     int_0$* res = new int_0$(t);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -945,7 +942,7 @@ __ne__int__(void* x, void* y) {
 int_0$*
 __toint__str__(void* x) {
     int_0$* res = new int_0$(atoi(((str_0$*)x)->getValue().c_str()));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1007,7 +1004,7 @@ __getitem__str__(void* s, void* k) {
         index += strLen;
     }
     str_0$* res = new str_0$(str.substr(index, 1));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1030,7 +1027,7 @@ __getslice__str__(void* s, void* start, void* end) {
 int_0$*
 __len__str__(void* s) {
     int_0$* res = new int_0$(((str_0$*) s)->size());
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1038,7 +1035,7 @@ str_0$*
 __tostr__(void* x) {
     string str = (($Object*)x)->toString();
     str_0$* res = new str_0$(str);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1069,7 +1066,7 @@ int_0$*
 __len__list__(void* S) {
     int s = ((list_0$*) S)->size();
     int_0$* res = new int_0$(s);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1079,7 +1076,7 @@ __argv__() {
     for (int i = 0; i < argcount; i++) {
         res->push(new str_0$(args[i]));
     }
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1105,7 +1102,7 @@ int_0$*
 __len__dict__(void* D) {
     int s = ((dict_0$*) D)->size();
     int_0$* res = new int_0$(s);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1113,7 +1110,7 @@ bool_0$*
 __contains__dict__(void* x, void* D) {
     bool b = ((dict_0$*) D)->contains(x);
     bool_0$* res = new bool_0$(b);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1121,7 +1118,7 @@ bool_0$*
 __notcontains__dict__(void* x, void* D) {
     bool b = ((dict_0$*) D)->contains(x);
     bool_0$* res = new bool_0$((b ? false : true));
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1139,7 +1136,7 @@ __open1__(void* name) {
         throw ss.str();
     }
     file_0$* res = new file_0$(f);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1155,7 +1152,7 @@ __open2__(void* name, void* mode) {
         throw ss.str();
     }
     file_0$* res = new file_0$(f);
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1176,7 +1173,7 @@ __readline__(void* file) {
         c = (char) fgetc(f);
     }
     str_0$* res = new str_0$(ss.str());
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 
@@ -1192,7 +1189,7 @@ __read__(void* file) {
         c = (char) fgetc(f);
     }
     str_0$* res = new str_0$(ss.str());
-    HEAP.push_back(res);
+    // HEAP.push_back(res);
     return res;
 }
 

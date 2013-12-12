@@ -20,6 +20,7 @@
 
 using namespace std;
 
+class $Reference;
 class $Object;
 class bool_0$;
 class int_0$;
@@ -51,19 +52,19 @@ typedef struct Frame {
 } Frame;
 
 extern vector<Frame*> STACK;
-extern vector<$Object*> HEAP;
-extern vector<$Object**> SM;
+extern vector<$Reference*> HEAP;
+extern vector<$Reference*> SM;
 
 extern Frame* cf;
 extern Frame* static_link;
 extern Frame* tmp_frame;
 extern FuncDesc* call;
-extern $Object** dst;
-extern $Object** src;
+extern $Reference* dst;
+extern $Reference* src;
 
-extern $Object* tmp_alloc;
-extern $Object* tmp_res;
-extern $Object* tmp_tup;
+extern $Reference* tmp_alloc;
+extern $Reference* tmp_res;
+extern tuple_0$* tmp_tup;
 
 extern int_0$* __ZERO__;
 
@@ -87,6 +88,22 @@ public:
     /** If applicable, return the size of THIS. */
     virtual int size() {return 0;}
 
+};
+
+/** A wrapper class that represents a reference to a $Object* */
+class $Reference {
+private:
+    $Object* _obj;
+public:
+    $Reference () {}
+
+    $Reference ($Object* obj) : _obj(obj) {}
+
+    void set ($Object* obj) { _obj = obj; }
+
+    $Object* get () { return _obj; }
+
+    void clean () { delete _obj; }
 };
 
 /** A call description struct that refers to a call descriptor. Contains the
@@ -184,7 +201,7 @@ public:
     void setValue(int val) {value = val;}
 
     /** Integer addition */
-    int_0$* operator+ (int_0$ y);
+    $Reference* operator+ (int_0$ y);
 
     /** Integer subtraction */
     int_0$* operator- (int_0$ y);
@@ -526,7 +543,7 @@ range_0$* __xrange__(void* low, void* high);
 int_0$* __len__range__(void* r);
 
 // Type int
-int_0$* __add__int__(void* x, void* y);
+$Reference* __add__int__($Reference* x, $Reference* y);
 
 int_0$* __sub__int__(void* x, void* y);
 

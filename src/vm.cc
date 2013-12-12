@@ -30,13 +30,13 @@ VirtualMachine::emit (const int& instr)
 
         case PUSH:
             comment("pushing top of HEAP onto SM");
-            code("SM.push_back( &HEAP[HEAP.size()-1] );");
+            code("SM.push_back( HEAP[HEAP.size()-1] );");
             break;
 
         case FCALL:
             comment("calling function");
             rlabel = newLabel("R");
-            code("call = (FuncDesc*) (*SM.back());");
+            code("call = (FuncDesc*) (SM.back()->get());");
             code("SM.pop_back();");
             code("cf->ra = &&" + rlabel + ";");
             code("static_link = call->sl;");
@@ -51,7 +51,7 @@ VirtualMachine::emit (const int& instr)
             code("SM.pop_back();");
             code("src = SM.back();");
             code("SM.pop_back();");
-            code("*dst = *src;");
+            code("dst->set(src->get());");
             code("SM.push_back(dst);");
             break;
 
@@ -77,7 +77,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         case GTZ:
             comment("jumping to " + arg + " if top is 0");
-            code("cmp = ((int_0$*) *SM.back());");
+            code("cmp = ((int_0$*) SM.back()->get());");
             code("SM.pop_back();");
             // Don't want to initialize a new int_0$(0) every time just for
             // this purpose; instead make a constant __ZERO__ = new int_0$(0).
@@ -92,18 +92,19 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         case ALLOC:
             comment("allocating memory for: " + arg);
-            code("tmp_alloc = " + arg + ";");
+            code("tmp_alloc = new $Reference(" + arg + ");");
             code("HEAP.push_back(tmp_alloc);");
             break;
 
         case SETSL:
             comment("setting up static link for FuncDesc");
-            code("((FuncDesc*)(*SM[SM.size() - 1]))->sl = " + arg + ";");
+            code("((FuncDesc*)(SM[SM.size() - 1]->get()))->sl = " + arg + ";");
             break;
 
         case SETLBL:
             comment("setting up label for FuncDesc");
-            code("((FuncDesc*)(*SM[SM.size() - 1]))->label = &&" + arg + ";");
+            code("((FuncDesc*)(SM[SM.size() - 1]->get()))->label = &&"
+                + arg + ";");
             break;
 
         default:
@@ -121,10 +122,10 @@ VirtualMachine::emit (const int& instr, int arg)
 
         case EXPAND:
             comment("expanding tuple into " + tostr(arg) + " elements");
-            code("tmp_tup = ($Object*) *(SM.back());");
+            code("tmp_tup = (tuple_0$*) SM.back()->get();");
             code("SM.pop_back();");
             code("for (int i = " + tostr(arg) + " - 1; i >= 0; i--) {");
-            code("SM.push_back( &(((tuple_0$*)tmp_tup)->getItem(i)) );", 8);
+            code("SM.push_back( tmp_tup->getItem(i) );", 8);
             code("}");
             break;
 
@@ -147,15 +148,15 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             code("tmp_res = " + arg1 + "(");
             for (int i = 1; i <= arg2; i++) {
                 if (i != arg2) {
-                    code("*SM[SM.size()-" + tostr(i) + "],", 8);
+                    code("SM[SM.size()-" + tostr(i) + "],", 8);
                 } else {
-                    code("*SM[SM.size()-" + tostr(i) + "]);", 8);
+                    code("SM[SM.size()-" + tostr(i) + "]);", 8);
                 }
             }
             for (int _ = 0; _ < arg2; _++) {
                 code("SM.pop_back();");
             }
-            code("SM.push_back( &tmp_res );");
+            code("SM.push_back( tmp_res );");
             break;
 
         default:
@@ -238,7 +239,8 @@ VirtualMachine::emitMainEpilogue ()
     comment("runtime epilogue: deleting objects stored on heap");
     code("cout << \"Heap size: \" << HEAP.size() << endl;");
     code("for (int i = 0; i < HEAP.size(); i++) {");
-    code("delete (($Object*) HEAP[i]);", 8);
+    code("HEAP[i]->clean();", 8);
+    code("delete HEAP[i];", 8);
     code("}");
     code("}", 0);
 }
@@ -351,7 +353,7 @@ VirtualMachine::__test_codegen()
     newline(2);
     comment("def foo(a, b):");
     comment("    return a + b");
-    emit(ALLOC, "new FuncDesc;");
+    emit(ALLOC, "new FuncDesc");
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->foo_0$");
     emit(MOVE);
@@ -359,13 +361,22 @@ VirtualMachine::__test_codegen()
     emit(POP);
 
     newline(2);
-    comment("z = foo(x, y)");
+    comment("z = foo(x, y) + 5 + 5 + 5");
+    emit(ALLOC, "new int_0$(5)");
+    emit(PUSH);
+    emit(ALLOC, "new int_0$(5)");
+    emit(PUSH);
+    emit(ALLOC, "new int_0$(5)");
+    emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->y_0$");
     emit(PUSH, "((__main__*) cf->locals)->x_0$");
-    emit(ALLOC, "new FuncDesc( ((FuncDesc*)((__main__*) cf->locals)->foo_0$) )");
+    emit(ALLOC, "new FuncDesc( ((FuncDesc*)((__main__*) cf->locals)->foo_0$.get()) )");
     emit(PUSH);
     emit(SETSL, "cf");
     emit(FCALL);
+    emit(NTV, "__add__int__", 2);
+    emit(NTV, "__add__int__", 2);
+    emit(NTV, "__add__int__", 2);
     emit(PUSH, "((__main__*) cf->locals)->z_0$");
     emit(MOVE);
     emit(POP);
