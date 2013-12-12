@@ -470,6 +470,19 @@ public:
      *       STACK MACHINE.
      * rslt: ARITY elements are added to the top of the STACK MACHINE,
      *       corresponding to the items that were in the tuple.
+     * ------------------------------------------------------------
+     * inst: PRINT ARITY
+     * args: ARITY (int) the number of objects being printed
+     * desc: Assuming that there is ARITY strings at the top of STACK MACHINE,
+     *       pop all of them off and generate code for printing them out.
+     * rslt: The top ARITY elements are popped off the STACK MACHINE.
+     * ------------------------------------------------------------
+     * inst: PRINTFILE ARITY
+     * args: ARITY (int) the number of objects being printed to file
+     * desc: Assuming that the top of the STACK MACHINE is a file, and there
+     *       are ARITY strings below the top of STACK MACHINE. Pop all of them
+     *       off and generate code for printing them to file.
+     * rslt: The top ARITY + 1 elements are popped off the STACK MACHINE.
      **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
@@ -554,5 +567,7 @@ const int NTV = 7;
 const int SETSL = 8;
 const int SETLBL = 9;
 const int EXPAND = 10;
+const int PRINT = 11;
+const int PRINTFILE = 12;
 
 #endif

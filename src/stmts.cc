@@ -32,6 +32,27 @@ protected:
         }
         return this;
     }
+
+    virtual void printEpilogue() {
+        /* Do Nothing */
+    }
+
+    void stmtCodeGen (int depth) {
+        // Push the items to be printed onto stack
+        child(1)->exprCodeGen(depth);
+
+        // Check if printing to file or not
+        if (child(0)->isMissing()) {
+            // Not printing to file
+            VM->emit(PRINT, child(1)->arity());
+        } else {
+            // Push file onto stack
+            child(1)->exprCodeGen(depth);
+            VM->emit(PRINTFILE, child(1)->arity());
+        }
+        // Output newline depending on if this is print or println
+        printEpilogue();
+    }
 };
 
 NODE_FACTORY (Print_AST, PRINT);
@@ -48,7 +69,11 @@ protected:
     NODE_CONSTRUCTORS (Println_AST, Print_AST);
 
     const char* externalName () {
-	return "println";
+    return "println";
+    }
+
+    virtual void printEpilogue() {
+        VM->code("cout << endl;");
     }
 
 };

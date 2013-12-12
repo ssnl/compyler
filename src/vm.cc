@@ -129,6 +129,36 @@ VirtualMachine::emit (const int& instr, int arg)
             code("}");
             break;
 
+        case PRINT:
+            comment("Printing to standard output");
+            code("ss.str("");");
+            code("if (" + tostr(arg) + " > 0) {");
+            code("ss << SM.back()->toString();", 8);
+            code("SM.pop_back();", 8);
+            code("}");
+            code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
+            code("ss << \" \" << SM.back()->toString();", 8)
+            code("SM.pop_back();", 8);
+            code("}");
+            code("cout << ss.str();");
+            break;
+
+        case PRINTFILE:
+            comment("Printing to file");
+            code("tmp_file = (file_0*) *(SM.back());");
+            code("SM.pop_back();");
+            code("ss.str("");");
+            code("if (" + tostr(arg) + " > 0) {");
+            code("ss << SM.back()->toString();", 8);
+            code("SM.pop_back();", 8);
+            code("}");
+            code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
+            code("ss << \" \" << SM.back()->toString();", 8)
+            code("SM.pop_back();", 8);
+            code("}");
+            code("fprintf(tmp_file->getValue(), ss.str().c_str());");
+            break;
+            
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int, int)"));

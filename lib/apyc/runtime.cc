@@ -42,6 +42,12 @@ $Reference* tmp_res;
 /** Stores a tuple to be expanded. */
 tuple_0$* tmp_tup;
 
+/** Stores a file to be printed to. */
+file_0* tmp_file;
+
+/** Used to combine strings. */
+stringstream ss;
+
 /** Stores the constant Integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);
 
