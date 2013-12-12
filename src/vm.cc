@@ -358,6 +358,7 @@ VirtualMachine::__test_codegen()
     emit(PUSH, "((__main__*) cf->locals)->foo_0$");
     emit(MOVE);
     emit(SETLBL, asLabel("foo_0$"));
+    emit(SETSL, "cf");
     emit(POP);
 
     newline(2);
@@ -370,9 +371,7 @@ VirtualMachine::__test_codegen()
     emit(PUSH);
     emit(PUSH, "((__main__*) cf->locals)->y_0$");
     emit(PUSH, "((__main__*) cf->locals)->x_0$");
-    emit(ALLOC, "new FuncDesc( ((FuncDesc*)((__main__*) cf->locals)->foo_0$.get()) )");
-    emit(PUSH);
-    emit(SETSL, "cf");
+    emit(PUSH, "((__main__*) cf->locals)->foo_0$");
     emit(FCALL);
     emit(NTV, "__add__int__", 2);
     emit(NTV, "__add__int__", 2);

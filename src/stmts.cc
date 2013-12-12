@@ -92,6 +92,12 @@ protected:
 
 NODE_FACTORY (StmtList_AST, STMT_LIST);
 
+class Block_AST : public StmtList_AST {
+
+    NODE_CONSTRUCTORS (Block_AST, StmtList_AST);
+};
+
+NODE_FACTORY (Block_AST, BLOCK);
 
 /***** DEF *****/
 
@@ -208,10 +214,6 @@ protected:
     void defCodeGen (int depth) {
         gcstring defname = getDecl ()->getRuntimeName ();
         VMLabel lbl = VM->asLabel (defname);
-        // recursively cgen any nested definitions
-        for_each_child (c, child (3)) {
-            c->defCodeGen (depth + 1);
-        } end_for;
         // start with my definition
         VM->placeLabel (lbl);
         VM->emitDefPrologue (defname);
@@ -224,6 +226,27 @@ protected:
         // cgen main body
         child (3)->stmtCodeGen (depth + 1);
         VM->emitDefEpilogue (defname);
+        // recursively cgen any nested definitions
+        for_each_child (c, child (3)) {
+            c->defCodeGen (depth + 1);
+        } end_for;
+    }
+
+    void stmtCodeGen (int depth) {
+        gcstring defname = getDecl ()->getRuntimeName ();
+        gcstring frameName;
+        if (getDecl ()->getContainer ()->getContainer () != NULL) {
+            frameName = getDecl ()->getContainer ()->getRuntimeName ();
+        } else {
+            frameName = "__main__";
+        }
+        VM->emit (ALLOC, "new FuncDesc");
+        VM->emit (PUSH);
+        VM->emit (PUSH, "((" + frameName + "*) cf->locals)->" + defname);
+        VM->emit (MOVE);
+        VM->emit (SETLBL, VM->asLabel (defname));
+        VM->emit (SETSL, "cf");
+        VM->emit (POP);
     }
 };
 
