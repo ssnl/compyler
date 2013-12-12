@@ -406,6 +406,11 @@ public:
      * desc: Pops off the top of the STACK MACHINE.
      * rslt: Top of the STACK MACHINE is removed.
      * ------------------------------------------------------------
+     * inst: GOTO
+     * desc: Pops the top of the STACK MACHINE, casting it as a label and then
+     *       jumping to that label.
+     * rslt: Top of the STACK MACHINE is removed.
+     * ------------------------------------------------------------
      * inst: PUSH
      * desc: Pushes the top of the HEAP onto the top of the STACK
      *       MACHINE.

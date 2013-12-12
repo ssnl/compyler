@@ -719,6 +719,43 @@ protected:
 NODE_FACTORY (For_AST, FOR);
 
 
+/***** FOR *****/
+
+/**  for target in exprs: body [ else: body ]     */
+class While_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (While_AST, AST_Tree);
+
+    void stmtCodeGen (int depth) {
+
+        stringstream ss;
+        VMLabel elseLbl = VM->newLabel ("ELSE");
+        VMLabel loopLbl = VM->newLabel ("LOOP");
+        VMLabel exitLbl = VM->newLabel ("EXIT");
+        ss << "&&" << exitLbl << ";";
+
+        VM->emit (PUSH, ss.str ());
+        child (0)->stmtCodeGen (depth);
+        VM->emit (GTZ, elseLbl);
+        // main loop
+        VM->placeLabel (loopLbl);
+        child (1)->stmtCodeGen (depth);
+        child (0)->stmtCodeGen (depth);
+        VM->emit (GTZ, elseLbl);
+        VM->emit (GOTO, loopLbl);
+        // else and exit
+        VM->placeLabel (elseLbl);
+        child (2)->stmtCodeGen (depth);
+        // pop the label if break not used
+        VM->emit (POP);
+        VM->placeLabel (exitLbl);
+    }
+};
+
+NODE_FACTORY (While_AST, WHILE);
+
+
 /***** RETURN *****/
 
 /**  return EXPR */

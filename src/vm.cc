@@ -24,6 +24,7 @@ VirtualMachine::emit (const int& instr)
 
     newline();
     switch (instr) {
+
         case POP:
             comment("popping top of SM");
             code("SM.pop_back();");
@@ -54,6 +55,12 @@ VirtualMachine::emit (const int& instr)
             code("SM.pop_back();");
             code("dst->set(src->get());");
             code("SM.push_back(dst);");
+            break;
+
+        case GOTO:
+            comment("jumping to top label");
+            code("tmp_label = ($Label*) *SM.back();");
+            code("goto *(tmp_label->label);");
             break;
 
         default:

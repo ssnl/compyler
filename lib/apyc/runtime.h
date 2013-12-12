@@ -36,7 +36,7 @@ class dict_bool_0$;
 class file_0$;
 
 class FuncDesc;
-
+class $Label;
 /* Runtime Data Structures */
 
 /** A label represents the address of a label that can be used to goto the
