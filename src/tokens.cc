@@ -297,6 +297,10 @@ protected:
                              consTree (EXPR_LIST));
     }
 
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
+        VM->emit (POP);
+    }
 
     void exprCodeGen (int depth) {
         // e.g. ((__main__*) cf->sl->sl) -> x
