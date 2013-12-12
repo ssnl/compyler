@@ -544,6 +544,32 @@ protected:
 
 NODE_FACTORY (Assign_AST, ASSIGN);
 
+
+/***** If *****/
+
+class If_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (If_AST, AST_Tree);
+
+    void stmtCodeGen (int depth) {
+
+        VMLabel elseLbl = VM->newLabel ("ELSE");
+        VMLabel exitLbl = VM->newLabel ("EXIT");
+
+        child (0)->exprCodeGen (depth);
+        VM->emit (GTZ, elseLbl);
+        child (1)->stmtCodeGen (depth);
+        VM->emit (GOTO, exitLbl);
+        VM->placeLabel (elseLbl);
+        child (2)->stmtCodeGen (depth);
+        VM->placeLabel (exitLbl);
+    }
+};
+
+NODE_FACTORY (If_AST, IF);
+
+
 /***** FOR *****/
 
 /**  for target in exprs: body [ else: body ]     */

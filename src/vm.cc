@@ -79,10 +79,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
             comment("jumping to " + arg + " if top is 0");
             code("cmp = ((int_0$*) SM.back()->get());");
             code("SM.pop_back();");
-            // Don't want to initialize a new int_0$(0) every time just for
-            // this purpose; instead make a constant __ZERO__ = new int_0$(0).
-            code("if (cmp->getValue() == __ZERO__->getValue()) { goto " +
-                arg + "; }");
+            code("if (cmp->asBool()) { goto " + arg + "; }");
             break;
 
         case PUSH:

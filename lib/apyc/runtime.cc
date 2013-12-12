@@ -46,8 +46,10 @@ file_0$* tmp_file;
 /** Used to combine strings. */
 stringstream tmp_ss;
 
-/** Stores the constant Integer value of 0. */
+/** Stores the constant integer value of 0. */
 int_0$* __ZERO__ = new int_0$(0);
+/** Stores the constant boolean value of False. */
+bool_0$* __FALSE__ = new bool_0$(false);
 
 /* Class $Object */
 
