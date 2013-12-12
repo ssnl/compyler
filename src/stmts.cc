@@ -211,12 +211,11 @@ protected:
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
-        gcstring memberName, memberTypeName;
+        gcstring memberName, memberTypeName = "$Reference";
         stringstream body;
         for (int i = 0; i < members.size (); i++) {
             memberDecl = members[i];
             memberName = memberDecl->getRuntimeName ();
-            memberTypeName = memberDecl->getRuntimeTypeName ();
             if (memberTypeName != "")
                 body << "    "
                      << memberTypeName << " " << memberName << ";" << endl;
@@ -362,18 +361,17 @@ protected:
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
-        gcstring memberName, memberTypeName;
+        gcstring memberName, memberTypeName = "$Reference";
         stringstream body;
         for (int i = 0; i < members.size (); i++) {
             memberDecl = members[i];
             memberName = memberDecl->getRuntimeName ();
-            memberTypeName = memberDecl->getRuntimeTypeName ();
             if (memberTypeName != "") {
                 body << "    "
                      << memberTypeName << " " << memberName << ";" << endl;
             }
         }
-        out << "class " << me->getRuntimeName() << " : $Object {" << endl
+        out << "class " << me->getRuntimeName() << " : public $Object {" << endl
             << "public:" << endl << endl
             << body.str () << endl
             << "};" << endl

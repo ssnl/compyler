@@ -338,7 +338,7 @@ public:
     }
 
     gcstring getRuntimeTypeName () const {
-        return "$Reference";
+        return getType ()->getDecl ()->getRuntimeName ();
     }
 
 protected:

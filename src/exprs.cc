@@ -481,6 +481,10 @@ protected:
 
     void exprCodeGen (int depth) {
         child (0)->exprCodeGen (depth);
+        gcstring typeName = child (0)->getType ()->binding ()
+            ->getDecl ()->getRuntimeName ();
+        gcstring field = getDecl ()->getRuntimeName ();
+        VM->emit(FIELD, typeName, field);
     }
 
 };

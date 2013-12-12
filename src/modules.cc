@@ -96,12 +96,11 @@ protected:
         Decl* me = mainModule;
         Decl_Vector members = me->getEnviron ()->get_members ();
         Decl* memberDecl;
-        gcstring memberName, memberTypeName;
+        gcstring memberName, memberTypeName = "$Reference";
         stringstream body;
         for (int i = 0; i < members.size(); i++) {
             memberDecl = members[i];
             memberName = memberDecl->getRuntimeName();
-            memberTypeName = memberDecl->getRuntimeTypeName();
             if (memberTypeName != "") {
                 body << "    " << memberTypeName << " "
                      << memberName << ";" << endl;

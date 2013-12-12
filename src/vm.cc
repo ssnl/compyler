@@ -204,7 +204,10 @@ VirtualMachine::emit (const int& instr, gcstring arg1, gcstring arg2)
 
         case FIELD:
             comment("getting field " + arg2 + " for instance of type " + arg1);
-            code("tmp_res = ((" + arg1 + "*)(*SM[SM.size() - 1]))->" + arg2);
+            code("tmp_res = &((" + arg1 + "*) SM[SM.size() - 1]->get())->"
+                + arg2 + ";");
+            code("SM.pop_back();");
+            code("SM.push_back(tmp_res);");
             break;
 
         default:
