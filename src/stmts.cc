@@ -70,6 +70,24 @@ protected:
         return this;
     }
 
+    void classCodeGen (int depth) {
+        for_each_child (c, this) {
+            c->classCodeGen (depth);
+        } end_for;
+    }
+
+    void defCodeGen (int depth) {
+        for_each_child (c, this) {
+            c->defCodeGen (depth);
+        } end_for;
+    }
+
+    void stmtCodeGen (int depth) {
+        for_each_child (c, this) {
+            c->stmtCodeGen (depth);
+        } end_for;
+    }
+
 };
 
 NODE_FACTORY (StmtList_AST, STMT_LIST);

@@ -212,10 +212,11 @@ public:
     /** Generate code for me on OUT. */
     virtual void outerCodeGen (std::ostream& out);
 
-    /** Generate code for me if [...] */
+    /** Generate code for me if I am a class by recursively generating code for
+     *  instance variables/methods within me. */
     virtual void classCodeGen (int depth);
 
-    /** Generate code for me if I am a definition, by recursively generating
+    /** Generate code for me if I am a definition by recursively generating
      *  code for all definitions within me before generating code for the
      *  statements within me. */
     virtual void defCodeGen (int depth);
