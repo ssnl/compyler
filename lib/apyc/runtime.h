@@ -126,38 +126,38 @@ public:
     void setValue(bool val) {value = val;}
 
     /** Boolean addition */
-    bool_0$* operator+ (bool_0$ y);
+    bool_0$** operator+ (bool_0$ y);
 
     /** Boolean subtraction */
-    bool_0$* operator- (bool_0$ y);
+    bool_0$** operator- (bool_0$ y);
 
     /** Boolean multiplication */
-    bool_0$* operator* (bool_0$ y);
+    bool_0$** operator* (bool_0$ y);
 
     /** Boolean division */
-    bool_0$* operator/ (bool_0$ y);
+    bool_0$** operator/ (bool_0$ y);
 
     /** Boolean modulus */
-    bool_0$* operator% (bool_0$ y);
+    bool_0$** operator% (bool_0$ y);
 
-    bool_0$* operator- ();
+    bool_0$** operator- ();
 
     /** Negation */
-    bool_0$* operator! ();
+    bool_0$** operator! ();
 
     /** Comparison */
 
-    bool_0$* operator< (bool_0$ y);
+    bool_0$** operator< (bool_0$ y);
 
-    bool_0$* operator> (bool_0$ y);
+    bool_0$** operator> (bool_0$ y);
 
-    bool_0$* operator<= (bool_0$ y);
+    bool_0$** operator<= (bool_0$ y);
 
-    bool_0$* operator>= (bool_0$ y);
+    bool_0$** operator>= (bool_0$ y);
 
-    bool_0$* operator== (bool_0$ y);
+    bool_0$** operator== (bool_0$ y);
 
-    bool_0$* operator!= (bool_0$ y);
+    bool_0$** operator!= (bool_0$ y);
 
     string toString(bool contained=false);
 
@@ -184,39 +184,41 @@ public:
     void setValue(int val) {value = val;}
 
     /** Integer addition */
-    int_0$* operator+ (int_0$ y);
+    int_0$** operator+ (int_0$ y);
 
     /** Integer subtraction */
-    int_0$* operator- (int_0$ y);
+    int_0$** operator- (int_0$ y);
 
     /** Integer multiplication */
-    int_0$* operator* (int_0$ y);
+    int_0$** operator* (int_0$ y);
 
     /** Return a str wrapper that is Y repeated THIS times */
-    str_0$* operator* (str_0$ y);
+    str_0$** operator* (str_0$ y);
 
     /** Integer division */
-    int_0$* operator/ (int_0$ y);
+    int_0$** operator/ (int_0$ y);
 
     /** Integer modulus */
-    int_0$* operator% (int_0$ y);
+    int_0$** operator% (int_0$ y);
 
     /** Negation */
-    int_0$* operator- ();
+    int_0$** operator- ();
+    
+    int_0$** operator+ ();
 
     /** Comparison */
 
-    bool_0$* operator< (int_0$ y);
+    bool_0$** operator< (int_0$ y);
 
-    bool_0$* operator> (int_0$ y);
+    bool_0$** operator> (int_0$ y);
 
-    bool_0$* operator<= (int_0$ y);
+    bool_0$** operator<= (int_0$ y);
 
-    bool_0$* operator>= (int_0$ y);
+    bool_0$** operator>= (int_0$ y);
 
-    bool_0$* operator== (int_0$ y);
+    bool_0$** operator== (int_0$ y);
 
-    bool_0$* operator!= (int_0$ y);
+    bool_0$** operator!= (int_0$ y);
 
     string toString(bool contained=false);
 
@@ -241,26 +243,26 @@ public:
     void setValue(string val) {value = val;}
 
     /** String addition */
-    str_0$* operator+ (str_0$ y);
+    str_0$** operator+ (str_0$ y);
 
     /** Return a str wrapper that is THIS repeated Y times */
-    str_0$* operator* (int_0$ y);
+    str_0$** operator* (int_0$ y);
 
     /** Comparison */
 
-    bool_0$* operator< (str_0$ y);
+    bool_0$** operator< (str_0$ y);
 
-    bool_0$* operator> (str_0$ y);
+    bool_0$** operator> (str_0$ y);
 
-    bool_0$* operator<= (str_0$ y);
+    bool_0$** operator<= (str_0$ y);
 
-    bool_0$* operator>= (str_0$ y);
+    bool_0$** operator>= (str_0$ y);
 
-    bool_0$* operator== (str_0$ y);
+    bool_0$** operator== (str_0$ y);
 
-    bool_0$* operator!= (str_0$ y);
+    bool_0$** operator!= (str_0$ y);
 
-    str_0$* getSlice(int start, int end);
+    str_0$** getSlice(int start, int end);
 
     string toString(bool contained=false);
 
@@ -317,9 +319,9 @@ public:
 
     void setItem(int k, $Object* item) {value[k] = item;}
 
-    $Object* getItem(int k);
+    $Object** getItem(int k);
 
-    list_0$* getSlice(int L, int U);
+    list_0$** getSlice(int L, int U);
 
     void clear() {value.clear();}
 
@@ -347,7 +349,7 @@ public:
 
     void push($Object* item) {value.push_back(item);}
 
-    $Object* getItem(int k) {return value[k];}
+    $Object** getItem(int k) {return &value[k];}
 
     int size() {return tupleSize;}
 
@@ -367,7 +369,7 @@ protected:
 public:
     dict_0$ () : value() {}
 
-    virtual $Object* get(void* key) {return this;}
+    virtual $Object** get(void* key) {return &value[0];}
 
     virtual void set(void* key, $Object* item) {}
 
@@ -386,7 +388,7 @@ protected:
 public:
     dict_int_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Object** get(void* key);
 
     void set(void* key, $Object* item);
 
@@ -406,7 +408,7 @@ protected:
 public:
     dict_str_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Object** get(void* key);
 
     void set(void* key, $Object* item);
 
@@ -426,7 +428,7 @@ protected:
 public:
     dict_bool_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Object** get(void* key);
 
     void set(void* key, $Object* item);
 
@@ -473,7 +475,8 @@ extern dict_0$ $dict_0$;
 extern file_0$ $file_0$;
 
 // Standard input, output, and error
-extern file_0$ STDIN, STDOUT, STDERR;
+extern file_0$ f1, f2, f3;
+extern file_0$ *STDIN, *STDOUT, *STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
 tuple_0$* __tuple0__();
@@ -505,130 +508,127 @@ dict_bool_0$* __dict__bool__(void* count, ...);
 
 void __donotcall__(void* x);
 
-int_0$* __None__();
+int_0$** __None__();
 
-bool_0$* __is__(void* x, void* y);
+bool_0$** __is__(void* x, void* y);
 
-bool_0$* __isnot__(void* x, void* y);
+bool_0$** __isnot__(void* x, void* y);
 
-$Object* __and__(void* x, void* y);
-
-$Object* __or__(void* x, void* y);
 
 // Type bool
-bool_0$* __truth__(void* x);
+bool_0$** __truth__(void* x);
 
-bool_0$* __not__(void* x);
+bool_0$** __not__(void* x);
 
 // Type range
-range_0$* __xrange__(void* low, void* high);
+range_0$** __xrange__(void* low, void* high);
 
-int_0$* __len__range__(void* r);
+int_0$** __len__range__(void* r);
 
 // Type int
-int_0$* __add__int__(void* x, void* y);
+int_0$** __add__int__(void* x, void* y);
 
-int_0$* __sub__int__(void* x, void* y);
+int_0$** __sub__int__(void* x, void* y);
 
-int_0$* __mul__int__(void* x, void* y);
+int_0$** __mul__int__(void* x, void* y);
 
-int_0$* __floordiv__int__(void* x, void* y);
+int_0$** __floordiv__int__(void* x, void* y);
 
-int_0$* __mod__int__(void* x, void* y);
+int_0$** __mod__int__(void* x, void* y);
 
-int_0$* __pow__int__(void* x, void* y);
+int_0$** __pow__int__(void* x, void* y);
 
-int_0$* __neg__int__(void* x);
+int_0$** __neg__int__(void* x);
 
-int_0$* __pos__int__(void* x);
+int_0$** __pos__int__(void* x);
 
-bool_0$* __lt__int__(void* x, void* y);
+bool_0$** __lt__int__(void* x, void* y);
 
-bool_0$* __gt__int__(void* x, void* y);
+bool_0$** __gt__int__(void* x, void* y);
 
-bool_0$* __le__int__(void* x, void* y);
+bool_0$** __le__int__(void* x, void* y);
 
-bool_0$* __ge__int__(void* x, void* y);
+bool_0$** __ge__int__(void* x, void* y);
 
-bool_0$* __eq__int__(void* x, void* y);
+bool_0$** __eq__int__(void* x, void* y);
 
-bool_0$* __ne__int__(void* x, void* y);
+bool_0$** __ne__int__(void* x, void* y);
 
-int_0$* __toint__str__(void* x);
+int_0$** __toint__str__(void* x);
 
 
 // Type string
 
-str_0$* __add__str__(void* x, void* y);
+str_0$** __add__str__(void* x, void* y);
 
-str_0$* __lmul__str__(void* x, void* y);
+str_0$** __lmul__str__(void* x, void* y);
 
-str_0$* __rmul__str__(void* x, void* y);
+str_0$** __rmul__str__(void* x, void* y);
 
-bool_0$* __lt__str__(void* x, void* y);
+bool_0$** __lt__str__(void* x, void* y);
 
-bool_0$* __gt__str__(void* x, void* y);
+bool_0$** __gt__str__(void* x, void* y);
 
-bool_0$* __le__str__(void* x, void* y);
+bool_0$** __le__str__(void* x, void* y);
 
-bool_0$* __ge__str__(void* x, void* y);
+bool_0$** __ge__str__(void* x, void* y);
 
-bool_0$* __eq__str__(void* x, void* y);
+bool_0$** __eq__str__(void* x, void* y);
 
-bool_0$* __ne__str__(void* x, void* y);
+bool_0$** __ne__str__(void* x, void* y);
 
-str_0$* __getitem__str__(void* s, void* k);
+str_0$** __getitem__str__(void* s, void* k);
 
-str_0$* __getslice__str__(void* s, void* start);
+str_0$** __getslice__str__(void* s, void* start);
 
-str_0$* __getslice__str__(void* s, void* start, void* end);
+str_0$** __getslice__str__(void* s, void* start, void* end);
 
-int_0$* __len__str__(void* s);
+int_0$** __len__str__(void* s);
 
-str_0$* __tostr__(void* x);
+str_0$** __tostr__(void* x);
 
 
 // Type list
 
-$Object* __getitem__list__(void* S, void* k);
+$Object** __getitem__list__(void* S, void* k);
 
-list_0$* __getslice__list__(void* S, void* L);
+list_0$** __getslice__list__(void* S, void* L);
 
-list_0$* __getslice__list__(void* S, void* L, void* U);
+list_0$** __getslice__list__(void* S, void* L, void* U);
 
-int_0$* __len__list__(void* S);
+int_0$** __len__list__(void* S);
 
-list_0$* __argv__();
+list_0$** __argv__();
 
 
 // Type dict
 
-$Object* __getitem__dict__int__(void* D, void* x);
+$Object** __getitem__dict__int__(void* D, void* x);
 
-$Object* __getitem__dict__bool__(void* D, void* x);
+$Object** __getitem__dict__bool__(void* D, void* x);
 
-$Object* __getitem__dict__str__(void* D, void* x);
+$Object** __getitem__dict__str__(void* D, void* x);
 
-int_0$* __len__dict__(void* D);
+int_0$** __len__dict__(void* D);
 
-bool_0$* __contains__dict__(void* x, void* D);
+bool_0$** __contains__dict__(void* x, void* D);
 
-bool_0$* __notcontains__dict__(void* x, void* D);
+bool_0$** __notcontains__dict__(void* x, void* D);
 
 
 // Type file
 
-file_0$* __open1__(void* name);
+file_0$** __open1__(void* name);
 
-file_0$* __open2__(void* name, void* mode);
+file_0$** __open2__(void* name, void* mode);
 
 void __close__(void* file);
 
-str_0$* __readline__(void* file);
+str_0$** __readline__(void* file);
 
-str_0$* __read__(void* file);
+str_0$** __read__(void* file);
 
-file_0$* __standard_file__(void* k);
+file_0$** __standard_file__(void* k);
 
 
 
