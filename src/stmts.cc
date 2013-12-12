@@ -562,7 +562,11 @@ protected:
         child (1)->stmtCodeGen (depth);
         VM->emit (GOTO, exitLbl);
         VM->placeLabel (elseLbl);
-        child (2)->stmtCodeGen (depth);
+        if (arity() > 2) {
+            child (2)->stmtCodeGen (depth);
+        } else {
+            VM->newline ();
+        }
         VM->placeLabel (exitLbl);
     }
 };
