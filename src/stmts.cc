@@ -707,6 +707,40 @@ protected:
         return this;
     }
 
+    void stmtCodeGen (int depth) {
+
+        child (1)->exprCodeGen (depth);
+        gcstring lstr = "(*SM.back())->size()";
+        gcstring vstr = "i_" + VM->tostr (VM->getForNestLvl ());
+        VMLabel elseLbl = VM->newLabel ("ELSE");
+        VMLabel exitLbl = VM->newLabel ("EXIT");
+        // main for loop prologue
+        VM->code ("for (int " + vstr + " = 0; " + vstr + " < " + lstr + "; " +
+            vstr + "++) {");
+        VM->incrForNestLvl ();
+        VM->incrIndentShift ();
+        // main for loop body
+        VM->emit (PUSH, "(*SM.back())->getItem(" + vstr + ")");
+        child (0)->exprCodeGen (depth);
+        VM->emit (MOVE);
+        VM->emit (POP);
+        child (2)->stmtCodeGen (depth);
+        // main for loop epilogue
+        VM->decrForNestLvl ();
+        VM->decrIndentShift ();
+        VM->code ("}");
+        // else and exit
+        VM->emit (GTE, elseLbl);
+        VM->emit (GOTO, exitLbl);
+        VM->placeLabel (elseLbl);
+        if (arity() > 3) {
+            child (3)->stmtCodeGen (depth);
+        } else {
+            VM->newline ();
+        }
+        VM->placeLabel (exitLbl);
+    }
+
     void collectDecls (Decl* enclosing) {
         AST_Ptr target = child (0);
         for (size_t i = 1; i < arity (); i += 1)
@@ -719,9 +753,8 @@ protected:
 NODE_FACTORY (For_AST, FOR);
 
 
-/***** FOR *****/
+/***** WHILE *****/
 
-/**  for target in exprs: body [ else: body ]     */
 class While_AST : public AST_Tree {
 protected:
 
@@ -732,23 +765,30 @@ protected:
         stringstream ss;
         VMLabel elseLbl = VM->newLabel ("ELSE");
         VMLabel loopLbl = VM->newLabel ("LOOP");
+        VMLabel epilLbl = VM->newLabel ("EPIL");
         VMLabel exitLbl = VM->newLabel ("EXIT");
         ss << "&&" << exitLbl << ";";
 
         VM->emit (PUSH, ss.str ());
-        child (0)->stmtCodeGen (depth);
+        child (0)->exprCodeGen (depth);
         VM->emit (GTZ, elseLbl);
-        // main loop
+        // main while loop
         VM->placeLabel (loopLbl);
         child (1)->stmtCodeGen (depth);
-        child (0)->stmtCodeGen (depth);
-        VM->emit (GTZ, elseLbl);
+        child (0)->exprCodeGen (depth);
+        VM->emit (GTZ, epilLbl);
         VM->emit (GOTO, loopLbl);
         // else and exit
         VM->placeLabel (elseLbl);
-        child (2)->stmtCodeGen (depth);
-        // pop the label if break not used
+        if (arity() > 2) {
+            child (2)->stmtCodeGen (depth);
+        } else {
+            VM->newline ();
+        }
+        // epilogue: pop the label
+        VM->placeLabel (epilLbl);
         VM->emit (POP);
+        // breaks jump straight to the exit
         VM->placeLabel (exitLbl);
     }
 };
