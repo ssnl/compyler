@@ -643,48 +643,48 @@ file_0$::equals(void* other) {
 
 
 /* Allocators for list_0$, tuple_0$, and dict_0$ */
-tuple_0$*
+tuple_0$**
 __tuple0__() {
     tuple_0$* res = new tuple_0$();
     HEAP.push_back(res);
-    return res;
+    return (tuple_0$**) &HEAP[HEAP.size() - 1];
 }
 
-tuple_0$*
+tuple_0$**
 __tuple1__(void* x) {
     tuple_0$* res = new tuple_0$(1);
     res->push(($Object*)x);
     HEAP.push_back(res);
-    return res;
+    return (tuple_0$**) &HEAP[HEAP.size() - 1];
 }
 
-tuple_0$*
+tuple_0$**
 __tuple2__(void* x, void* y) {
     tuple_0$* res = new tuple_0$(2);
     res->push(($Object*)x);
     res->push(($Object*)y);
     HEAP.push_back(res);
-    return res;
+    return (tuple_0$**) &HEAP[HEAP.size() - 1];
 }
 
-tuple_0$*
+tuple_0$**
 __tuple3__(void* x, void* y, void* z) {
     tuple_0$* res = new tuple_0$(3);
     res->push(($Object*)x);
     res->push(($Object*)y);
     res->push(($Object*)z);
     HEAP.push_back(res);
-    return res;
+    return (tuple_0$**) &HEAP[HEAP.size() - 1];
 }
 
-list_0$*
+list_0$**
 __list__empty__() {
     list_0$* res = new list_0$();
     HEAP.push_back(res);
-    return res;
+    return (list_0$**) &HEAP[HEAP.size() - 1];
 }
 
-list_0$*
+list_0$**
 __list__(void* count, void* x, ...) {
     int argcount = ((int_0$*) count)->getValue();
     list_0$* res = new list_0$();
@@ -699,31 +699,31 @@ __list__(void* count, void* x, ...) {
 
     va_end (arguments);
     HEAP.push_back(res);
-    return res;
+    return (list_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_int_0$*
+dict_int_0$**
 __dict__empty__int__() {
     dict_int_0$* res = new dict_int_0$();
     HEAP.push_back(res);
-    return res;
+    return (dict_int_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_str_0$*
+dict_str_0$**
 __dict__empty__str__() {
     dict_str_0$* res = new dict_str_0$();
     HEAP.push_back(res);
-    return res;
+    return (dict_str_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_bool_0$*
+dict_bool_0$**
 __dict__empty__bool__() {
     dict_bool_0$* res = new dict_bool_0$();
     HEAP.push_back(res);
-    return res;
+    return (dict_bool_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_int_0$*
+dict_int_0$**
 __dict__int__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_int_0$* res = new dict_int_0$();
@@ -740,10 +740,10 @@ __dict__int__(void* count, ...) {
 
     va_end (arguments);
     HEAP.push_back(res);
-    return res;
+    return (dict_int_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_str_0$*
+dict_str_0$**
 __dict__str__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_str_0$* res = new dict_str_0$();
@@ -760,10 +760,10 @@ __dict__str__(void* count, ...) {
 
     va_end (arguments);
     HEAP.push_back(res);
-    return res;
+    return (dict_str_0$**) &HEAP[HEAP.size() - 1];
 }
 
-dict_bool_0$*
+dict_bool_0$**
 __dict__bool__(void* count, ...) {
     int argcount = ((int_0$*) count)->getValue();
     dict_bool_0$* res = new dict_bool_0$();
@@ -780,7 +780,7 @@ __dict__bool__(void* count, ...) {
 
     va_end (arguments);
     HEAP.push_back(res);
-    return res;
+    return (dict_bool_0$**) &HEAP[HEAP.size() - 1];
 }
 
 /* Runtime routines */

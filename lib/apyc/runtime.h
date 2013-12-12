@@ -479,29 +479,29 @@ extern file_0$ f1, f2, f3;
 extern file_0$ *STDIN, *STDOUT, *STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
-tuple_0$* __tuple0__();
+tuple_0$** __tuple0__();
 
-tuple_0$* __tuple1__(void* x);
+tuple_0$** __tuple1__(void* x);
 
-tuple_0$* __tuple2__(void* x, void* y);
+tuple_0$** __tuple2__(void* x, void* y);
 
-tuple_0$* __tuple3__(void* x, void* y, void* z);
+tuple_0$** __tuple3__(void* x, void* y, void* z);
 
-list_0$* __list__empty__();
+list_0$** __list__empty__();
 
-list_0$* __list__(void* count, void* x, ...);
+list_0$** __list__(void* count, void* x, ...);
 
-dict_int_0$* __dict__empty__int__();
+dict_int_0$** __dict__empty__int__();
 
-dict_str_0$* __dict__empty__str__();
+dict_str_0$** __dict__empty__str__();
 
-dict_bool_0$* __dict__empty__bool__();
+dict_bool_0$** __dict__empty__bool__();
 
-dict_int_0$* __dict__int__(void* count, ...);
+dict_int_0$** __dict__int__(void* count, ...);
 
-dict_str_0$* __dict__str__(void* count, ...);
+dict_str_0$** __dict__str__(void* count, ...);
 
-dict_bool_0$* __dict__bool__(void* count, ...);
+dict_bool_0$** __dict__bool__(void* count, ...);
 
 
 // Miscellaneous routines
