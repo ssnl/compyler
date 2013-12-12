@@ -478,6 +478,14 @@ protected:
         return this;
     }
 
+    void classCodeGen (int depth) {
+        getId ()->classCodeGen (depth);
+    }
+
+    void exprCodeGen (int depth) {
+        getId ()->exprCodeGen (depth);
+    }
+
 };
 
 NODE_FACTORY (TypedId_AST, TYPED_ID);
