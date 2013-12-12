@@ -808,6 +808,23 @@ __isnot__(void* x, void* y) {
     return res;
 }
 
+$Object*
+__and__(void* x, void* y) {
+    bool left = (($Object*) x)->asBool();
+    if (left == false)
+        return ($Object*) x;
+    else
+        return ($Object*) y;
+}
+
+$Object*
+__or__(void* x, void* y) {
+    bool left = (($Object*) x)->asBool();
+    if (left == false)
+        return ($Object*) y;
+    else
+        return ($Object*) x;
+}
 
 // Type bool
 

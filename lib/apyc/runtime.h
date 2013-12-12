@@ -463,14 +463,14 @@ public:
     bool equals(void* other);
 };
 
-//extern bool_0$ $bool_0$;
+extern bool_0$ $bool_0$;
 extern int_0$ $int_0$;
-//extern str_0$ $str_0$;
-//extern range_0$ $range_0$;
-//extern list_0$ $list_0$;
-//extern tuple_0$ $tuple_0$;
-//extern dict_0$ $dict_0$;
-//extern file_0$ $file_0$;
+extern str_0$ $str_0$;
+extern range_0$ $range_0$;
+extern list_0$ $list_0$;
+extern tuple_0$ $tuple_0$;
+extern dict_0$ $dict_0$;
+extern file_0$ $file_0$;
 
 // Standard input, output, and error
 extern file_0$ STDIN, STDOUT, STDERR;
@@ -494,14 +494,12 @@ dict_str_0$* __dict__empty__str__();
 
 dict_bool_0$* __dict__empty__bool__();
 
-/** Allocator for dict. The x is not used, the key-value pairs should be
-  * in the variable list.
-  */
 dict_int_0$* __dict__int__(void* count, ...);
 
 dict_str_0$* __dict__str__(void* count, ...);
 
 dict_bool_0$* __dict__bool__(void* count, ...);
+
 
 // Miscellaneous routines
 
@@ -513,6 +511,9 @@ bool_0$* __is__(void* x, void* y);
 
 bool_0$* __isnot__(void* x, void* y);
 
+$Object* __and__(void* x, void* y);
+
+$Object* __or__(void* x, void* y);
 
 // Type bool
 bool_0$* __truth__(void* x);

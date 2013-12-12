@@ -253,6 +253,36 @@ int main()
     cout << (success ? "passes" : "failed") << endl;
     failures += (success) ? 0 : 1;
 
+    cout << "    __and__:  ";
+    success = true;
+    x->setValue(1);
+    y->setValue(2);
+    success = (__and__(x, y) == y) ? success : false;
+    y->setValue(0);
+    success = (__and__(x, y) == y) ? success : false;
+    x->setValue(0);
+    y->setValue(2);
+    success = (__and__(x, y) == x) ? success : false;
+    y->setValue(0);
+    success = (__and__(x, y) == x) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
+    cout << "    __or__:  ";
+    success = true;
+    x->setValue(1);
+    y->setValue(2);
+    success = (__or__(x, y) == x) ? success : false;
+    y->setValue(0);
+    success = (__or__(x, y) == x) ? success : false;
+    x->setValue(0);
+    y->setValue(2);
+    success = (__or__(x, y) == y) ? success : false;
+    y->setValue(0);
+    success = (__or__(x, y) == y) ? success : false;
+    cout << (success ? "passes" : "failed") << endl;
+    failures += (success) ? 0 : 1;
+
 
     cout << "\nTesting runtime routines for bool:" << endl;
 
