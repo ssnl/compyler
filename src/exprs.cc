@@ -505,6 +505,15 @@ protected:
         return this;
     }
 
+    void exprCodeGen(int depth) {
+        for_each_child_reverse(c, this) {
+            c->exprCodeGen(depth);
+        } end_for;
+        stringstream ss;
+        ss << "__tuple" << arity() << "__";
+        VM->emit(NTV, ss.str(), arity());
+    }
+
 };
 
 NODE_FACTORY (Tuple_AST, TUPLE);
