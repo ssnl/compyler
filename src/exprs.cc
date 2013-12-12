@@ -534,6 +534,14 @@ protected:
             error (this, "bound method value outside a call");
     }
 
+    void exprCodeGen (int depth) {
+        child (0)->exprCodeGen (depth);
+        gcstring typeName = child (0)->getType ()->binding ()
+            ->getDecl ()->getRuntimeName ();
+        gcstring field = getDecl ()->getRuntimeName ();
+        VM->emit(FIELD, typeName, field);
+    }
+
 };
 
 NODE_FACTORY (AttributeRef_AST, ATTRIBUTEREF);

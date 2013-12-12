@@ -489,11 +489,23 @@ public:
      *       are ARITY strings below the top of STACK MACHINE. Pop all of them
      *       off and generate code for printing them to file.
      * rslt: The top ARITY + 1 elements are popped off the STACK MACHINE.
+     * ------------------------------------------------------------
+     * inst: FIELD INSTANCETYPE VAR
+     * args: INSTANCETYPE (gcstring) represents the type of the instance whose
+     *       field is being accessed.
+     *       VAR (gcstring) represents the field to be accessed.
+     * desc: Assuming that there is an instance of a class at the top of the
+     *       STACK MACHINE of type INSTANCETYPE, pops this instance off the
+     *       stack machine and accesses its instance variable VAR. Places the
+     *       reference to this VAR at the top of the STACK MACHINE.
+     * rslt: The instance of type INSTANCETYPE is popped off the STACK MACHINE
+     *       and its instance variable VAR is placed on it.
      **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
     void emit (const int& instr, int arg);
     void emit (const int& instr, gcstring arg1, int arg2);
+    void emit (const int& instr, gcstring arg1, gcstring arg2);
 
     /** Outputs code to handle the start of a function call into my output
      *  stream. */
@@ -575,5 +587,6 @@ const int SETLBL = 9;
 const int EXPAND = 10;
 const int PRNT = 11;
 const int PRNTFILE = 12;
+const int FIELD = 13;
 
 #endif
