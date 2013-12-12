@@ -54,6 +54,12 @@ protected:
 
     NODE_CONSTRUCTORS (Expr_List_AST, AST_Tree);
 
+    void exprCodeGen (int depth) {
+        for_each_child_reverse (c, this) {
+            c->exprCodeGen (depth);
+        } end_for;
+    }
+
 };
 
 NODE_FACTORY (Expr_List_AST, EXPR_LIST);
