@@ -223,6 +223,27 @@ protected:
             << "};" << endl << endl;
         AST::runtimeDataStructGen (out);
     }
+
+    void defCodeGen (int depth) {
+        gcstring defname = getDecl ()->getRuntimeName ();
+        VMLabel lbl = VM->asLabel (defname);
+        // recursively cgen any nested definitions
+        for_each_child (c, child (3)) {
+            c->defCodeGen (depth + 1);
+        } end_for;
+        // start with my definition
+        VM->placeLabel (lbl);
+        VM->emitDefPrologue (defname);
+        // bind params to variables
+        for_each_child (c, child (1)) {
+            c->stmtCodeGen (depth + 1);
+            VM->emit (MOVE);
+            VM->emit (POP);
+        } end_for;
+        // cgen main body
+        child (3)->stmtCodeGen (depth + 1);
+        VM->emitDefEpilogue (defname);
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
