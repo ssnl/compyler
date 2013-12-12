@@ -50,20 +50,20 @@ protected:
         declNamePreprocess (names);
         runtimeDataStructGen (out);
 
-        // VMLabel start = VM->asLabel("START");
-        // VM->emitMainPrologue();
-        // VM->emit(GOTO, start);
-        // for_each_child (c, this) {
-        //     c->defCodeGen (startDepth);
-        // } end_for;
-        // VM->newline(2);
-        // VM->placeLabel(start);
-        // for_each_child (c, this) {
-        //     c->stmtCodeGen (startDepth);
-        // } end_for;
+        VMLabel start = VM->asLabel("START");
+        VM->emitMainPrologue();
+        VM->emit(GOTO, start);
+        for_each_child (c, this) {
+            c->defCodeGen (startDepth);
+        } end_for;
+        VM->newline(2);
+        VM->placeLabel(start);
+        for_each_child (c, this) {
+            c->stmtCodeGen (startDepth);
+        } end_for;
 
-        // VM->emitMainEpilogue();
-        VM->emitRuntime();
+        VM->emitMainEpilogue();
+        // VM->emitRuntime();
     }
 
     /** Sets the depth of all my member declarations to be CURRDEPTH, and

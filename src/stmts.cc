@@ -204,6 +204,16 @@ protected:
             << "};" << endl << endl;
         AST::runtimeDataStructGen (out);
     }
+
+    void stmtCodeGen (int depth) {
+        gcstring defname = getDecl ()->getRuntimeName ();
+        VMLabel lbl = VM->asLabel (defname);
+
+        VM->placeLabel (lbl);
+        VM->emitDefPrologue (defname);
+
+        VM->emitDefEpilogue (defname);
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -454,6 +464,26 @@ protected:
         if (!getId ()->setType (child (1)->asType ()))
             error (this, "incompatible type assignment");
         return this;
+    }
+
+
+    void exprCodeGen (int depth) {
+        // e.g. ((__main__*) cf->sl->sl) -> x
+        gcstring expr;
+        gcstring runtimeName = child (0)->getDecl ()->getRuntimeName ();
+        gcstring frameName;
+        if (getDecl ()->getContainer ()->getContainer () != NULL) {
+            frameName = getDecl ()->getContainer ()->getRuntimeName();
+        } else {
+            frameName = "__main__";
+        }
+        int myDepth = getDecl ()->getDepth ();
+
+        gcstring frameString = VM->staticLinkStr (myDepth, depth);
+        expr += VM->typeCastStr (frameName + "*", frameString);
+        expr = VM->fieldAccessStr (expr, runtimeName);
+
+        VM->emit (PUSH, expr);
     }
 
 };

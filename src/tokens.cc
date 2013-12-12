@@ -189,25 +189,6 @@ protected:
         }
     }
 
-    void exprCodeGen (int depth) {
-        // e.g. ((__main__*) cf->sl->sl) -> x
-        gcstring expr;
-        gcstring runtimeName = getDecl ()->getRuntimeName ();
-        gcstring frameName;
-        if (getDecl ()->getContainer ()->getContainer () != NULL) {
-            frameName = getDecl ()->getContainer ()->getRuntimeName();
-        } else {
-            frameName = "__main__";
-        }
-        int myDepth = getDecl ()->getDepth ();
-
-        gcstring frameString = VM->staticLinkStr (myDepth, depth);
-        expr += VM->typeCastStr (frameName + "*", frameString);
-        expr = VM->fieldAccessStr (expr, runtimeName);
-
-        VM->emit (PUSH, expr);
-    }
-
     AST_Ptr resolveSimpleIds (const Environ* env) {
         gcstring name = as_string ();
         if (leaveUnresolved (name))
@@ -314,6 +295,26 @@ protected:
         else
             return consTree (CALL, make_id ("__None__", loc ()),
                              consTree (EXPR_LIST));
+    }
+
+
+    void exprCodeGen (int depth) {
+        // e.g. ((__main__*) cf->sl->sl) -> x
+        gcstring expr;
+        gcstring runtimeName = getDecl ()->getRuntimeName ();
+        gcstring frameName;
+        if (getDecl ()->getContainer ()->getContainer () != NULL) {
+            frameName = getDecl ()->getContainer ()->getRuntimeName();
+        } else {
+            frameName = "__main__";
+        }
+        int myDepth = getDecl ()->getDepth ();
+
+        gcstring frameString = VM->staticLinkStr (myDepth, depth);
+        expr += VM->typeCastStr (frameName + "*", frameString);
+        expr = VM->fieldAccessStr (expr, runtimeName);
+
+        VM->emit (PUSH, expr);
     }
 
 private:
