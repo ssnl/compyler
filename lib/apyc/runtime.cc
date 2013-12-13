@@ -1357,19 +1357,23 @@ __standard_file__($Reference* K) {
         return STDERR;
 }
 
-/** Garbage collection sweep routine */
+/** Garbage collection sweep routine. Every $Object's reference counter is
+ *  either reset to zero after execution if it has 0 or 1 references, otherwise
+ *  it is removed from the HEAP and reclaimed. */
 void
 __gc__() {
     for (int i = 0; i < SM.size(); i++) {
         SM[i]->get()->incrCounter();
     }
     for (int i = 0; i < HEAP.size(); i++) {
-        if (HEAP[i].getCounter() < 1) {
-            HEAP[i]->clean();
-            delete HEAP[i];
-        }
+        HEAP[i]->get()->incrCounter();
     }
-    for (int i = 0; i < SM.size(); i++) {
-        SM[i]->get()->decrCounter();
+    for (int i = 0; i < HEAP.size(); i++) {
+        if (HEAP[i]->get()->getCounter() < 2) {
+            HEAP[i].clean();
+            delete HEAP[i];
+        } else {
+            HEAP[i]->get()->setCounter(0);
+        }
     }
 }
