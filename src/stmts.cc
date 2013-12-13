@@ -709,18 +709,26 @@ protected:
 
     void stmtCodeGen (int depth) {
 
-        child (1)->exprCodeGen (depth);
-        gcstring lstr = "SM.back()->get()->size()";
-        gcstring vstr = "i_" + VM->tostr (VM->getForNestLvl ());
-        VMLabel elseLbl = VM->newLabel ("ELSE");
         VMLabel exitLbl = VM->newLabel ("EXIT");
+        stringstream ss;
+        ss << "new $Label(&&" << exitLbl << ")";
+        gcstring itstr = "SM[SM.size()-2]";
+        gcstring lstr = itstr + "->get()->size()";
+        gcstring vstr = "_i_" + VM->tostr (VM->getForNestLvl ());
+
+        // second in stack: iterable
+        child (1)->exprCodeGen (depth);
+        // first in stack: $Label to exit
+        VM->emit (ALLOC, ss.str ());
+        VM->emit (PUSH);
         // main for loop prologue
         VM->code ("for (int " + vstr + " = 0; " + vstr + " < " + lstr + "; " +
             vstr + "++) {");
         VM->incrForNestLvl ();
         VM->incrIndentShift ();
         // main for loop body
-        VM->code ("SM.push_back(SM.back()->get()->getElement(" + vstr + "));");
+        VM->code ("SM.push_back(" + itstr + "->get()->getElement(" + vstr +
+            "));");
         child (0)->exprCodeGen (depth);
         VM->emit (MOVE);
         VM->emit (POP);
@@ -728,18 +736,18 @@ protected:
         // main for loop epilogue
         VM->decrForNestLvl ();
         VM->decrIndentShift ();
-        VM->code (";");
+        // POP the label
         VM->code ("}");
         // else and exit
-        VM->emit (GTE, elseLbl);
-        VM->emit (GOTO, exitLbl);
-        VM->placeLabel (elseLbl);
         if (arity() > 3) {
             child (3)->stmtCodeGen (depth);
         } else {
             VM->newline ();
         }
+        VM->emit (POP);
         VM->placeLabel (exitLbl);
+        // POP the iterable
+        VM->emit (POP);
     }
 
     void collectDecls (Decl* enclosing) {
@@ -763,13 +771,12 @@ protected:
 
     void stmtCodeGen (int depth) {
 
-        stringstream ss;
         VMLabel elseLbl = VM->newLabel ("ELSE");
         VMLabel loopLbl = VM->newLabel ("LOOP");
-        VMLabel epilLbl = VM->newLabel ("EPIL");
         VMLabel exitLbl = VM->newLabel ("EXIT");
+        stringstream ss;
         ss << "new $Label(&&" << exitLbl << ")";
-
+        // first in stack: $Label to exit
         VM->emit (ALLOC, ss.str ());
         VM->emit (PUSH);
         child (0)->exprCodeGen (depth);
@@ -778,7 +785,7 @@ protected:
         VM->placeLabel (loopLbl);
         child (1)->stmtCodeGen (depth);
         child (0)->exprCodeGen (depth);
-        VM->emit (GTZ, epilLbl);
+        VM->emit (GTZ, elseLbl);
         VM->emit (GOTO, loopLbl);
         // else and exit
         VM->placeLabel (elseLbl);
@@ -787,8 +794,7 @@ protected:
         } else {
             VM->newline ();
         }
-        // epilogue: pop the label
-        VM->placeLabel (epilLbl);
+        // POP the $Label off the stack
         VM->emit (POP);
         // breaks jump straight to the exit
         VM->placeLabel (exitLbl);
