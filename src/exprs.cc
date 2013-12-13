@@ -127,6 +127,19 @@ public:
         return this;
     }
 
+    void exprCodeGen (int depth) {
+        for (int i = numActuals () - 1; i >= 0; i--)
+            actualParam (i)->exprCodeGen (depth);
+        calledExpr ()->exprCodeGen (depth);
+        VM->emit (FCALL);
+    }
+
+    void stmtCodeGen (int depth) {
+        // FIXME
+        exprCodeGen (depth);
+        VM->emit (POP);
+    }
+
 };
 
 /** A function call. */
@@ -178,22 +191,6 @@ protected:
         else
             return dynamic_cast<Callable*>(call)
                 ->Callable::resolveTypes (context, resolved, ambiguities);
-    }
-
-    void exprCodeGen (int depth) {
-        // push args in reverse order onto stack
-        child (1)->exprCodeGen (depth);
-        // eval. callable, create new descriptor
-        child (0)->exprCodeGen (depth);
-        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) SM.pop_back()->get() )");
-        VM->emit (PUSH);
-        // call the function using the descriptor
-        VM->emit (FCALL);
-    }
-
-    void stmtCodeGen (int depth) {
-        exprCodeGen (depth);
-        VM->emit (POP);
     }
 
 };
