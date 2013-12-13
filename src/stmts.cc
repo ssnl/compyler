@@ -724,7 +724,7 @@ protected:
             VM->comment("Pushing return value onto stack machine");
             child (0)->exprCodeGen (depth);
         }
-        
+
         // Return to where this function is called.
         VM->emitDefEpilogue (getContainer ()->getRuntimeName ());
     }
