@@ -321,6 +321,13 @@ protected:
         VM->emit (PUSH, expr);
     }
 
+    void classCodeGen (int depth) {
+        // e.g. $Foo_0$.x_0$
+        gcstring runtimeName = getDecl ()->getRuntimeName ();
+        gcstring className = getDecl ()->getContainer ()->getRuntimeName();
+        VM->emit (PUSH, "$" + className + "." + runtimeName);
+    }
+
 private:
 
     Decl_Vector _me;

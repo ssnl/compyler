@@ -248,6 +248,18 @@ protected:
         VM->emit (SETSL, "cf");
         VM->emit (POP);
     }
+
+    void classCodeGen (int depth) {
+        gcstring defname = getDecl ()->getRuntimeName ();
+        gcstring className = getDecl ()->getContainer ()->getRuntimeName ();
+        VM->emit (ALLOC, "new FuncDesc");
+        VM->emit (PUSH);
+        VM->emit (PUSH, "$" + className + "." + defname);
+        VM->emit (MOVE);
+        VM->emit (SETLBL, VM->asLabel (defname));
+        VM->emit (SETSL, "cf");
+        VM->emit (POP);
+    }
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -402,6 +414,18 @@ protected:
             <<  me->getRuntimeName () << " $" << me->getRuntimeName () << ";"
             << endl << endl;
         AST::runtimeDataStructGen (out);
+    }
+
+    void stmtCodeGen (int depth) {
+        for_each_child (c, child (2)) {
+            c->classCodeGen (depth);
+        } end_for;
+    }
+
+    void defCodeGen (int depth) {
+        for_each_child (c, child(2)) {
+            c->defCodeGen (depth);
+        } end_for;
     }
 
 private:
@@ -578,6 +602,24 @@ protected:
         } else {
             child (1)->exprCodeGen (depth);
             child (0)->exprCodeGen (depth);
+            VM->emit (MOVE);
+        }
+    }
+
+    void classCodeGen (int depth) {
+        if (child (0)->isTargetList ()) {
+            int tuplesize = child (0)->arity ();
+            child (1)->exprCodeGen (depth);
+            VM->emit (EXPAND, tuplesize);
+            for_each_child (c, child (0)) {
+                c->classCodeGen (depth);
+                VM->emit (MOVE);
+            } end_for;
+            VM->emit (POP);
+            child (0)->exprCodeGen (depth);
+        } else {
+            child (1)->exprCodeGen (depth);
+            child (0)->classCodeGen (depth);
             VM->emit (MOVE);
         }
     }
