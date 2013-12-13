@@ -246,9 +246,7 @@ protected:
         child (3)->stmtCodeGen (depth + 1);
         VM->emitDefEpilogue (defname);
         // recursively cgen any nested definitions
-        for_each_child (c, child (3)) {
-            c->defCodeGen (depth + 1);
-        } end_for;
+        child (3)->defCodeGen (depth + 1);
     }
 
     void stmtCodeGen (int depth) {
