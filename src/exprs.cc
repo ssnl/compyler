@@ -378,6 +378,48 @@ protected:
     void addTargetDecls (Decl* enclosing) {
     }
 
+    void exprCodeGen (int depth) {
+        bool startMiss = actualParam (1)->isMissing ();
+        bool endMiss = actualParam (2)->isMissing ();
+        int nativeArity;
+        stringstream ss;
+
+        if (startMiss && endMiss) {
+            ss << "new " << intDecl->getRuntimeName () << " (0)";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+            nativeArity = 2;
+        } else if (startMiss && !endMiss){
+            actualParam (2)->exprCodeGen (depth);
+            ss << "new " << intDecl->getRuntimeName () << " (0)";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+            nativeArity = 3;
+        } else if (!startMiss && endMiss) {
+            actualParam (1)->exprCodeGen (depth);
+            nativeArity = 2;
+        } else {
+            actualParam (2)->exprCodeGen (depth);
+            actualParam (1)->exprCodeGen (depth);
+            nativeArity = 3;
+        }
+
+        actualParam (0)->exprCodeGen (depth);
+
+        gcstring typeName = actualParam (0)->getType ()->
+                                binding ()->getDecl ()->getName ();
+
+        if (typeName == listDecl->getName ())
+            typeName = "list";
+        else
+            typeName = "str";
+
+        ss.str ("");
+        ss << "__getslice__" << typeName << "__";
+
+        VM->emit (NTV, ss.str (), nativeArity);
+    }
+
 };
 
 NODE_FACTORY (Slicing_AST, SLICING);
