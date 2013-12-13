@@ -41,6 +41,9 @@ $Reference* tmp_alloc;
 $Reference* tmp_res;
 /** Stores a temp reference to the result of a comparison. */
 $Reference* tmp_cmp;
+/** Stores a temp reference to the result of a left comparison. */
+$Reference* tmp_left;
+$Reference* tmp_right;
 /** Stores a tuple to be expanded. */
 tuple_0$* tmp_tup;
 /** Stores a file to be printed to. */

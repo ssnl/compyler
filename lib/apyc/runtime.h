@@ -60,6 +60,8 @@ extern $Reference* src;
 extern $Reference* tmp_alloc;
 extern $Reference* tmp_res;
 extern $Reference* tmp_cmp;
+extern $Reference* tmp_left;
+extern $Reference* tmp_right;
 extern tuple_0$* tmp_tup;
 extern file_0$* tmp_file;
 extern stringstream tmp_ss;

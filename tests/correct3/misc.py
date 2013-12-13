@@ -1,8 +1,4 @@
-class A:
-  x = 3
-
-a = A()
-print a.x
+print 1 < 2 < 3 < 4
 
 # class A:
 #   x = 3

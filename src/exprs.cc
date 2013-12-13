@@ -292,6 +292,27 @@ protected:
         return boolDecl->asType ();
     }
 
+    void exprCodeGen (int depth) {
+        VMLabel endLbl = VM->newLabel ();
+        VM->emit(ALLOC, "new $Label(&&" + endLbl + ")");
+        VM->emit(PUSH);
+        actualParam(0)->exprCodeGen(depth);
+        actualParam(1)->exprCodeGen(depth);
+        VM->code("tmp_right = SM.back();");
+        VM->emit(POP);
+        VM->code("tmp_left = SM.back();");
+        VM->emit(POP);
+        VM->code("SM.push_back(tmp_right);");
+        VM->code("SM.push_back(tmp_left);");
+        calledExpr ()->exprCodeGen (depth);
+        VM->emit (FCALL);
+        VM->placeLabel(endLbl);
+        VM->code("tmp_right = SM.back();");
+        VM->emit(POP);
+        VM->emit(POP);
+        VM->code("SM.push_back(tmp_right);");
+    }
+
 };
 
 NODE_FACTORY (Compare_AST, COMPARE);
@@ -308,6 +329,24 @@ protected:
 
     Type_Ptr computeType () {
         return actualParam (1)->getType ();
+    }
+
+    void exprCodeGen (int depth) {
+        actualParam(0)->exprCodeGen(depth);
+        actualParam(1)->exprCodeGen(depth);
+        VM->code("tmp_right = SM.back();");
+        VM->emit(POP);
+        VM->code("tmp_left = SM.back();");
+        VM->emit(POP);
+        VM->code("SM.push_back(tmp_right);");
+        VM->code("SM.push_back(tmp_left);");
+        calledExpr ()->exprCodeGen (depth);
+        VM->emit (FCALL);
+        VM->code("if ( !SM.back()->get()->asBool() ) {");
+        VM->code("goto *((($Label *) SM[SM.size() - 2]->get())->label);", 8);
+        VM->code("}");
+        VM->emit(POP);
+        VM->code("SM.push_back(tmp_right);");
     }
 
 };
