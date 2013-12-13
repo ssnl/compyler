@@ -84,6 +84,8 @@ public:
     /** Return the class name. Helper method for equals(). */
     virtual string className() {return "Object";}
 
+    virtual $Reference* getElement(int k);
+
     /** Check equality between THIS and OTHER. */
     virtual bool equals(void* other) {return this == other;}
 
@@ -261,6 +263,8 @@ public:
 
     void setValue(string val) {value = val;}
 
+    $Reference* getElement(int k);
+
     /** String addition */
     $Reference* operator+ (str_0$ y);
 
@@ -314,6 +318,8 @@ public:
 
     int getHigh() {return end;}
 
+    $Reference* getElement(int k);
+
     int size() { return end - start;}
 
     string toString(bool contained=false);
@@ -341,6 +347,8 @@ public:
     $Reference* getItem(int k);
 
     $Reference* getSlice(int L, int U);
+
+    $Reference* getElement(int k);
 
     void clear() {value.clear();}
 

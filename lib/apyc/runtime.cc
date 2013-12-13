@@ -421,6 +421,14 @@ str_0$::getSlice(int startIndex, int endIndex) {
     return ref;
 }
 
+$Reference*
+str_0$::getElement(int k) {
+    str_0$* res = new str_0$(value.substr(k, 1));
+    $Reference* ref = new $Reference(res);
+    HEAP.push_back(ref);
+    return ref;    
+}
+
 string
 str_0$::toString(bool contained) {
     if (contained)
@@ -451,6 +459,14 @@ range_0$::toString(bool contained) {
     return ss.str();
 }
 
+$Reference*
+range_0$::getElement(int k) {
+    int_0$* res = new int_0$(start + k);
+    $Reference* ref = new $Reference(res);
+    HEAP.push_back(ref);
+    return ref;    
+}
+
 bool
 range_0$::equals(void* other) {
     return this == other;
@@ -466,6 +482,11 @@ list_0$::getItem(int k) {
     else if (k < 0)
         k += s;
     return value[k];
+}
+
+$Reference*
+list_0$::getElement(int k) {
+    return getItem(k);    
 }
 
 $Reference*
