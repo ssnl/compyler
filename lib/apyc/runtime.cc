@@ -916,7 +916,7 @@ __donotcall__(void* x) {
 
 $Reference*
 __None__() {
-    int_0$* res = new int_0$(0);
+    none_0$* res = new none_0$();
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
     return ref;

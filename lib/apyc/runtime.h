@@ -312,6 +312,13 @@ public:
     bool asBool() {return (value != 0) ? true : false;}
 };
 
+class none_0$: public int_0$ {
+public:
+    none_0$ () { value = 0; }
+
+    string toString(bool contained=false) { return "None"; };
+};
+
 /** The wrapper class for primitive type str.*/
 class str_0$: public $Object {
 protected:
