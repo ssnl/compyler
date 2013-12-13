@@ -53,6 +53,11 @@ int_0$* __ZERO__ = new int_0$(0);
 /** Stores the constant boolean value of False. */
 bool_0$* __FALSE__ = new bool_0$(false);
 
+void runtimeErrorHandler( int signum ) {
+    cout << "Runtime Exception (" << signum << ") received.\n";
+   exit(signum);
+}
+
 /* Class $Object */
 
 string

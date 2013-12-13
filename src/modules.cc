@@ -43,7 +43,8 @@ protected:
     /** Top-level code generation routine.  */
     void outerCodeGen (ostream& out) {
         VM = new VirtualMachine (out);
-        out << "#include \"runtime.h\"" << endl << endl;
+        out << "#include <signal.h>"<< endl
+            << "#include \"runtime.h\"" << endl << endl;
         int startDepth = 0;
         gcmap<gcstring, int> names;
         declDepthPreprocess (startDepth);

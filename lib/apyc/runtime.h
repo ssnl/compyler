@@ -65,6 +65,8 @@ extern stringstream tmp_ss;
 extern int_0$* __ZERO__;
 extern $Object* cmp;
 
+extern void runtimeErrorHandler( int signum );
+
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
 public:

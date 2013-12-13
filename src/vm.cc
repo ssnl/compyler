@@ -10,7 +10,7 @@
 using namespace std;
 
 static const bool DEBUG_OUT = true;
-static const bool DEBUG_DATA = true;
+static const bool DEBUG_DATA = false;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -301,7 +301,7 @@ VirtualMachine::placeLabel (VMLabel label)
 {
     newline();
     code(label + ":", 0);
-    code(";");
+    code(";"    );
 }
 
 void
@@ -319,6 +319,9 @@ VirtualMachine::emitMainPrologue ()
 {
     code("int main (int argc, char *argv[]) {", 0);
     newline();
+    code("signal(SIGSEGV, runtimeErrorHandler);");
+    code("signal(SIGFPE, runtimeErrorHandler);");
+    code("signal(SIGABRT, runtimeErrorHandler);");
     comment("runtime prologue: set up __main__ frame");
     code("tmp_frame = new Frame;");
     code("tmp_frame->locals = new __main__;");
