@@ -94,6 +94,9 @@ public:
 
     int getCounter () { return _counter; }
 
+    void setCounter (int c) { _counter = c; }
+
+
 private:
 
     int _counter;
