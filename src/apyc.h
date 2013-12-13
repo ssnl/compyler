@@ -620,5 +620,6 @@ const int PRNTFILE = 12;
 const int FIELD = 13;
 const int GTE = 14;
 const int INSERT = 15;
+const int GTL = 16;
 
 #endif

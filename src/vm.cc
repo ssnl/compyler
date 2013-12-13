@@ -34,6 +34,12 @@ VirtualMachine::emit (const int& instr)
             code("SM.push_back( HEAP[HEAP.size()-1] );");
             break;
 
+        case GTL:
+            comment("jumping to label in top of stack");
+            code("goto *((($Label*) SM.back()->get())->label);");
+            code("SM.pop_back();");
+            break;
+
         case FCALL:
             comment("calling function");
             rlabel = newLabel("R");
@@ -295,6 +301,7 @@ VirtualMachine::placeLabel (VMLabel label)
 {
     newline();
     code(label + ":", 0);
+    code(";");
 }
 
 void

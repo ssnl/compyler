@@ -746,6 +746,7 @@ protected:
         }
         VM->emit (POP);
         VM->placeLabel (exitLbl);
+        VM->code (";");
         // POP the iterable
         VM->emit (POP);
     }
@@ -798,6 +799,7 @@ protected:
         VM->emit (POP);
         // breaks jump straight to the exit
         VM->placeLabel (exitLbl);
+        VM->code (";");
     }
 };
 
@@ -806,7 +808,7 @@ NODE_FACTORY (While_AST, WHILE);
 
 /***** RETURN *****/
 
-/**  return EXPR */
+/**  return statement */
 class Return_AST : public AST_Tree {
 protected:
 
@@ -854,3 +856,22 @@ protected:
 
 NODE_FACTORY (Return_AST, RETURN);
 
+/***** BREAK *****/
+
+/**  break statement */
+class Break_AST : public AST_Tree {
+protected:
+
+    NODE_CONSTRUCTORS (Break_AST, AST_Tree);
+
+    void stmtCodeGen (int depth) {
+        exprCodeGen(depth);
+    }
+
+    void exprCodeGen (int depth) {
+        VM->emit (GTL);
+    }
+
+};
+
+NODE_FACTORY (Break_AST, BREAK);
