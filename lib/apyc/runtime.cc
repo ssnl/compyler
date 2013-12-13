@@ -55,7 +55,7 @@ bool_0$* __FALSE__ = new bool_0$(false);
 
 void runtimeErrorHandler( int signum ) {
     cout << "Runtime Exception (" << signum << ") received.\n";
-   exit(signum);
+   exit(1);
 }
 
 /* Class $Object */
