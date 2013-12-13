@@ -716,6 +716,19 @@ protected:
         return this;
     }
 
+    void exprCodeGen (int depth) {
+        // Push the return value, if it exists, onto stack.
+        VM->comment("Returning from this function");
+        if (!(child (0)->isMissing ())) {
+            VM->newline();
+            VM->comment("Pushing return value onto stack machine");
+            child (0)->exprCodeGen (depth);
+        }
+        
+        // Return to where this function is called.
+        VM->emitDefEpilogue (getContainer ()->getRuntimeName ());
+    }
+
 };
 
 NODE_FACTORY (Return_AST, RETURN);
