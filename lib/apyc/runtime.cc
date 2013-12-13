@@ -1357,3 +1357,19 @@ __standard_file__($Reference* K) {
         return STDERR;
 }
 
+/** Garbage collection sweep routine */
+void
+__gc__() {
+    for (int i = 0; i < SM.size(); i++) {
+        SM[i]->get()->incrCounter();
+    }
+    for (int i = 0; i < HEAP.size(); i++) {
+        if (HEAP[i].getCounter() < 1) {
+            HEAP[i]->clean();
+            delete HEAP[i];
+        }
+    }
+    for (int i = 0; i < SM.size(); i++) {
+        SM[i]->get()->decrCounter();
+    }
+}
