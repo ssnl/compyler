@@ -192,22 +192,6 @@ protected:
                 ->Callable::resolveTypes (context, resolved, ambiguities);
     }
 
-    void exprCodeGen (int depth) {
-        // push args in reverse order onto stack
-        child (1)->exprCodeGen (depth);
-        // eval. callable, create new descriptor
-        child (0)->exprCodeGen (depth);
-        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) SM.back()->get() )");
-        VM->emit (POP);
-        VM->emit (PUSH);
-        // call the function using the descriptor
-        VM->emit (FCALL);
-    }
-
-    void stmtCodeGen (int depth) {
-        exprCodeGen (depth);
-        VM->emit (POP);
-    }
 };
 
 NODE_FACTORY (Call_AST, CALL);
@@ -225,21 +209,11 @@ protected:
     }
 
     void exprCodeGen (int depth) {
-        Decl* initDecl = child (0)->getDecl ();
-        gcstring initName = initDecl->getRuntimeName ();
-        gcstring clsName = initDecl->getContainer ()->getRuntimeName ();
-        // push the arguments (including new) to __init__ in reverse
-        child (1)->exprCodeGen (depth);
-        // push the FuncDesc for __init__
-        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) (((" + clsName +
-            ") SM[SM.size() - 1])." + initName + "->get()) )");
-        VM->emit (PUSH);
+        Callable::exprCodeGen (depth);
+        for (int i = numActuals () - 1; i >= 0; i--)
+            actualParam (i)->exprCodeGen (depth);
+        calledExpr ()->exprCodeGen (depth);
         VM->emit (FCALL);
-    }
-
-    void stmtCodeGen (int depth) {
-        exprCodeGen (depth);
-        VM->emit (POP);
     }
 
 };
@@ -262,7 +236,7 @@ protected:
     }
 
     void exprCodeGen (int depth) {
-        gcstring clsName = getType ()->getDecl ()->getRuntimeName ();
+        gcstring clsName = child (0)->getDecl ()->getRuntimeName ();
         // create a new instance of the class
         VM->emit (ALLOC, "new " + clsName + "( $" + clsName + " )");
         VM->emit (PUSH);

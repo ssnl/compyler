@@ -1,4 +1,8 @@
-print [1, 2, 3]
+class A:
+  x = 3
+
+a = A()
+print a.x
 
 # class A:
 #   x = 3
