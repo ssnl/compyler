@@ -217,18 +217,12 @@ protected:
         Decl* initDecl = child (0)->getDecl ();
         gcstring initName = initDecl->getRuntimeName ();
         gcstring clsName = initDecl->getContainer ()->getRuntimeName ();
-        // push the arguments (not including new) to __init__
-        for_each_child_reverse (c, this) {
-            if (c_i_ != 0) {
-                c->exprCodeGen (depth);
-            }
-        } end_for;
-        // create a new instance of the class
-        VM->emit (ALLOC, "new " + clsName + "( $" + clsName + " )");
-        VM->emit (PUSH);
+        // push the arguments (including new) to __init__ in reverse
+        child (1)->exprCodeGen (depth);
         // push the FuncDesc for __init__
-        VM->emit (PUSH, "new FuncDesc( (FuncDesc*) (((" + clsName +
+        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) (((" + clsName +
             ") SM[SM.size() - 1])." + initName + "->get()) )");
+        VM->emit (PUSH);
         VM->emit (FCALL);
     }
 
@@ -254,6 +248,13 @@ protected:
             error (this, "inconsistent types");
         }
         return this;
+    }
+
+    void exprCodeGen (int depth) {
+        gcstring clsName = getType ()->getDecl ()->getRuntimeName ();
+        // create a new instance of the class
+        VM->emit (ALLOC, "new " + clsName + "( $" + clsName + " )");
+        VM->emit (PUSH);
     }
 
 };
