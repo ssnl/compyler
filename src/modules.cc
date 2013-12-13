@@ -83,6 +83,7 @@ protected:
      *  Determines the new name using NAMES to create a unique identifier. */
     void declNamePreprocess (gcmap<gcstring, int>& names) {
         Decl* me = mainModule;
+        me->setRuntimeName ("__main__");
         Decl_Vector members = me->getEnviron ()->get_members ();
         for (int i = 0; i < members.size (); i++)
             members[i]->setupRuntimeName(names);

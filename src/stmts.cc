@@ -460,6 +460,14 @@ protected:
         AST::runtimeDataStructGen (out);
     }
 
+    void stmtCodeGen (int depth) {
+        child (2)->stmtCodeGen (depth);
+    }
+
+    void defCodeGen (int depth) {
+        child (2)->defCodeGen (depth);
+    }
+
 private:
     /** Add declaration of method init to me. */
     void addInit () {

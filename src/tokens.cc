@@ -298,21 +298,18 @@ protected:
     }
 
     void exprCodeGen (int depth) {
-        // e.g. ((__main__*) cf->sl->sl) -> x
+        Decl* me = getDecl ();
         gcstring expr;
-        gcstring runtimeName = getDecl ()->getRuntimeName ();
-        gcstring frameName;
-        if (getDecl ()->getContainer ()->getContainer () != NULL) {
-            frameName = getDecl ()->getContainer ()->getRuntimeName();
-        } else {
-            frameName = "__main__";
-        }
-        int myDepth = getDecl ()->getDepth ();
-
+        gcstring runtimeName = me->getRuntimeName ();
+        gcstring frameName = me->getContainer ()->getRuntimeName ();
+        int myDepth = me->getDepth ();
         gcstring frameString = VM->staticLinkStr (myDepth, depth);
-        expr += VM->typeCastStr (frameName + "*", frameString + "->locals");
-        expr = VM->fieldAccessStr (expr, runtimeName);
-
+        if (me->getContainer ()->isType ()) {
+            expr = VM->fieldAccessStr ("$" + frameName, runtimeName, ".");
+        } else {
+            expr += VM->typeCastStr (frameName + "*", frameString + "->locals");
+            expr = VM->fieldAccessStr (expr, runtimeName);
+        }
         VM->emit (PUSH, expr);
     }
 

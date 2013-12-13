@@ -3,3 +3,4 @@ class Foo:
   x::int = 6
   def __init__(self):
     pass
+
