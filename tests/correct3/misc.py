@@ -9,3 +9,10 @@
 # y = a.x     # just a normal attrref
 # a.foo() # rewritten as a call
 # A.foo   # rewritten to simply foo
+print "leo is a maniac"
+def foo():
+  pass
+
+foo()
+
+x = 3

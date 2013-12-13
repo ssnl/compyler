@@ -135,7 +135,6 @@ public:
     }
 
     void stmtCodeGen (int depth) {
-        // FIXME
         exprCodeGen (depth);
         VM->emit (POP);
     }

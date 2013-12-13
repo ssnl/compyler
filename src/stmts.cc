@@ -253,6 +253,9 @@ protected:
         }
         // cgen main body
         child (3)->stmtCodeGen (depth + 1);
+        VM->newline();
+        VM->comment("returning None by default");
+        VM->emit(NTV, "__None__", 0);
         VM->emitDefEpilogue (defname);
         // recursively cgen any nested definitions
         child (3)->defCodeGen (depth + 1);
