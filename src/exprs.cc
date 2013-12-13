@@ -509,9 +509,7 @@ protected:
         for_each_child_reverse(c, this) {
             c->exprCodeGen(depth);
         } end_for;
-        stringstream ss;
-        ss << "__tuple" << arity() << "__";
-        VM->emit(NTV, ss.str(), arity());
+        VM->emit(NTV, "__tuple__", arity());
     }
 
 };
@@ -584,7 +582,7 @@ protected:
             } end_for;
             stringstream ss;
             ss << "new " << intDecl->getRuntimeName () << " (";
-            ss << (arity()-1) << ")";
+            ss << arity() << ")";
             VM->emit (ALLOC, ss.str ());
             VM->emit (PUSH);
             VM->emit(NTV, "__list__", arity()+1);
@@ -629,6 +627,37 @@ protected:
         if (!setType (dictType))
             error (this, "type mismatch on dict display");
         return this;
+    }
+
+    void exprCodeGen (int depth) {
+        Type_Ptr keyType = getType()->typeParam(0);
+        gcstring keyTypeName;
+        stringstream ss;
+
+        if (keyType->isVariable() && keyType->binding() == keyType)
+            keyTypeName = "int";
+        else
+            keyTypeName = keyType->getDecl()->getName();
+
+        stringstream ss;
+        if (arity() == 0) {
+            ss << "__dict__empty__" << keyTypeName << "__";
+            VM->emit(NTV, ss.str(), 0);
+        } else {
+            for_each_child_reverse(c, this) {
+                c->child(1)->exprCodeGen(depth);
+                c->child(0)->exprCodeGen(depth);
+            } end_for;
+            
+            ss << "new " << intDecl->getRuntimeName () << " (";
+            ss << arity() << ")";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+
+            ss.str("");
+            ss << "__dict__" << keyTypeName << "__";
+            VM->emit(NTV, ss.str(), arity()+1);
+        }
     }
 
 };
