@@ -43,6 +43,8 @@ class $Label;
  *  label at runtime. */
 typedef void* Label;
 
+extern int argcount;
+extern char** args;
 
 extern vector<Frame*> STACK;
 extern vector<$Reference*> HEAP;

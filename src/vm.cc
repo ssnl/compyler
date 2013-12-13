@@ -319,6 +319,8 @@ VirtualMachine::emitMainPrologue ()
 {
     code("int main (int argc, char *argv[]) {", 0);
     newline();
+    code("argcount = argc;");
+    code("args = argv;");
     code("signal(SIGSEGV, runtimeErrorHandler);");
     code("signal(SIGFPE, runtimeErrorHandler);");
     code("signal(SIGABRT, runtimeErrorHandler);");
