@@ -746,9 +746,15 @@ protected:
             VM->comment("Pushing return value onto stack machine");
             child (0)->exprCodeGen (depth);
 
-            Decl* returnVal = child (0)->getDecl ();
-            if (returnVal->isOverloadable () 
-                        && depth <= returnType->getDepth ()) {
+            VM->newline();
+            VM->comment("Returning a new reference on stack machine");
+            VM->emit(ALLOC, "SM.back()->get()");
+            VM->emit(POP);
+            VM->emit(PUSH);
+
+            Decl* returnVal = child (0)->getType ()->binding ()->getDecl ();
+            if (returnVal->isOverloadable ()
+                        && depth <= returnVal->getDepth ()) {
                 handleClosure (depth);
             }
         } else {
@@ -772,14 +778,15 @@ protected:
         gcstring currFrame = "cf";
 
         VM->newline ();
-        VM->comment ("Returning a nested function")
-        VM->comment ("Handling closure")
+        VM->comment ("Returning a nested function");
+        VM->comment ("Handling closure");
         VM->emit (ALLOC, "new Frame ()");
         ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
-        ss << "new " << structName << " (" << currFrame << "->locals);";
+        ss << "new " << structName << " (*((";
+        ss << structName << "*) " << currFrame << "->locals));";
         VM->code (ss.str ());
         ss.str ("");
-        
+
         ss << "((FuncDesc*) SM.back()->get())->sl = ";
         ss << "(Frame*) (HEAP[HEAP.size()-1]->get());";
         VM->code (ss.str ());
@@ -789,11 +796,12 @@ protected:
             container = container->getContainer ();
             currFrame = currFrame + "->sl";
             structName = container->getRuntimeName ();
-            
+
             VM->newline();
             VM->emit (ALLOC, "new Frame ()");
             ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
-            ss << "new " << structName << " (" << currFrame << "->locals);";
+            ss << "new " << structName << " (*((";
+            ss << structName << "*) " << currFrame << "->locals));";
             VM->code (ss.str ());
             ss.str ("");
 

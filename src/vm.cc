@@ -301,7 +301,6 @@ VirtualMachine::emitMainEpilogue ()
        code("cout << \"Stack machine size: \" << SM.size() << endl;");
     }
     code("for (int i = 0; i < HEAP.size(); i++) {");
-    code("HEAP[i]->clean();", 8);
     code("delete HEAP[i];", 8);
     code("}");
     code("}", 0);

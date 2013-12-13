@@ -88,6 +88,16 @@ public:
     /** If applicable, return the size of THIS. */
     virtual int size() {return 0;}
 
+    void incrCounter () { _counter += 1; }
+
+    void decrCounter () { _counter -= 1; }
+
+    int getCounter () { return _counter; }
+
+private:
+
+    int _counter;
+
 };
 
 
@@ -96,15 +106,29 @@ class $Reference {
 private:
     $Object* _obj;
 public:
-    $Reference () {}
+    $Reference () { _obj = NULL; }
 
-    $Reference ($Object* obj) : _obj(obj) {}
+    $Reference ($Object* obj) : _obj(obj) {
+        _obj->incrCounter ();
+    }
 
-    void set ($Object* obj) { _obj = obj; }
+    void set ($Object* obj) {
+        if (_obj != NULL)
+            _obj->decrCounter ();
+        _obj = obj;
+        obj->incrCounter ();
+
+    }
 
     $Object* get () { return _obj; }
 
-    void clean () { delete _obj; }
+    ~$Reference () {
+        if (_obj != NULL) {
+            _obj->decrCounter();
+            if ( _obj->getCounter() == 0 )
+                delete _obj;
+        }
+    }
 };
 
 
