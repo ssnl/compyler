@@ -63,6 +63,7 @@ extern file_0$* tmp_file;
 extern stringstream tmp_ss;
 
 extern int_0$* __ZERO__;
+extern $Object* cmp;
 
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
