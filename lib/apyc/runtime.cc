@@ -462,7 +462,7 @@ str_0$::equals(void* other) {
 string
 range_0$::toString(bool contained) {
     stringstream ss;
-    ss << "range(";
+    ss << "xrange(";
     if (start == 0)
         ss << end;
     else
