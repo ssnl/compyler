@@ -180,6 +180,22 @@ protected:
                 ->Callable::resolveTypes (context, resolved, ambiguities);
     }
 
+    void exprCodeGen (int depth) {
+        // push args in reverse order onto stack
+        child (1)->exprCodeGen (depth);
+        // eval. callable, create new descriptor
+        child (0)->exprCodeGen (depth);
+        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) SM.pop_back()->get() )");
+        VM->emit (PUSH);
+        // call the function using the descriptor
+        VM->emit (FCALL);
+    }
+
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
+        VM->emit (POP);
+    }
+
 };
 
 NODE_FACTORY (Call_AST, CALL);
