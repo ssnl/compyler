@@ -43,7 +43,7 @@ $Reference* tmp_res;
 tuple_0$* tmp_tup;
 
 /** Stores a file to be printed to. */
-file_0* tmp_file;
+file_0$* tmp_file;
 
 /** Used to combine strings. */
 stringstream ss;

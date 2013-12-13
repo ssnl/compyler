@@ -62,11 +62,10 @@ extern FuncDesc* call;
 extern $Reference* dst;
 extern $Reference* src;
 
-<<<<<<< HEAD
 extern $Reference* tmp_alloc;
 extern $Reference* tmp_res;
 extern tuple_0$* tmp_tup;
-extern file_0* tmp_file;
+extern file_0$* tmp_file;
 
 extern stringstream ss;
 
