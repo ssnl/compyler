@@ -567,7 +567,7 @@ const int NTV = 7;
 const int SETSL = 8;
 const int SETLBL = 9;
 const int EXPAND = 10;
-const int PRINT = 11;
-const int PRINTFILE = 12;
+const int PRNT = 11;
+const int PRNTFILE = 12;
 
 #endif

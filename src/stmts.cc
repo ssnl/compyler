@@ -33,24 +33,19 @@ protected:
         return this;
     }
 
+    /* Prints a newline or not depending on the type of the print. */
     virtual void printEpilogue() {
-        /* Do Nothing */
+        /* Do nothing */
     }
 
     void stmtCodeGen (int depth) {
-        // Push the items to be printed onto stack
         child(1)->exprCodeGen(depth);
-
-        // Check if printing to file or not
         if (child(0)->isMissing()) {
-            // Not printing to file
-            VM->emit(PRINT, child(1)->arity());
+            VM->emit(PRNT, child(1)->arity());
         } else {
-            // Push file onto stack
-            child(1)->exprCodeGen(depth);
-            VM->emit(PRINTFILE, child(1)->arity());
+            child(0)->exprCodeGen(depth);
+            VM->emit(PRNTFILE, child(1)->arity());
         }
-        // Output newline depending on if this is print or println
         printEpilogue();
     }
 };

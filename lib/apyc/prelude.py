@@ -67,8 +67,9 @@ def truth(x)::bool:
 def __not__(x)::bool:
     native "__not__"
 
-True::bool = truth(1)
-False::bool = truth(0)
+# FIXME DONT DO IT!
+# True::bool = truth(1)
+# False::bool = truth(0)
 
 # Type range
 
@@ -213,7 +214,8 @@ class __sys__:
 
     argv::list of str = __argv__()
 
-sys::__sys__ = __sys__()
+# FIXME DONT DO IT
+# sys::__sys__ = __sys__()
 
 # Type dict
 
