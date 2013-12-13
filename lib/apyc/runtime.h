@@ -48,7 +48,7 @@ typedef void* Label;
 typedef struct Frame {
     Label ra;
     Frame* sl;
-    void* locals;
+    $Reference* locals;
 } Frame;
 
 extern vector<Frame*> STACK;
@@ -90,7 +90,7 @@ public:
 
 };
 
-/** A wrapper class that represents a reference to a $Object* */
+/** A wrapper class that represents a reference to a $Object. */
 class $Reference {
 private:
     $Object* _obj;
@@ -143,38 +143,38 @@ public:
     void setValue(bool val) {value = val;}
 
     /** Boolean addition */
-    bool_0$* operator+ (bool_0$ y);
+    $Reference* operator+ (bool_0$ y);
 
     /** Boolean subtraction */
-    bool_0$* operator- (bool_0$ y);
+    $Reference* operator- (bool_0$ y);
 
     /** Boolean multiplication */
-    bool_0$* operator* (bool_0$ y);
+    $Reference* operator* (bool_0$ y);
 
     /** Boolean division */
-    bool_0$* operator/ (bool_0$ y);
+    $Reference* operator/ (bool_0$ y);
 
     /** Boolean modulus */
-    bool_0$* operator% (bool_0$ y);
+    $Reference* operator% (bool_0$ y);
 
-    bool_0$* operator- ();
+    $Reference* operator- ();
 
     /** Negation */
-    bool_0$* operator! ();
+    $Reference* operator! ();
 
     /** Comparison */
 
-    bool_0$* operator< (bool_0$ y);
+    $Reference* operator< (bool_0$ y);
 
-    bool_0$* operator> (bool_0$ y);
+    $Reference* operator> (bool_0$ y);
 
-    bool_0$* operator<= (bool_0$ y);
+    $Reference* operator<= (bool_0$ y);
 
-    bool_0$* operator>= (bool_0$ y);
+    $Reference* operator>= (bool_0$ y);
 
-    bool_0$* operator== (bool_0$ y);
+    $Reference* operator== (bool_0$ y);
 
-    bool_0$* operator!= (bool_0$ y);
+    $Reference* operator!= (bool_0$ y);
 
     string toString(bool contained=false);
 
@@ -204,36 +204,38 @@ public:
     $Reference* operator+ (int_0$ y);
 
     /** Integer subtraction */
-    int_0$* operator- (int_0$ y);
+    $Reference* operator- (int_0$ y);
 
     /** Integer multiplication */
-    int_0$* operator* (int_0$ y);
+    $Reference* operator* (int_0$ y);
 
     /** Return a str wrapper that is Y repeated THIS times */
-    str_0$* operator* (str_0$ y);
+    $Reference* operator* (str_0$ y);
 
     /** Integer division */
-    int_0$* operator/ (int_0$ y);
+    $Reference* operator/ (int_0$ y);
 
     /** Integer modulus */
-    int_0$* operator% (int_0$ y);
+    $Reference* operator% (int_0$ y);
 
     /** Negation */
-    int_0$* operator- ();
+    $Reference* operator- ();
+
+    $Reference* operator+ ();
 
     /** Comparison */
 
-    bool_0$* operator< (int_0$ y);
+    $Reference* operator< (int_0$ y);
 
-    bool_0$* operator> (int_0$ y);
+    $Reference* operator> (int_0$ y);
 
-    bool_0$* operator<= (int_0$ y);
+    $Reference* operator<= (int_0$ y);
 
-    bool_0$* operator>= (int_0$ y);
+    $Reference* operator>= (int_0$ y);
 
-    bool_0$* operator== (int_0$ y);
+    $Reference* operator== (int_0$ y);
 
-    bool_0$* operator!= (int_0$ y);
+    $Reference* operator!= (int_0$ y);
 
     string toString(bool contained=false);
 
@@ -258,26 +260,26 @@ public:
     void setValue(string val) {value = val;}
 
     /** String addition */
-    str_0$* operator+ (str_0$ y);
+    $Reference* operator+ (str_0$ y);
 
     /** Return a str wrapper that is THIS repeated Y times */
-    str_0$* operator* (int_0$ y);
+    $Reference* operator* (int_0$ y);
 
     /** Comparison */
 
-    bool_0$* operator< (str_0$ y);
+    $Reference* operator< (str_0$ y);
 
-    bool_0$* operator> (str_0$ y);
+    $Reference* operator> (str_0$ y);
 
-    bool_0$* operator<= (str_0$ y);
+    $Reference* operator<= (str_0$ y);
 
-    bool_0$* operator>= (str_0$ y);
+    $Reference* operator>= (str_0$ y);
 
-    bool_0$* operator== (str_0$ y);
+    $Reference* operator== (str_0$ y);
 
-    bool_0$* operator!= (str_0$ y);
+    $Reference* operator!= (str_0$ y);
 
-    str_0$* getSlice(int start, int end);
+    $Reference* getSlice(int start, int end);
 
     string toString(bool contained=false);
 
@@ -324,19 +326,19 @@ public:
 /** The wrapper class for primitive type list.*/
 class list_0$: public $Object {
 protected:
-    vector<$Object*> value;
+    vector<$Reference*> value;
 public:
     list_0$ () : value() {}
 
-    vector<$Object*> getValue() {return value;}
+    vector<$Reference*> getValue() {return value;}
 
-    void push($Object* item) {value.push_back(item);}
+    void push($Reference* item) {value.push_back(item);}
 
-    void setItem(int k, $Object* item) {value[k] = item;}
+    void setItem(int k, $Reference* item) {value[k] = item;}
 
-    $Object* getItem(int k);
+    $Reference* getItem(int k);
 
-    list_0$* getSlice(int L, int U);
+    $Reference* getSlice(int L, int U);
 
     void clear() {value.clear();}
 
@@ -355,16 +357,16 @@ public:
 /** The wrapper class for primitive type tuple0.*/
 class tuple_0$: public $Object {
 protected:
-    vector<$Object*> value;
+    vector<$Reference*> value;
     int tupleSize;
 public:
     tuple_0$ () : tupleSize(0) {}
 
     tuple_0$ (int s) : tupleSize(s) {}
 
-    void push($Object* item) {value.push_back(item);}
+    void push($Reference* item) {value.push_back(item);}
 
-    $Object* getItem(int k) {return value[k];}
+    $Reference* getItem(int k) {return value[k];}
 
     int size() {return tupleSize;}
 
@@ -380,13 +382,13 @@ public:
 /** Base class wrapper for primitive type dict. */
 class dict_0$: public $Object {
 protected:
-    map<int, $Object*> value;
+    map<int, $Reference*> value;
 public:
     dict_0$ () : value() {}
 
-    virtual $Object* get(void* key) {return this;}
+    virtual $Reference* get(void* key);
 
-    virtual void set(void* key, $Object* item) {}
+    virtual void set(void* key, $Reference* item) {}
 
     virtual bool contains(void* key) {return false;}
 
@@ -399,13 +401,13 @@ public:
 /** The wrapper class for primitive type dict with key type int.*/
 class dict_int_0$: public dict_0$ {
 protected:
-    map<int, $Object*> value;
+    map<int, $Reference*> value;
 public:
     dict_int_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Reference* get(void* key);
 
-    void set(void* key, $Object* item);
+    void set(void* key, $Reference* item);
 
     bool contains(void* key);
 
@@ -419,13 +421,13 @@ public:
 /** The wrapper class for primitive type dict with key type string.*/
 class dict_str_0$: public dict_0$ {
 protected:
-    map<string, $Object*> value;
+    map<string, $Reference*> value;
 public:
     dict_str_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Reference* get(void* key);
 
-    void set(void* key, $Object* item);
+    void set(void* key, $Reference* item);
 
     bool contains(void* key);
 
@@ -439,13 +441,13 @@ public:
 /** The wrapper class for primitive type dict with key type bool.*/
 class dict_bool_0$: public dict_0$ {
 protected:
-    map<bool, $Object*> value;
+    map<bool, $Reference*> value;
 public:
     dict_bool_0$ () : value() {}
 
-    $Object* get(void* key);
+    $Reference* get(void* key);
 
-    void set(void* key, $Object* item);
+    void set(void* key, $Reference* item);
 
     bool contains(void* key);
 
@@ -490,162 +492,163 @@ extern dict_0$ $dict_0$;
 extern file_0$ $file_0$;
 
 // Standard input, output, and error
-extern file_0$ STDIN, STDOUT, STDERR;
+extern file_0$ $f1, $f2, $f3;
+extern $Reference *STDIN, *STDOUT, *STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
-tuple_0$* __tuple0__();
+$Reference* __tuple0__();
 
-tuple_0$* __tuple1__(void* x);
+$Reference* __tuple1__($Reference* x);
 
-tuple_0$* __tuple2__(void* x, void* y);
+$Reference* __tuple2__($Reference* x, $Reference* y);
 
-tuple_0$* __tuple3__(void* x, void* y, void* z);
+$Reference* __tuple3__($Reference* x, $Reference* y, $Reference* z);
 
-list_0$* __list__empty__();
+$Reference* __list__empty__();
 
-list_0$* __list__(void* count, void* x, ...);
+$Reference* __list__($Reference* count, ...);
 
-dict_int_0$* __dict__empty__int__();
+$Reference* __dict__empty__int__();
 
-dict_str_0$* __dict__empty__str__();
+$Reference* __dict__empty__str__();
 
-dict_bool_0$* __dict__empty__bool__();
+$Reference* __dict__empty__bool__();
 
-dict_int_0$* __dict__int__(void* count, ...);
+$Reference* __dict__int__($Reference* count, ...);
 
-dict_str_0$* __dict__str__(void* count, ...);
+$Reference* __dict__str__($Reference* count, ...);
 
-dict_bool_0$* __dict__bool__(void* count, ...);
+$Reference* __dict__bool__($Reference* count, ...);
 
 
 // Miscellaneous routines
 
 void __donotcall__(void* x);
 
-int_0$* __None__();
+$Reference* __None__();
 
-bool_0$* __is__(void* x, void* y);
+$Reference* __is__($Reference* x, $Reference* y);
 
-bool_0$* __isnot__(void* x, void* y);
+$Reference* __isnot__($Reference* x, $Reference* y);
 
-$Object* __and__(void* x, void* y);
+$Reference* __and__($Reference* x, $Reference* y);
 
-$Object* __or__(void* x, void* y);
+$Reference* __or__($Reference* x, $Reference* y);
 
 // Type bool
-bool_0$* __truth__(void* x);
+$Reference* __truth__($Reference* x);
 
-bool_0$* __not__(void* x);
+$Reference* __not__($Reference* x);
 
 // Type range
-range_0$* __xrange__(void* low, void* high);
+$Reference* __xrange__($Reference* low, $Reference* high);
 
-int_0$* __len__range__(void* r);
+$Reference* __len__range__($Reference* r);
 
 // Type int
 $Reference* __add__int__($Reference* x, $Reference* y);
 
-int_0$* __sub__int__(void* x, void* y);
+$Reference* __sub__int__($Reference* x, $Reference* y);
 
-int_0$* __mul__int__(void* x, void* y);
+$Reference* __mul__int__($Reference* x, $Reference* y);
 
-int_0$* __floordiv__int__(void* x, void* y);
+$Reference* __floordiv__int__($Reference* x, $Reference* y);
 
-int_0$* __mod__int__(void* x, void* y);
+$Reference* __mod__int__($Reference* x, $Reference* y);
 
-int_0$* __pow__int__(void* x, void* y);
+$Reference* __pow__int__($Reference* x, $Reference* y);
 
-int_0$* __neg__int__(void* x);
+$Reference* __neg__int__($Reference* x);
 
-int_0$* __pos__int__(void* x);
+$Reference* __pos__int__($Reference* x);
 
-bool_0$* __lt__int__(void* x, void* y);
+$Reference* __lt__int__($Reference* x, $Reference* y);
 
-bool_0$* __gt__int__(void* x, void* y);
+$Reference* __gt__int__($Reference* x, $Reference* y);
 
-bool_0$* __le__int__(void* x, void* y);
+$Reference* __le__int__($Reference* x, $Reference* y);
 
-bool_0$* __ge__int__(void* x, void* y);
+$Reference* __ge__int__($Reference* x, $Reference* y);
 
-bool_0$* __eq__int__(void* x, void* y);
+$Reference* __eq__int__($Reference* x, $Reference* y);
 
-bool_0$* __ne__int__(void* x, void* y);
+$Reference* __ne__int__($Reference* x, $Reference* y);
 
-int_0$* __toint__str__(void* x);
+$Reference* __toint__str__($Reference* x);
 
 
 // Type string
 
-str_0$* __add__str__(void* x, void* y);
+$Reference* __add__str__($Reference** x, $Reference** y);
 
-str_0$* __lmul__str__(void* x, void* y);
+$Reference* __lmul__str__($Reference** x, $Reference** y);
 
-str_0$* __rmul__str__(void* x, void* y);
+$Reference* __rmul__str__($Reference** x, $Reference** y);
 
-bool_0$* __lt__str__(void* x, void* y);
+$Reference* __lt__str__($Reference** x, $Reference** y);
 
-bool_0$* __gt__str__(void* x, void* y);
+$Reference* __gt__str__($Reference** x, $Reference** y);
 
-bool_0$* __le__str__(void* x, void* y);
+$Reference* __le__str__($Reference** x, $Reference** y);
 
-bool_0$* __ge__str__(void* x, void* y);
+$Reference* __ge__str__($Reference** x, $Reference** y);
 
-bool_0$* __eq__str__(void* x, void* y);
+$Reference* __eq__str__($Reference** x, $Reference** y);
 
-bool_0$* __ne__str__(void* x, void* y);
+$Reference* __ne__str__($Reference** x, $Reference** y);
 
-str_0$* __getitem__str__(void* s, void* k);
+$Reference* __getitem__str__($Reference* s, $Reference* k);
 
-str_0$* __getslice__str__(void* s, void* start);
+$Reference* __getslice__str__($Reference* s, $Reference* start);
 
-str_0$* __getslice__str__(void* s, void* start, void* end);
+$Reference* __getslice__str__($Reference* s, $Reference* start, $Reference* end);
 
-int_0$* __len__str__(void* s);
+$Reference* __len__str__($Reference* s);
 
-str_0$* __tostr__(void* x);
+$Reference* __tostr__($Reference* x);
 
 
 // Type list
 
-$Object* __getitem__list__(void* S, void* k);
+$Reference* __getitem__list__($Reference* S, $Reference* k);
 
-list_0$* __getslice__list__(void* S, void* L);
+$Reference* __getslice__list__($Reference* S, $Reference* L);
 
-list_0$* __getslice__list__(void* S, void* L, void* U);
+$Reference* __getslice__list__($Reference* S, $Reference* L, $Reference* U);
 
-int_0$* __len__list__(void* S);
+$Reference* __len__list__($Reference* S);
 
-list_0$* __argv__();
+$Reference* __argv__();
 
 
 // Type dict
 
-$Object* __getitem__dict__int__(void* D, void* x);
+$Reference* __getitem__dict__int__($Reference* D, $Reference* x);
 
-$Object* __getitem__dict__bool__(void* D, void* x);
+$Reference* __getitem__dict__bool__($Reference* D, $Reference* x);
 
-$Object* __getitem__dict__str__(void* D, void* x);
+$Reference* __getitem__dict__str__($Reference* D, $Reference* x);
 
-int_0$* __len__dict__(void* D);
+$Reference* __len__dict__($Reference* D);
 
-bool_0$* __contains__dict__(void* x, void* D);
+$Reference* __contains__dict__($Reference* x, $Reference* D);
 
-bool_0$* __notcontains__dict__(void* x, void* D);
+$Reference* __notcontains__dict__($Reference* x, $Reference* D);
 
 
 // Type file
 
-file_0$* __open1__(void* name);
+$Reference* __open1__($Reference* name);
 
-file_0$* __open2__(void* name, void* mode);
+$Reference* __open2__($Reference* name, $Reference* mode);
 
-void __close__(void* file);
+void __close__($Reference* file);
 
-str_0$* __readline__(void* file);
+$Reference* __readline__($Reference* file);
 
-str_0$* __read__(void* file);
+$Reference* __read__($Reference* file);
 
-file_0$* __standard_file__(void* k);
+$Reference* __standard_file__($Reference* k);
 
 
 
