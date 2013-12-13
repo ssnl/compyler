@@ -208,12 +208,19 @@ protected:
         return calledExpr ()->getType ()->binding ()->paramType (0);
     }
 
+
     void exprCodeGen (int depth) {
-        Callable::exprCodeGen (depth);
         for (int i = numActuals () - 1; i >= 0; i--)
             actualParam (i)->exprCodeGen (depth);
+        VM->emit (INSERT, numActuals ());
         calledExpr ()->exprCodeGen (depth);
         VM->emit (FCALL);
+        VM->emit(POP);
+    }
+
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
+        VM->emit (POP);
     }
 
 };

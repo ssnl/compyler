@@ -500,6 +500,14 @@ public:
      *       reference to this VAR at the top of the STACK MACHINE.
      * rslt: The instance of type INSTANCETYPE is popped off the STACK MACHINE
      *       and its instance variable VAR is placed on it.
+     * ------------------------------------------------------------
+     * inst: INSERT ARITY
+     * args: ARITY (int) the number of objects from the top of STACK MACHINE
+     *       insertion is occurring at.
+     * desc: Assuming that there are at least ARITY objects in the STACK
+     *       MACHINE. Create a copy of the top item and then insert it as the
+     *       (ARITY+1)th elements counting from the top of the STACK MACHINE.
+     * rslt: The (ARITY+1)th elements from top is a copy of the top item.
      **/
     void emit (const int& instr);
     void emit (const int& instr, gcstring arg);
@@ -588,5 +596,7 @@ const int EXPAND = 10;
 const int PRNT = 11;
 const int PRNTFILE = 12;
 const int FIELD = 13;
+const int GTE = 14;
+const int INSERT = 15;
 
 #endif

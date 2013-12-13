@@ -115,6 +115,7 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 void
 VirtualMachine::emit (const int& instr, int arg)
 {
+    stringstream ss;
     newline();
     switch (instr) {
 
@@ -139,6 +140,15 @@ VirtualMachine::emit (const int& instr, int arg)
             code("SM.pop_back();", 8);
             code("}");
             code("cout << tmp_ss.str();");
+            break;
+
+        case INSERT:
+            comment("Creating a copy of top item...");
+            comment("and insert it to some elements below top");
+            emit(ALLOC, "SM.back()->get()");
+            ss << "SM.insert(SM.begin() + SM.size() - " << (arg);
+            ss << ", HEAP[HEAP.size() - 1]);";
+            code(ss.str());
             break;
 
         default:
