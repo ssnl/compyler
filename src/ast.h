@@ -89,6 +89,12 @@ public:
      *  set. Returns true iff successful. */
     virtual bool setType (Type_Ptr type);
 
+    /** Set my container to CONTAINER. */
+    virtual void setContainer (Decl* container) { _container = container; };
+
+    /** Get my container. */
+    virtual Decl* getContainer () const { return _container; };
+
     /** True for a missing node. */
     virtual bool isMissing ();
 
@@ -247,6 +253,11 @@ public:
      *  function definitions have undefined depth. */
     virtual void declDepthPreprocess (int& currDepth);
 
+    /** Sets the container of each AST appropriately to the declaration
+     *  enclosing it. For native calls, also sets the containing function
+     *  declaration to be a native. */
+    virtual void containerPreprocess (Decl* container);
+
     /** True if an error has been reported on me. */
     bool errorReported ();
 
@@ -302,6 +313,9 @@ private:
     /** Set to true to indicate that an error has been flagged on this
      *  node.  Used to avoid multiple error messages on a node. */
     bool _erroneous;
+
+    /** The container of this AST. */
+    Decl* _container;
 
 };
 

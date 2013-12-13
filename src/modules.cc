@@ -48,6 +48,7 @@ protected:
         gcmap<gcstring, int> names;
         declDepthPreprocess (startDepth);
         declNamePreprocess (names);
+        containerPreprocess (mainModule);
         runtimeDataStructGen (out);
 
         VMLabel start = VM->asLabel("START");

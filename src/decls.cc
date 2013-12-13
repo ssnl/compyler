@@ -156,6 +156,12 @@ Decl::setAst (AST_Ptr ast)
     _ast = ast;
 }
 
+void
+Decl::setNative (bool native)
+{
+    UNIMPLEMENTED (setNative);
+}
+
 bool
 Decl::isType () const
 {
@@ -164,6 +170,12 @@ Decl::isType () const
 
 bool
 Decl::isTypeVar () const
+{
+    return false;
+}
+
+bool
+Decl::isNative () const
 {
     return false;
 }
@@ -500,6 +512,14 @@ protected:
         _frozen = freeze;
     }
 
+    void setNative (bool native) {
+        _native = native;
+    }
+
+    bool isNative () const {
+        return _native;
+    }
+
     Decl* addVarDecl (AST_Ptr id) {
 	Decl* decl = makeVarDecl (id->as_string (), this, Type::makeVar ());
 	addMember (decl);
@@ -509,6 +529,9 @@ protected:
     Decl* newDefDecl (AST_Ptr id, int k) {
 	return makeFuncDecl (id->as_string (), this, makeFuncType (k));
     }
+private:
+
+    bool _native;
 };
 
 Decl*

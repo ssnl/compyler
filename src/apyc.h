@@ -136,6 +136,9 @@ public:
     /** Set getAst() to AST. */
     virtual void setAst (AST_Ptr ast);
 
+    /** Set myself to be a native call. */
+    virtual void setNative (bool native) ;
+
     /** True iff I am an overloadable kind of entity (defined by def). */
     virtual bool isOverloadable () const;
 
@@ -147,6 +150,9 @@ public:
 
     /** True iff I represent a type variable. */
     virtual bool isTypeVar () const;
+
+    /** True iff I represent a native definition. */
+    virtual bool isNative () const;
 
     /** True iff I represent an internally generated type variable
      *  (which should not be included in the output list). */

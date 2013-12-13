@@ -207,6 +207,13 @@ protected:
         child (3)->declNamePreprocess (names);
     }
 
+    void containerPreprocess (Decl* container) {
+        setContainer (container);
+        for_each_child (c, this) {
+            c->containerPreprocess (getDecl ());
+        } end_for;
+    };
+
     /** Generates the runtime data structures for myself and prints them on
      *  OUT. Creates a templated C struct depending on whether or not there are
      *  any unbound type variables in me. */
@@ -265,6 +272,7 @@ protected:
         VM->emit (SETSL, "cf");
         VM->emit (POP);
     }
+
 };
 
 NODE_FACTORY (Def_AST, DEF);
@@ -291,7 +299,20 @@ protected:
 
 NODE_FACTORY (Method_AST, METHOD);
 
+/***** NATIVE *****/
+class Native_AST : public AST_Tree {
+protected:
 
+    NODE_CONSTRUCTORS (Native_AST, AST_Tree);
+
+    void containerPreprocess (Decl* container) {
+        container->setNative(true);
+        AST::containerPreprocess (container);
+    }
+
+};
+
+NODE_FACTORY (Native_AST, NATIVE);
 
 
 /***** FORMALS_LIST *****/

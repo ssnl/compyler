@@ -304,6 +304,15 @@ AST::declDepthPreprocess(int& currDepth)
     } end_for;
 }
 
+void
+AST::containerPreprocess (Decl* container)
+{
+    setContainer (container);
+    for_each_child (c, this) {
+        c->containerPreprocess (container);
+    } end_for;
+}
+
 bool
 AST::errorReported ()
 {
