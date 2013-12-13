@@ -73,6 +73,7 @@ protected:
     }
 
     virtual void printEpilogue() {
+        VM->comment("Adding newline for println");
         VM->code("cout << endl;");
     }
 

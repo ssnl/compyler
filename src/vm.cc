@@ -133,11 +133,11 @@ VirtualMachine::emit (const int& instr, int arg)
             comment("Printing to standard output");
             code("ss.str("");");
             code("if (" + tostr(arg) + " > 0) {");
-            code("ss << SM.back()->toString();", 8);
+            code("ss << SM.back()->get()->toString();", 8);
             code("SM.pop_back();", 8);
             code("}");
             code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
-            code("ss << \" \" << SM.back()->toString();", 8)
+            code("ss << \" \" << SM.back()->get()->toString();", 8)
             code("SM.pop_back();", 8);
             code("}");
             code("cout << ss.str();");
@@ -145,15 +145,15 @@ VirtualMachine::emit (const int& instr, int arg)
 
         case PRINTFILE:
             comment("Printing to file");
-            code("tmp_file = (file_0*) *(SM.back());");
+            code("tmp_file = (file_0*) *(SM.back()->get());");
             code("SM.pop_back();");
             code("ss.str("");");
             code("if (" + tostr(arg) + " > 0) {");
-            code("ss << SM.back()->toString();", 8);
+            code("ss << SM.back()->get()->toString();", 8);
             code("SM.pop_back();", 8);
             code("}");
             code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
-            code("ss << \" \" << SM.back()->toString();", 8)
+            code("ss << \" \" << SM.back()->get()->toString();", 8)
             code("SM.pop_back();", 8);
             code("}");
             code("fprintf(tmp_file->getValue(), ss.str().c_str());");
