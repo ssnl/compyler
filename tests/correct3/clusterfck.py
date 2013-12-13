@@ -1,4 +1,4 @@
-x::int = 10
+x = 10
 if 1 > 0:
   print "pass if"
   while 5 > x:
@@ -12,6 +12,6 @@ if 1 > 0:
       for j in [5,6,7]:
         print i,j
     else:
-      print "fail for"
+      print "pass for"
 else:
   print "fail if"
