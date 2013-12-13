@@ -10,7 +10,7 @@
 using namespace std;
 
 static const bool DEBUG_OUT = true;
-static const bool DEBUG_DATA = true;
+static const bool DEBUG_DATA = false;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -141,22 +141,6 @@ VirtualMachine::emit (const int& instr, int arg)
             code("cout << tmp_ss.str();");
             break;
 
-        case PRNTFILE:
-            comment("Printing to file");
-            code("tmp_file = (file_0*) *(SM.back()->get());");
-            code("SM.pop_back();");
-            code("tmp_ss.str(\"\");");
-            code("if (" + tostr(arg) + " > 0) {");
-            code("tmp_ss << SM.back()->get()->toString();", 8);
-            code("SM.pop_back();", 8);
-            code("}");
-            code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
-            code("tmp_ss << \" \" << SM.back()->get()->toString();", 8);
-            code("SM.pop_back();", 8);
-            code("}");
-            code("fprintf(tmp_file->getValue(), tmp_ss.str().c_str());");
-            break;
-
         default:
             comment("compilation error: argument mismatch in" +
                 string("VirtualMachine::emit(int, int)"));
@@ -176,7 +160,10 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             if (arg2 == 0)
                 code("tmp_res = " + arg1 + "();");
             else {
-                code("tmp_res = " + arg1 + "(");
+                if (arg1 == "__close__" || arg1 == "__donotcall__")
+                    code(arg1 + "(");
+                else
+                    code("tmp_res = " + arg1 + "(");
                 for (int i = 1; i <= arg2; i++) {
                     if (i != arg2) {
                         code("SM[SM.size()-" + tostr(i) + "],", 8);
@@ -188,7 +175,25 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             for (int _ = 0; _ < arg2; _++) {
                 code("SM.pop_back();");
             }
-            code("SM.push_back( tmp_res );");
+            if (arg1 != "__close__" && arg1 != "__donotcall__")
+                code("SM.push_back( tmp_res );");
+            break;
+
+        case PRNTFILE:
+            comment("Printing to file");
+            code("tmp_file = (file_0$*) SM.back()->get();");
+            code("SM.pop_back();");
+            code("tmp_ss.str(\"\");");
+            code("if (" + tostr(arg2) + " > 0) {");
+            code("tmp_ss << SM.back()->get()->toString();", 8);
+            code("SM.pop_back();", 8);
+            code("}");
+            code("for (int i = 1; i < " + tostr(arg2) + "; i++) {");
+            code("tmp_ss << \" \" << SM.back()->get()->toString();", 8);
+            code("SM.pop_back();", 8);
+            code("}");
+            code("tmp_ss << " + arg1 + ";");
+            code("fprintf(tmp_file->getValue(), tmp_ss.str().c_str(), \"\");");
             break;
 
         default:

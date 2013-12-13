@@ -34,9 +34,13 @@ protected:
     }
 
     /* Prints a newline or not depending on the type of the print. */
-    virtual void printEpilogue() {
+    virtual void printEpilogue () {
         VM->comment("Adding space for print");
         VM->code("cout << \" \";");
+    }
+
+    virtual gcstring addon () {
+        return "\"\"";
     }
 
     void stmtCodeGen (int depth) {
@@ -45,7 +49,8 @@ protected:
             VM->emit(PRNT, child(1)->arity());
         } else {
             child(0)->exprCodeGen(depth);
-            VM->emit(PRNTFILE, child(1)->arity());
+            VM->emit(PRNTFILE, addon (), child(1)->arity());
+            return;
         }
         printEpilogue();
     }
@@ -65,7 +70,11 @@ protected:
     return "println";
     }
 
-    virtual void printEpilogue() {
+    gcstring addon () {
+        return "\"\\n\"";
+    }
+
+    void printEpilogue() {
         VM->comment("Adding newline for println");
         VM->code("cout << endl;");
     }

@@ -483,7 +483,7 @@ public:
      *       pop all of them off and generate code for printing them out.
      * rslt: The top ARITY elements are popped off the STACK MACHINE.
      * ------------------------------------------------------------
-     * inst: PRINTFILE ARITY
+     * inst: PRINTFILE ADDON ARITY
      * args: ARITY (int) the number of objects being printed to file
      * desc: Assuming that the top of the STACK MACHINE is a file, and there
      *       are ARITY strings below the top of STACK MACHINE. Pop all of them

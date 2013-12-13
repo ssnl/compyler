@@ -1275,7 +1275,7 @@ __open2__($Reference* name, $Reference* mode) {
 
 void
 __close__($Reference* file) {
-    ((file_0$*) file)->close();
+    ((file_0$*) file->get())->close();
 }
 
 $Reference*

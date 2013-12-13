@@ -592,23 +592,23 @@ $Reference* __toint__str__($Reference* x);
 
 // Type string
 
-$Reference* __add__str__($Reference** x, $Reference** y);
+$Reference* __add__str__($Reference* x, $Reference* y);
 
-$Reference* __lmul__str__($Reference** x, $Reference** y);
+$Reference* __lmul__str__($Reference* x, $Reference* y);
 
-$Reference* __rmul__str__($Reference** x, $Reference** y);
+$Reference* __rmul__str__($Reference* x, $Reference* y);
 
-$Reference* __lt__str__($Reference** x, $Reference** y);
+$Reference* __lt__str__($Reference* x, $Reference* y);
 
-$Reference* __gt__str__($Reference** x, $Reference** y);
+$Reference* __gt__str__($Reference* x, $Reference* y);
 
-$Reference* __le__str__($Reference** x, $Reference** y);
+$Reference* __le__str__($Reference* x, $Reference* y);
 
-$Reference* __ge__str__($Reference** x, $Reference** y);
+$Reference* __ge__str__($Reference* x, $Reference* y);
 
-$Reference* __eq__str__($Reference** x, $Reference** y);
+$Reference* __eq__str__($Reference* x, $Reference* y);
 
-$Reference* __ne__str__($Reference** x, $Reference** y);
+$Reference* __ne__str__($Reference* x, $Reference* y);
 
 $Reference* __getitem__str__($Reference* s, $Reference* k);
 
