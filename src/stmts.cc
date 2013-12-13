@@ -710,7 +710,7 @@ protected:
     void stmtCodeGen (int depth) {
 
         child (1)->exprCodeGen (depth);
-        gcstring lstr = "(*SM.back())->size()";
+        gcstring lstr = "SM.back()->get()->size()";
         gcstring vstr = "i_" + VM->tostr (VM->getForNestLvl ());
         VMLabel elseLbl = VM->newLabel ("ELSE");
         VMLabel exitLbl = VM->newLabel ("EXIT");
@@ -720,7 +720,7 @@ protected:
         VM->incrForNestLvl ();
         VM->incrIndentShift ();
         // main for loop body
-        VM->emit (PUSH, "(*SM.back())->getItem(" + vstr + ")");
+        VM->emit (PUSH, "SM.back()->get()->getItem(" + vstr + ")");
         child (0)->exprCodeGen (depth);
         VM->emit (MOVE);
         VM->emit (POP);
