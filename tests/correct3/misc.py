@@ -9,6 +9,14 @@
 # y = a.x     # just a normal attrref
 # a.foo() # rewritten as a call
 # A.foo   # rewritten to simply foo
-x = "fck"
-print 1, x, "str", "face"
-print 3
+x, y = (3, 1) if 0 else (1 or 2, 0 and 3)
+
+if x:
+  if x:
+    y = 3
+    print y, "bye", "fight!"
+  elif 0:
+    print 3
+  else:
+    print "hi"
+
