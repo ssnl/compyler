@@ -1,2 +1,2 @@
 # Default behavior of end of lines
-* eol=lf
+./src eol=lf
