@@ -21,6 +21,7 @@
 using namespace std;
 
 class $Reference;
+class Frame;
 class $Object;
 class bool_0$;
 class int_0$;
@@ -42,14 +43,6 @@ class FuncDesc;
  *  label at runtime. */
 typedef void* Label;
 
-/** A stack frame struct that refers to a stack frame on the stack. Locals points
- *  to a structure containing all the local variables in the frame during
- *  runtime. */
-typedef struct Frame {
-    Label ra;
-    Frame* sl;
-    void* locals;
-} Frame;
 
 extern vector<Frame*> STACK;
 extern vector<$Reference*> HEAP;
@@ -97,6 +90,7 @@ public:
 
 };
 
+
 /** A wrapper class that represents a reference to a $Object. */
 class $Reference {
 private:
@@ -112,6 +106,18 @@ public:
 
     void clean () { delete _obj; }
 };
+
+
+/** A stack frame class that refers to a stack frame on the stack. Locals points
+ *  to a structure containing all the local variables in the frame during
+ *  runtime. */
+class Frame: public $Object {
+public:
+    Label ra;
+    Frame* sl;
+    void* locals;
+};
+
 
 /** A call description struct that refers to a call descriptor. Contains the
  *  static link for the call as well as the label to jump to. */
