@@ -498,13 +498,13 @@ extern file_0$ $f1, $f2, $f3;
 extern $Reference *STDIN, *STDOUT, *STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
-$Reference* __tuple0__();
+$Reference* __tuple__();
 
-$Reference* __tuple1__($Reference* x);
+$Reference* __tuple__($Reference* x);
 
-$Reference* __tuple2__($Reference* x, $Reference* y);
+$Reference* __tuple__($Reference* x, $Reference* y);
 
-$Reference* __tuple3__($Reference* x, $Reference* y, $Reference* z);
+$Reference* __tuple__($Reference* x, $Reference* y, $Reference* z);
 
 $Reference* __list__empty__();
 

@@ -694,7 +694,7 @@ file_0$::equals(void* other) {
 
 /* Allocators for list_0$, tuple_0$, and dict_0$ */
 $Reference*
-__tuple0__() {
+__tuple__() {
     tuple_0$* res = new tuple_0$();
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
@@ -702,7 +702,7 @@ __tuple0__() {
 }
 
 $Reference*
-__tuple1__($Reference* x) {
+__tuple__($Reference* x) {
     tuple_0$* res = new tuple_0$(1);
     res->push(x);
     $Reference* ref = new $Reference(res);
@@ -711,7 +711,7 @@ __tuple1__($Reference* x) {
 }
 
 $Reference*
-__tuple2__($Reference* x, $Reference* y) {
+__tuple__($Reference* x, $Reference* y) {
     tuple_0$* res = new tuple_0$(2);
     res->push(x);
     res->push(y);
@@ -721,7 +721,7 @@ __tuple2__($Reference* x, $Reference* y) {
 }
 
 $Reference*
-__tuple3__($Reference* x, $Reference* y, $Reference* z) {
+__tuple__($Reference* x, $Reference* y, $Reference* z) {
     tuple_0$* res = new tuple_0$(3);
     res->push(x);
     res->push(y);
@@ -792,7 +792,7 @@ __dict__int__($Reference* count, ...) {
     int_0$* key;
 
     for (int i = 0; i < argcount; i++) {
-        key = va_arg(arguments, int_0$*);
+        key = (int_0$*) va_arg(arguments, $Reference*)->get();
         res->set(key, va_arg (arguments, $Reference*));
     }
 
@@ -813,7 +813,7 @@ __dict__str__($Reference* count, ...) {
     str_0$* key;
 
     for (int i = 0; i < argcount; i++) {
-        key = va_arg(arguments, str_0$*);
+        key = (str_0$*) va_arg(arguments, $Reference*)->get();
         res->set(key, va_arg (arguments, $Reference*));
     }
 
@@ -834,7 +834,7 @@ __dict__bool__($Reference* count, ...) {
     bool_0$* key;
 
     for (int i = 0; i < argcount; i++) {
-        key = va_arg(arguments, bool_0$*);
+        key = (bool_0$*) va_arg(arguments, $Reference*)->get();
         res->set(key, va_arg (arguments, $Reference*));
     }
 
