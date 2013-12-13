@@ -706,6 +706,12 @@ protected:
 
     NODE_CONSTRUCTORS (And_AST, BalancedExpr);
 
+    void exprCodeGen (int depth) {
+        child (1)->exprCodeGen (depth);
+        child (0)->exprCodeGen (depth);
+        VM->emit(NTV, "__and__", 2);
+    }
+
 };
 
 NODE_FACTORY (And_AST, AND);
