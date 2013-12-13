@@ -575,6 +575,17 @@ protected:
 
     NODE_CONSTRUCTORS (ClassType_AST, Type);
 
+    int numTypeParams () {
+        return child(1)->arity();
+    }
+
+    Type_Ptr typeParam (int k) {
+        int ar = child(1)->arity();
+        if (k == -1 || k > ar)
+            logic_error("invalid parameter index");
+        return (Type_Ptr) child(1)->child(k);
+    }
+
     AST_Ptr getId () {
         return child (0);
     }

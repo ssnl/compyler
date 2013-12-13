@@ -426,13 +426,13 @@ str_0$::getElement(int k) {
     str_0$* res = new str_0$(value.substr(k, 1));
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
-    return ref;    
+    return ref;
 }
 
 string
 str_0$::toString(bool contained) {
     if (contained)
-        return "\"" + value + "\"";
+        return "\'" + value + "\'";
     else
         return value;
 }
@@ -464,7 +464,7 @@ range_0$::getElement(int k) {
     int_0$* res = new int_0$(start + k);
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
-    return ref;    
+    return ref;
 }
 
 bool
@@ -486,7 +486,7 @@ list_0$::getItem(int k) {
 
 $Reference*
 list_0$::getElement(int k) {
-    return getItem(k);    
+    return getItem(k);
 }
 
 $Reference*
@@ -648,7 +648,7 @@ dict_str_0$::toString(bool contained) {
     for (map<string, $Reference*>::iterator it = value.begin();
                 it != value.end(); it++) {
         count++;
-        ss << "\"" << it->first << "\": " << it->second->get()->toString(true);
+        ss << "\'" << it->first << "\': " << it->second->get()->toString(true);
         if (count < s)
             ss << ", ";
     }
@@ -1243,7 +1243,7 @@ __open1__($Reference* name) {
     f = fopen(fName.c_str(), "r");
     if (f == NULL) {
         stringstream ss;
-        ss << "IOError: file \"" << fName << "\" cannot be opened";
+        ss << "IOError: file \'" << fName << "\' cannot be opened";
         throw ss.str();
     }
     file_0$* res = new file_0$(f);
@@ -1260,7 +1260,7 @@ __open2__($Reference* name, $Reference* mode) {
     f = fopen(fName.c_str(), fMode.c_str());
     if (f == NULL) {
         stringstream ss;
-        ss << "IOError: file \"" << fName << "\" cannot be opened";
+        ss << "IOError: file \'" << fName << "\' cannot be opened";
         throw ss.str();
     }
     file_0$* res = new file_0$(f);

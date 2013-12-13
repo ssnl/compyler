@@ -5,6 +5,7 @@
 /* Authors:  YOUR NAMES HERE */
 
 #include <iostream>
+#include <sstream>
 #include "apyc.h"
 #include "ast.h"
 #include "apyc-parser.hh"
@@ -505,11 +506,11 @@ protected:
         return this;
     }
 
-    void exprCodeGen(int depth) {
-        for_each_child_reverse(c, this) {
-            c->exprCodeGen(depth);
+    void exprCodeGen (int depth) {
+        for_each_child_reverse (c, this) {
+            c->exprCodeGen (depth);
         } end_for;
-        VM->emit(NTV, "__tuple__", arity());
+        VM->emit (NTV, "__tuple__", arity ());
     }
 
 };
@@ -573,19 +574,19 @@ protected:
         return this;
     }
 
-    void exprCodeGen(int depth) {
-        if (arity() == 0) {
-            VM->emit(NTV, "__list__empty__", 0)
+    void exprCodeGen (int depth) {
+        if (arity () == 0) {
+            VM->emit(NTV, "__list__empty__", 0);
         } else {
-            for_each_child_reverse(c, this) {
-                c->exprCodeGen(depth);
+            for_each_child_reverse (c, this) {
+                c->exprCodeGen (depth);
             } end_for;
             stringstream ss;
             ss << "new " << intDecl->getRuntimeName () << " (";
-            ss << arity() << ")";
+            ss << arity () << ")";
             VM->emit (ALLOC, ss.str ());
             VM->emit (PUSH);
-            VM->emit(NTV, "__list__", arity()+1);
+            VM->emit (NTV, "__list__", arity () + 1);
         }
     }
 
@@ -630,33 +631,32 @@ protected:
     }
 
     void exprCodeGen (int depth) {
-        Type_Ptr keyType = getType()->typeParam(0);
+        Type_Ptr keyType = getType ()->binding ()->typeParam (0);
         gcstring keyTypeName;
         stringstream ss;
 
-        if (keyType->isVariable() && keyType->binding() == keyType)
+        if (keyType->isTypeVariable () && keyType->binding () == keyType)
             keyTypeName = "int";
         else
-            keyTypeName = keyType->getDecl()->getName();
+            keyTypeName = keyType->getDecl ()->getName ();
 
-        stringstream ss;
-        if (arity() == 0) {
+        if (arity () == 0) {
             ss << "__dict__empty__" << keyTypeName << "__";
-            VM->emit(NTV, ss.str(), 0);
+            VM->emit (NTV, ss.str (), 0);
         } else {
-            for_each_child_reverse(c, this) {
-                c->child(1)->exprCodeGen(depth);
-                c->child(0)->exprCodeGen(depth);
+            for_each_child_reverse (c, this) {
+                c->child (1)->exprCodeGen (depth);
+                c->child (0)->exprCodeGen (depth);
             } end_for;
-            
+
             ss << "new " << intDecl->getRuntimeName () << " (";
-            ss << arity() << ")";
+            ss << arity () << ")";
             VM->emit (ALLOC, ss.str ());
             VM->emit (PUSH);
 
-            ss.str("");
+            ss.str ("");
             ss << "__dict__" << keyTypeName << "__";
-            VM->emit(NTV, ss.str(), arity()+1);
+            VM->emit (NTV, ss.str (), 2 * arity () + 1);
         }
     }
 

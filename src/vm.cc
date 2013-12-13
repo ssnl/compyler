@@ -175,12 +175,16 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
 
         case NTV:
             comment("calling " + arg1 + " (" + tostr(arg2) + " params)");
-            code("tmp_res = " + arg1 + "(");
-            for (int i = 1; i <= arg2; i++) {
-                if (i != arg2) {
-                    code("SM[SM.size()-" + tostr(i) + "],", 8);
-                } else {
-                    code("SM[SM.size()-" + tostr(i) + "]);", 8);
+            if (arg2 == 0)
+                code("tmp_res = " + arg1 + "();");
+            else {
+                code("tmp_res = " + arg1 + "(");
+                for (int i = 1; i <= arg2; i++) {
+                    if (i != arg2) {
+                        code("SM[SM.size()-" + tostr(i) + "],", 8);
+                    } else {
+                        code("SM[SM.size()-" + tostr(i) + "]);", 8);
+                    }
                 }
             }
             for (int _ = 0; _ < arg2; _++) {
