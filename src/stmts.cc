@@ -723,10 +723,18 @@ protected:
             VM->newline();
             VM->comment("Pushing return value onto stack machine");
             child (0)->exprCodeGen (depth);
+        } else {
+            VM->newline();
+            VM->comment("returning None by default");
+            VM->emit(NTV, "__None__", 0);
         }
 
         // Return to where this function is called.
         VM->emitDefEpilogue (getContainer ()->getRuntimeName ());
+    }
+
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
     }
 
 };
