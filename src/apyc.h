@@ -610,5 +610,6 @@ const int EXPAND = 10;
 const int PRNT = 11;
 const int PRNTFILE = 12;
 const int FIELD = 13;
+const int GTE = 14;
 
 #endif

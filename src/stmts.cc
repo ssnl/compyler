@@ -767,9 +767,10 @@ protected:
         VMLabel loopLbl = VM->newLabel ("LOOP");
         VMLabel epilLbl = VM->newLabel ("EPIL");
         VMLabel exitLbl = VM->newLabel ("EXIT");
-        ss << "&&" << exitLbl << ";";
+        ss << "new $Label(&&" << exitLbl << ")";
 
-        VM->emit (PUSH, ss.str ());
+        VM->emit (ALLOC, ss.str ());
+        VM->emit (PUSH);
         child (0)->exprCodeGen (depth);
         VM->emit (GTZ, elseLbl);
         // main while loop
