@@ -91,9 +91,9 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         case GTE:
             comment("jumping to " + arg + " if size of top is 0");
-            code("cmp = ($Object*) SM.back()->get();");
+            code("tmp_cmp = SM.back();");
             code("SM.pop_back();");
-            code("if (!cmp->size()) { goto " + arg + "; }");
+            code("if (!tmp_cmp->get()->size()) { goto " + arg + "; }");
             break;
 
         case PUSH:

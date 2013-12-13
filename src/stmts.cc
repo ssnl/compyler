@@ -720,7 +720,7 @@ protected:
         VM->incrForNestLvl ();
         VM->incrIndentShift ();
         // main for loop body
-        VM->emit (PUSH, "SM.back()->get()->getItem(" + vstr + ")");
+        VM->code ("SM.push_back(SM.back()->get()->getElement(" + vstr + "));");
         child (0)->exprCodeGen (depth);
         VM->emit (MOVE);
         VM->emit (POP);
@@ -728,6 +728,7 @@ protected:
         // main for loop epilogue
         VM->decrForNestLvl ();
         VM->decrIndentShift ();
+        VM->code (";");
         VM->code ("}");
         // else and exit
         VM->emit (GTE, elseLbl);
