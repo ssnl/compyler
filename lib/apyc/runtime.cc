@@ -39,6 +39,8 @@ $Reference* src;
 $Reference* tmp_alloc;
 /** Stores the result of a native call. */
 $Reference* tmp_res;
+/** Stores a temp reference to the result of a comparison. */
+$Reference* tmp_cmp;
 /** Stores a tuple to be expanded. */
 tuple_0$* tmp_tup;
 /** Stores a file to be printed to. */

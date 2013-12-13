@@ -64,6 +64,7 @@ extern $Reference* src;
 
 extern $Reference* tmp_alloc;
 extern $Reference* tmp_res;
+extern $Reference* tmp_cmp;
 extern tuple_0$* tmp_tup;
 extern file_0$* tmp_file;
 extern stringstream tmp_ss;
@@ -84,7 +85,7 @@ public:
     /** Return the class name. Helper method for equals(). */
     virtual string className() {return "Object";}
 
-    /** Return the Kth elementh. Should only be used for appropriate objects. 
+    /** Return the Kth elementh. Should only be used for appropriate objects.
     */
     virtual $Reference* getElement(int k) {return NULL;}
 

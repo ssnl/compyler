@@ -531,8 +531,8 @@ protected:
             for_each_child (c, child (0)) {
                 c->exprCodeGen (depth);
                 VM->emit (MOVE);
+                VM->emit (POP);
             } end_for;
-            VM->emit (POP);
             child (0)->exprCodeGen (depth);
         } else {
             child (1)->exprCodeGen (depth);

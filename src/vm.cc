@@ -9,7 +9,8 @@
 
 using namespace std;
 
-static const bool DEBUG_OUT = false;
+static const bool DEBUG_OUT = true;
+static const bool DEBUG_DATA = false;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -77,9 +78,9 @@ VirtualMachine::emit (const int& instr, gcstring arg)
 
         case GTZ:
             comment("jumping to " + arg + " if top is 0");
-            code("cmp = ((int_0$*) SM.back()->get());");
+            code("tmp_cmp = SM.back();");
             code("SM.pop_back();");
-            code("if (!cmp->asBool()) { goto " + arg + "; }");
+            code("if (!tmp_cmp->get()->asBool()) { goto " + arg + "; }");
             break;
 
         case PUSH:
@@ -268,8 +269,9 @@ VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
-    if (DEBUG_OUT) {
+    if (DEBUG_DATA) {
        code("cout << \"Heap size: \" << HEAP.size() << endl;");
+       code("cout << \"Stack machine size: \" << SM.size() << endl;");
     }
     code("for (int i = 0; i < HEAP.size(); i++) {");
     code("HEAP[i]->clean();", 8);
