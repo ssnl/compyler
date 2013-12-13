@@ -167,6 +167,25 @@ public:
     bool asBool() {return true;}
 };
 
+/** A label class that refers to a label to a location in the code. Contains the
+ *  void* pointer to a C++ label. */
+class $Label: public $Object {
+public:
+    void* label;
+
+    $Label () {
+        label = NULL;
+    }
+
+    $Label (void* lbl) {
+        label = lbl;
+    }
+
+    string toString() { return string("<label>"); };
+
+    bool asBool() {return true;}
+};
+
 /** The wrapper class for primitive type bool.*/
 class bool_0$: public $Object {
 protected:
