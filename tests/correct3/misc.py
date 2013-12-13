@@ -10,4 +10,4 @@
 # a.foo() # rewritten as a call
 # A.foo   # rewritten to simply foo
 def foo(x, y):
-  pass
+  native "__add__"

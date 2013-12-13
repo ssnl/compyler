@@ -244,11 +244,13 @@ protected:
         VM->placeLabel (lbl);
         VM->emitDefPrologue (defname);
         // bind params to variables
-        for_each_child (c, child (1)) {
-            c->exprCodeGen (depth + 1);
-            VM->emit (MOVE);
-            VM->emit (POP);
-        } end_for;
+        if (!getDecl ()->isNative ()) {
+            for_each_child (c, child (1)) {
+                c->exprCodeGen (depth + 1);
+                VM->emit (MOVE);
+                VM->emit (POP);
+            } end_for;
+        }
         // cgen main body
         child (3)->stmtCodeGen (depth + 1);
         VM->emitDefEpilogue (defname);
