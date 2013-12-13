@@ -313,6 +313,7 @@ protected:
     void stmtCodeGen (int depth) {
         int argc = getContainer ()->getType ()->numParams();
         VM->emit(NTV, child (0)->as_string (), argc);
+        VM->emitDefEpilogue( getContainer ()->getRuntimeName ());
     }
 
     void containerPreprocess (Decl* container) {

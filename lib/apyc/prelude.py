@@ -84,14 +84,14 @@ class int:
 def __add__(x:: int, y::int)::int:
     native "__add__int__"
 
-def __sub__(x::int, y::int)::int:
-    native "__sub__int__"
+# def __sub__(x::int, y::int)::int:
+#     native "__sub__int__"
 
-def __mul__(x::int, y::int)::int:
-    native "__mul__int__"
+# def __mul__(x::int, y::int)::int:
+#     native "__mul__int__"
 
-def __floordiv__(x::int, y::int)::int:
-    native "__floordiv__int__"
+# def __floordiv__(x::int, y::int)::int:
+#     native "__floordiv__int__"
 
 # def __mod__(x::int, y::int)::int:
 #     native "__mod__int__"

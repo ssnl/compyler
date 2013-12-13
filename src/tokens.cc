@@ -310,7 +310,7 @@ protected:
         int myDepth = getDecl ()->getDepth ();
 
         gcstring frameString = VM->staticLinkStr (myDepth, depth);
-        expr += VM->typeCastStr (frameName + "*", frameString);
+        expr += VM->typeCastStr (frameName + "*", frameString + "->locals");
         expr = VM->fieldAccessStr (expr, runtimeName);
 
         VM->emit (PUSH, expr);
