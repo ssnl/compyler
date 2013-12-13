@@ -185,7 +185,8 @@ protected:
         child (1)->exprCodeGen (depth);
         // eval. callable, create new descriptor
         child (0)->exprCodeGen (depth);
-        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) SM.pop_back()->get() )");
+        VM->emit (ALLOC, "new FuncDesc( (FuncDesc*) SM.back()->get() )");
+        VM->emit (POP);
         VM->emit (PUSH);
         // call the function using the descriptor
         VM->emit (FCALL);
@@ -210,6 +211,30 @@ protected:
 
     Type_Ptr computeType () {
         return calledExpr ()->getType ()->binding ()->paramType (0);
+    }
+
+    void exprCodeGen (int depth) {
+        Decl* initDecl = child (0)->getDecl ();
+        gcstring initName = initDecl->getRuntimeName ();
+        gcstring clsName = initDecl->getContainer ()->getRuntimeName ();
+        // push the arguments (not including new) to __init__
+        for_each_child_reverse (c, this) {
+            if (c_i_ != 0) {
+                c->exprCodeGen (depth);
+            }
+        } end_for;
+        // create a new instance of the class
+        VM->emit (ALLOC, "new " + clsName + "( $" + clsName + " )");
+        VM->emit (PUSH);
+        // push the FuncDesc for __init__
+        VM->emit (PUSH, "new FuncDesc( (FuncDesc*) (((" + clsName +
+            ") SM[SM.size() - 1])." + initName + "->get()) )");
+        VM->emit (FCALL);
+    }
+
+    void stmtCodeGen (int depth) {
+        exprCodeGen (depth);
+        VM->emit (POP);
     }
 
 };
