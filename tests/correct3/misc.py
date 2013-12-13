@@ -1,6 +1,4 @@
-class A:
-  pass
-
+print [1, 2, 3]
 
 # class A:
 #   x = 3

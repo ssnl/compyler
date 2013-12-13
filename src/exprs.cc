@@ -542,6 +542,14 @@ protected:
         VM->emit(FIELD, typeName, field);
     }
 
+    void closureCodeGen (int depth) {
+        child (0)->closureCodeGen (depth);
+        gcstring typeName = child (0)->getType ()->binding ()
+            ->getDecl ()->getRuntimeName ();
+        gcstring field = getDecl ()->getRuntimeName ();
+        VM->emit(FIELD, typeName, field);
+    }
+
 };
 
 NODE_FACTORY (AttributeRef_AST, ATTRIBUTEREF);
@@ -571,6 +579,13 @@ protected:
     void exprCodeGen (int depth) {
         for_each_child_reverse (c, this) {
             c->exprCodeGen (depth);
+        } end_for;
+        VM->emit (NTV, "__tuple__", arity ());
+    }
+
+    void closureCodeGen (int depth) {
+        for_each_child_reverse (c, this) {
+            c->closureCodeGen (depth);
         } end_for;
         VM->emit (NTV, "__tuple__", arity ());
     }
@@ -652,6 +667,22 @@ protected:
         }
     }
 
+    void closureCodeGen (int depth) {
+        if (arity () == 0) {
+            VM->emit(NTV, "__list__empty__", 0);
+        } else {
+            for_each_child_reverse (c, this) {
+                c->closureCodeGen (depth);
+            } end_for;
+            stringstream ss;
+            ss << "new " << intDecl->getRuntimeName () << " (";
+            ss << arity () << ")";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+            VM->emit (NTV, "__list__", arity () + 1);
+        }
+    }
+
 };
 
 NODE_FACTORY (ListDisplay_AST, LIST_DISPLAY);
@@ -708,6 +739,36 @@ protected:
         } else {
             for_each_child_reverse (c, this) {
                 c->child (1)->exprCodeGen (depth);
+                c->child (0)->exprCodeGen (depth);
+            } end_for;
+
+            ss << "new " << intDecl->getRuntimeName () << " (";
+            ss << arity () << ")";
+            VM->emit (ALLOC, ss.str ());
+            VM->emit (PUSH);
+
+            ss.str ("");
+            ss << "__dict__" << keyTypeName << "__";
+            VM->emit (NTV, ss.str (), 2 * arity () + 1);
+        }
+    }
+
+    void closureCodeGen (int depth) {
+        Type_Ptr keyType = getType ()->binding ()->typeParam (0);
+        gcstring keyTypeName;
+        stringstream ss;
+
+        if (keyType->isTypeVariable () && keyType->binding () == keyType)
+            keyTypeName = "int";
+        else
+            keyTypeName = keyType->getDecl ()->getName ();
+
+        if (arity () == 0) {
+            ss << "__dict__empty__" << keyTypeName << "__";
+            VM->emit (NTV, ss.str (), 0);
+        } else {
+            for_each_child_reverse (c, this) {
+                c->child (1)->closureCodeGen (depth);
                 c->child (0)->exprCodeGen (depth);
             } end_for;
 

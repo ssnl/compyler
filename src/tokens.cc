@@ -313,7 +313,65 @@ protected:
         VM->emit (PUSH, expr);
     }
 
+    void closureCodeGen (int depth) {
+        exprCodeGen (depth);
+
+        if (isDefinition () && depth <= getDecl ()->getDepth ()) {
+            handleClosure (depth);
+        }
+    }
+
+    bool isDefinition () {
+        return getDecl ()->isOverloadable ();
+    }
+
 private:
+
+    void handleClosure (int depth) {
+        stringstream ss;
+        Decl* container = getDecl ()->getContainer ();
+        gcstring structName = container->getRuntimeName ();
+        gcstring currFrame = "cf";
+
+        VM->newline ();
+        VM->comment ("Returning a nested function");
+        VM->comment ("Handling closure");
+        VM->emit (ALLOC, "new Frame ()");
+        ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
+        ss << "new " << structName << " (*((";
+        ss << structName << "*) " << currFrame << "->locals));";
+        VM->code (ss.str ());
+        ss.str ("");
+
+        ss << "((FuncDesc*) SM.back()->get())->sl = ";
+        ss << "(Frame*) (HEAP[HEAP.size()-1]->get());";
+        VM->code (ss.str ());
+        ss.str ("");
+
+        for (int i = 1; i < depth; i++) {
+            container = container->getContainer ();
+            currFrame = currFrame + "->sl";
+            structName = container->getRuntimeName ();
+
+            VM->newline();
+            VM->emit (ALLOC, "new Frame ()");
+            ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
+            ss << "new " << structName << " (*((";
+            ss << structName << "*) " << currFrame << "->locals));";
+            VM->code (ss.str ());
+            ss.str ("");
+
+            ss << "((Frame*) (HEAP[HEAP.size()-2]->get()) )->sl = ";
+            ss << "(Frame*) (HEAP[HEAP.size()-1]->get());";
+            VM->code (ss.str ());
+            ss.str ("");
+        }
+        currFrame = currFrame + "->sl";
+        ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->sl = ";
+        ss << currFrame << ";";
+        VM->newline();
+        VM->code (ss.str ());
+    }
 
     Decl_Vector _me;
 

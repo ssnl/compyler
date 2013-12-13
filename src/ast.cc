@@ -126,6 +126,12 @@ AST::isTargetList ()
     return false;
 }
 
+bool
+AST::isDefinition ()
+{
+    return false;
+}
+
 extern void DBcheck(const char*, const AST_Ptr&);
 
 /** Default collects declarations and resolves in the current
@@ -286,6 +292,12 @@ AST::runtimeDataStructGen (ostream& out)
     for_each_child (c, this) {
         c->runtimeDataStructGen (out);
     } end_for;
+}
+
+void
+AST::closureCodeGen (int depth)
+{
+    exprCodeGen (depth);
 }
 
 void

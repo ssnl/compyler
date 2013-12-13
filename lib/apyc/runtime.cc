@@ -728,8 +728,10 @@ __tuple__() {
 
 $Reference*
 __tuple__($Reference* x) {
+    $Reference* tmp = new $Reference(x->get());
+    HEAP.push_back(tmp);
     tuple_0$* res = new tuple_0$(1);
-    res->push(x);
+    res->push(tmp);
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
     return ref;
@@ -737,9 +739,13 @@ __tuple__($Reference* x) {
 
 $Reference*
 __tuple__($Reference* x, $Reference* y) {
+    $Reference* tmp1 = new $Reference(x->get());
+    $Reference* tmp2 = new $Reference(y->get());
+    HEAP.push_back(tmp1);
+    HEAP.push_back(tmp2);
     tuple_0$* res = new tuple_0$(2);
-    res->push(x);
-    res->push(y);
+    res->push(tmp1);
+    res->push(tmp2);
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
     return ref;
@@ -747,10 +753,16 @@ __tuple__($Reference* x, $Reference* y) {
 
 $Reference*
 __tuple__($Reference* x, $Reference* y, $Reference* z) {
+    $Reference* tmp1 = new $Reference(x->get());
+    $Reference* tmp2 = new $Reference(y->get());
+    $Reference* tmp3 = new $Reference(z->get());
+    HEAP.push_back(tmp1);
+    HEAP.push_back(tmp2);
+    HEAP.push_back(tmp3);
     tuple_0$* res = new tuple_0$(3);
-    res->push(x);
-    res->push(y);
-    res->push(z);
+    res->push(tmp1);
+    res->push(tmp2);
+    res->push(tmp3);
     $Reference* ref = new $Reference(res);
     HEAP.push_back(ref);
     return ref;
@@ -772,8 +784,12 @@ __list__($Reference* count, ...) {
     va_list arguments;
     va_start (arguments, count);
 
+    $Reference* tmp;
+
     for (int i = 0; i < argcount; i++) {
-        res->push(va_arg (arguments, $Reference*));
+        tmp = new $Reference(va_arg (arguments, $Reference*)->get());
+        res->push(tmp);
+        HEAP.push_back(tmp);
     }
 
     va_end (arguments);
@@ -816,9 +832,13 @@ __dict__int__($Reference* count, ...) {
 
     int_0$* key;
 
+    $Reference *tmp;
+
     for (int i = 0; i < argcount; i++) {
         key = (int_0$*) va_arg(arguments, $Reference*)->get();
-        res->set(key, va_arg (arguments, $Reference*));
+        tmp = new $Reference(va_arg (arguments, $Reference*)->get());
+        res->set(key, tmp);
+        HEAP.push_back(tmp);
     }
 
     va_end (arguments);
@@ -837,9 +857,13 @@ __dict__str__($Reference* count, ...) {
 
     str_0$* key;
 
+    $Reference *tmp;
+
     for (int i = 0; i < argcount; i++) {
         key = (str_0$*) va_arg(arguments, $Reference*)->get();
-        res->set(key, va_arg (arguments, $Reference*));
+        tmp = new $Reference(va_arg (arguments, $Reference*)->get());
+        res->set(key, tmp);
+        HEAP.push_back(tmp);
     }
 
     va_end (arguments);
@@ -858,9 +882,13 @@ __dict__bool__($Reference* count, ...) {
 
     bool_0$* key;
 
+    $Reference *tmp;
+
     for (int i = 0; i < argcount; i++) {
         key = (bool_0$*) va_arg(arguments, $Reference*)->get();
-        res->set(key, va_arg (arguments, $Reference*));
+        tmp = new $Reference(va_arg (arguments, $Reference*)->get());
+        res->set(key, tmp);
+        HEAP.push_back(tmp);
     }
 
     va_end (arguments);

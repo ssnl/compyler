@@ -67,7 +67,7 @@ extern int_0$* __ZERO__;
 /** The base class for all primitive and user-defined classes in this dialect.*/
 class $Object {
 public:
-    $Object () {}
+    $Object () : _counter(0) {}
 
     /** Return a string representation of THIS.*/
     virtual string toString(bool contained=false);
@@ -161,7 +161,7 @@ public:
         label = fd->label;
     }
 
-    string toString() { return string("<function>"); };
+    string toString(bool contained=false) { return "<function>"; };
 
     bool asBool() {return true;}
 };

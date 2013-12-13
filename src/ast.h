@@ -105,6 +105,9 @@ public:
     /** True if I represent a "target list." */
     virtual bool isTargetList ();
 
+    /** True if I represent a definition. */
+    virtual bool isDefinition ();
+
     /** Do outer-level semantic analysis on me---all scope and type
      *  analysis that applies to definitions and statements that are
      *  not nested inside classes or function definitions.  Modifies
@@ -234,6 +237,10 @@ public:
     /** Generate code for me assuming I am within an expression, leaving the
      *  result of my evaluation at the top of the stack machine. */
     virtual void exprCodeGen (int depth);
+
+    /** Generate code for me assuming I am within a return statement, creating
+     *  a closure if necessary. */
+    virtual void closureCodeGen (int depth);
 
     /** Generates runtime data structures for modules, functions, and classes
      *  and prints them on OUT. */

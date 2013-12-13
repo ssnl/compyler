@@ -1,5 +1,5 @@
 # return def call: tests return on function call
-y,z = 10,15
+y, z = 10,15
 def foo(x::int):
     return x + y
 

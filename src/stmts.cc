@@ -738,25 +738,19 @@ protected:
         return this;
     }
 
-    void exprCodeGen (int depth) {
+    void closureCodeGen (int depth) {
         // Push the return value, if it exists, onto stack.
         VM->comment("Returning from this function");
         if (!(child (0)->isMissing ())) {
             VM->newline();
             VM->comment("Pushing return value onto stack machine");
-            child (0)->exprCodeGen (depth);
+            child (0)->closureCodeGen (depth);
 
             VM->newline();
             VM->comment("Returning a new reference on stack machine");
             VM->emit(ALLOC, "SM.back()->get()");
             VM->emit(POP);
             VM->emit(PUSH);
-
-            Decl* returnVal = child (0)->getType ()->binding ()->getDecl ();
-            if (returnVal->isOverloadable ()
-                        && depth <= returnVal->getDepth ()) {
-                handleClosure (depth);
-            }
         } else {
             VM->newline();
             VM->comment("returning None by default");
@@ -768,54 +762,7 @@ protected:
     }
 
     void stmtCodeGen (int depth) {
-        exprCodeGen (depth);
-    }
-
-    void handleClosure (int depth) {
-        stringstream ss;
-        Decl* container = getContainer();
-        gcstring structName = container->getRuntimeName ();
-        gcstring currFrame = "cf";
-
-        VM->newline ();
-        VM->comment ("Returning a nested function");
-        VM->comment ("Handling closure");
-        VM->emit (ALLOC, "new Frame ()");
-        ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
-        ss << "new " << structName << " (*((";
-        ss << structName << "*) " << currFrame << "->locals));";
-        VM->code (ss.str ());
-        ss.str ("");
-
-        ss << "((FuncDesc*) SM.back()->get())->sl = ";
-        ss << "(Frame*) (HEAP[HEAP.size()-1]->get());";
-        VM->code (ss.str ());
-        ss.str ("");
-
-        for (int i = 1; i < depth; i++) {
-            container = container->getContainer ();
-            currFrame = currFrame + "->sl";
-            structName = container->getRuntimeName ();
-
-            VM->newline();
-            VM->emit (ALLOC, "new Frame ()");
-            ss << "((Frame*) (HEAP[HEAP.size()-1]->get()) )->locals = ";
-            ss << "new " << structName << " (*((";
-            ss << structName << "*) " << currFrame << "->locals));";
-            VM->code (ss.str ());
-            ss.str ("");
-
-            ss << "((Frame*) (HEAP[HEAP.size()-2]->get()) )->sl = ";
-            ss << "(Frame*) (HEAP[HEAP.size()-1]->get());";
-            VM->code (ss.str ());
-            ss.str ("");
-        }
-        currFrame = currFrame + "->sl";
-        ss << "((Frame*) (HEAP[HEAP.size()-2]->get()) )->sl = ";
-        ss << currFrame << ";";
-        VM->newline();
-        VM->code (ss.str ());
-        ss.str ("");
+        closureCodeGen (depth);
     }
 
 };

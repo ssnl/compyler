@@ -10,7 +10,7 @@
 using namespace std;
 
 static const bool DEBUG_OUT = true;
-static const bool DEBUG_DATA = true;
+static const bool DEBUG_DATA = false;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
