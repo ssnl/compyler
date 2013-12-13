@@ -716,6 +716,8 @@ $Reference* __read__($Reference* file);
 
 $Reference* __standard_file__($Reference* k);
 
+// Garbage collection
 
+void __gc__();
 
 #endif

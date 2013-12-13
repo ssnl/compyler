@@ -264,3 +264,5 @@ def __is__(x, y)::bool:
 def __isnot__(x, y)::bool:
     native "__isnot__"
 
+def __gc__():
+    native "__gc__"

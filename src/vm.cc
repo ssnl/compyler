@@ -10,7 +10,7 @@
 using namespace std;
 
 static const bool DEBUG_OUT = true;
-static const bool DEBUG_DATA = false;
+static const bool DEBUG_DATA = true;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -181,7 +181,10 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
         case NTV:
             comment("calling " + arg1 + " (" + tostr(arg2) + " params)");
             if (arg2 == 0)
-                code("tmp_res = " + arg1 + "();");
+                if (arg1 == "__gc__")
+                    code(arg1 + "();");
+                else
+                    code("tmp_res = " + arg1 + "();");
             else {
                 if (arg1 == "__close__" || arg1 == "__donotcall__")
                     code(arg1 + "(");
@@ -198,7 +201,9 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             for (int _ = 0; _ < arg2; _++) {
                 code("SM.pop_back();");
             }
-            if (arg1 != "__close__" && arg1 != "__donotcall__")
+            if (arg1 != "__close__"
+                && arg1 != "__donotcall__"
+                && arg1 != "__gc__")
                 code("SM.push_back( tmp_res );");
             break;
 

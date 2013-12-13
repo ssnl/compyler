@@ -1362,18 +1362,15 @@ __standard_file__($Reference* K) {
  *  it is removed from the HEAP and reclaimed. */
 void
 __gc__() {
-    for (int i = 0; i < SM.size(); i++) {
+    for (int i = 0; i < SM.size(); i++)
         SM[i]->get()->incrCounter();
-    }
     for (int i = 0; i < HEAP.size(); i++) {
-        HEAP[i]->get()->incrCounter();
-    }
-    for (int i = 0; i < HEAP.size(); i++) {
-        if (HEAP[i]->get()->getCounter() < 2) {
-            HEAP[i].clean();
+        if (HEAP[i]->get()->getCounter() == 1) {
             delete HEAP[i];
-        } else {
-            HEAP[i]->get()->setCounter(0);
+            HEAP.erase(HEAP.begin() + i);
+            i--;
         }
     }
+    for (int i = 0; i < SM.size(); i++)
+        SM[i]->get()->decrCounter();
 }
