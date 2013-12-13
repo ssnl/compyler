@@ -35,7 +35,8 @@ protected:
 
     /* Prints a newline or not depending on the type of the print. */
     virtual void printEpilogue() {
-        /* Do nothing */
+        VM->comment("Adding space for print");
+        VM->code("cout << \" \";");
     }
 
     void stmtCodeGen (int depth) {

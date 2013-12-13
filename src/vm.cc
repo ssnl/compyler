@@ -9,7 +9,7 @@
 
 using namespace std;
 
-static const bool DEBUG_OUT = true;
+static const bool DEBUG_OUT = false;
 
 VirtualMachine::VirtualMachine (ostream& _out)
     : out(_out)
@@ -267,7 +267,9 @@ VirtualMachine::emitMainEpilogue ()
 {
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
-    code("cout << \"Heap size: \" << HEAP.size() << endl;");
+    if (DEBUG_OUT) {
+       code("cout << \"Heap size: \" << HEAP.size() << endl;");
+    }
     code("for (int i = 0; i < HEAP.size(); i++) {");
     code("HEAP[i]->clean();", 8);
     code("delete HEAP[i];", 8);
