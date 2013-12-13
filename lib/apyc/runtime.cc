@@ -1102,8 +1102,8 @@ __ne__str__($Reference* x, $Reference* y) {
 
 $Reference*
 __getitem__str__($Reference* s, $Reference* k) {
-    string str = ((str_0$*)s)->getValue();
-    int index = ((int_0$*)k)->getValue();
+    string str = ((str_0$*)s->get())->getValue();
+    int index = ((int_0$*)k->get())->getValue();
     int strLen = str.length();
     if (index >= strLen || index < -strLen) {
         throw "IndexError: string index out of range";
@@ -1197,17 +1197,17 @@ __argv__() {
 
 $Reference*
 __getitem__dict__int__($Reference* D, $Reference* x) {
-    return ((dict_int_0$*) D->get())->get(x);
+    return ((dict_int_0$*) D->get())->get(x->get());
 }
 
 $Reference*
 __getitem__dict__str__($Reference* D, $Reference* x) {
-    return ((dict_str_0$*) D->get())->get(x);
+    return ((dict_str_0$*) D->get())->get(x->get());
 }
 
 $Reference*
 __getitem__dict__bool__($Reference* D, $Reference* x) {
-    return ((dict_bool_0$*) D->get())->get(x);
+    return ((dict_bool_0$*) D->get())->get(x->get());
 }
 
 $Reference*
