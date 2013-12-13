@@ -15,60 +15,60 @@ class int:
     def __init__(self::int):
         native "__donotcall__"
 
-class bool:
-    def __init__(self::bool):
-        native "__donotcall__"
+# class bool:
+#     def __init__(self::bool):
+#         native "__donotcall__"
 
 # class range:
 #     def __init__(self::range):
 #         native "__donotcall__"
 
-class file:
-    def __init__(self::file):
-        native "__donotcall__"
+# class file:
+#     def __init__(self::file):
+#         native "__donotcall__"
 
-class list of [$T]:
-    def __init__(self::list of [$T]):
-        native "__donotcall__"
+# class list of [$T]:
+#     def __init__(self::list of [$T]):
+#         native "__donotcall__"
 
-class dict of [$Key, $Value]:
-    def __init__(self::dict of [$Key, $Value]):
-        native "__donotcall__"
+# class dict of [$Key, $Value]:
+#     def __init__(self::dict of [$Key, $Value]):
+#         native "__donotcall__"
 
-class tuple0:
-    def __init__(self::tuple0):
-        native "__donotcall__"
+# class tuple0:
+#     def __init__(self::tuple0):
+#         native "__donotcall__"
 
-class tuple1 of [$T0]:
-    def __init__(self::tuple1 of [$a]):
-        native "__donotcall__"
+# class tuple1 of [$T0]:
+#     def __init__(self::tuple1 of [$a]):
+#         native "__donotcall__"
 
-class tuple2 of [$T1, $T2]:
-    def __init__(self::tuple2 of [$a, $b]):
-        native "__donotcall__"
+# class tuple2 of [$T1, $T2]:
+#     def __init__(self::tuple2 of [$a, $b]):
+#         native "__donotcall__"
 
-class tuple3 of [$T1, $T2, $T3]:
-    def __init__(self::tuple3 of [$a, $b, $c]):
-        native "__donotcall__"
+# class tuple3 of [$T1, $T2, $T3]:
+#     def __init__(self::tuple3 of [$a, $b, $c]):
+#         native "__donotcall__"
 
 # The value None.  References to None are converted to calls __None__().
 
-def __None__():
-    native "__None__"
+# def __None__():
+#     native "__None__"
 
 # Type bool
 
 # truth replaces bool(...) in regular Python.  truth(x) is True iff x is a
 # true value, according to the Python spec.
 
-def truth(x)::bool:
-    native "__truth__"
+# def truth(x)::bool:
+#     native "__truth__"
 
 # def __not__(x)::bool:
 #     native "__not__"
 
-True::bool = truth(1)
-False::bool = truth(0)
+# True::bool = truth(1)
+# False::bool = truth(0)
 
 # # Type range
 
@@ -80,8 +80,8 @@ False::bool = truth(0)
 
 # # Type int
 
-def __add__(x:: int, y::int)::int:
-    native "__add__int__"
+# def __add__(x:: int, y::int)::int:
+#     native "__add__int__"
 
 # def __sub__(x::int, y::int)::int:
 #     native "__sub__int__"
@@ -128,8 +128,8 @@ def __add__(x:: int, y::int)::int:
 
 # # Type str
 
-def __add__(x:: str, y::str)::str:
-    native "__add__str__"
+# def __add__(x:: str, y::str)::str:
+#     native "__add__str__"
 
 # def __mul__(x::str, y::int)::str:
 #     native "__lmul__str__"
@@ -155,11 +155,11 @@ def __add__(x:: str, y::str)::str:
 # def __ne__(x::str, y::str)::bool:
 #     native "__ne__str__"
 
-def __getitem__(S::str, k::int)::str:
-    native "__getitem__str__"
+# def __getitem__(S::str, k::int)::str:
+#     native "__getitem__str__"
 
-def __getslice__(S::str, L::int, U::int)::str:
-    native "__getslice__str__"
+# def __getslice__(S::str, L::int, U::int)::str:
+#     native "__getslice__str__"
 
 # def len(S::str)::int:
 #     native "__len__str__"
@@ -170,11 +170,11 @@ def __getslice__(S::str, L::int, U::int)::str:
 
 # # Type list
 
-def __getitem__(S::list of $a, k::int)::$a:
-    native "__getitem__list__"
+# def __getitem__(S::list of $a, k::int)::$a:
+#     native "__getitem__list__"
 
-def __getslice__(S::list of $a, L::int, U::int)::list of $a:
-    native "__getslice__list__"
+# def __getslice__(S::list of $a, L::int, U::int)::list of $a:
+#     native "__getslice__list__"
 
 # def len(S::list of $a)::int:
 #     native "__len__list__"
@@ -182,25 +182,25 @@ def __getslice__(S::list of $a, L::int, U::int)::list of $a:
 # def __argv__()::list of str:
 #     native "__argv__"
 
-# Type file
+# # Type file
 
-def open(name::str)::file:
-    native "__open1__"
+# def open(name::str)::file:
+#     native "__open1__"
 
-def open(name::str, mode::str)::file:
-    native "__open2__"
+# def open(name::str, mode::str)::file:
+#     native "__open2__"
 
-def close(f::file):
-    native "__close__"
+# def close(f::file):
+#     native "__close__"
 
-# def __standard_file__(k::int):
-#     native "__standard_file__"
+# # def __standard_file__(k::int):
+# #     native "__standard_file__"
 
-def readline(f::file)::str:
-    native "__readline__"
+# def readline(f::file)::str:
+#     native "__readline__"
 
-def read(f::file)::str:
-    native "__read__"
+# def read(f::file)::str:
+#     native "__read__"
 
 # # The module sys.
 # # (We fake this with an instance of a class, using instance variables instead
@@ -218,14 +218,14 @@ def read(f::file)::str:
 
 # # Type dict
 
-def __getitem__(D::dict of [int, $b], x::int)::$b:
-    native "__getitem__dict__int__"
+# def __getitem__(D::dict of [int, $b], x::int)::$b:
+#     native "__getitem__dict__int__"
 
-def __getitem__(D::dict of [bool, $b], x::bool)::$b:
-    native "__getitem__dict__bool__"
+# def __getitem__(D::dict of [bool, $b], x::bool)::$b:
+#     native "__getitem__dict__bool__"
 
-def __getitem__(D::dict of [str, $b], x::str)::$b:
-    native "__getitem__dict__str__"
+# def __getitem__(D::dict of [str, $b], x::str)::$b:
+#     native "__getitem__dict__str__"
 
 # def len(D::dict of [int, $b])::int:
 #     native "__len__dict__"

@@ -272,14 +272,14 @@ protected:
     void stmtCodeGen (int depth) {
         gcstring defname = getDecl ()->getRuntimeName ();
         gcstring frameName;
-        if (getDecl ()->getContainer ()->getContainer () != NULL) {
-            frameName = getDecl ()->getContainer ()->getRuntimeName ();
-        } else {
-            frameName = "__main__";
-        }
+        frameName = getDecl ()->getContainer ()->getRuntimeName ();
+
         VM->emit (ALLOC, "new FuncDesc");
         VM->emit (PUSH);
-        VM->emit (PUSH, "((" + frameName + "*) cf->locals)->" + defname);
+        if (getDecl ()->getContainer ()->isType ())
+            VM->emit (PUSH, "$" + frameName + "." + defname);
+        else
+            VM->emit (PUSH, "((" + frameName + "*) cf->locals)->" + defname);
         VM->emit (MOVE);
         VM->emit (SETLBL, VM->asLabel (defname));
         VM->emit (SETSL, "cf");
@@ -435,8 +435,7 @@ protected:
     }
 
     void runtimeDataStructGen (std::ostream& out) {
-        if (isPrimitive(getDecl ())
-            || getDecl ()->getName () == "__sys__")
+        if (isPrimitive(getDecl ()))
             return;
         Decl* me = getDecl ();
         Decl_Vector members = me->getEnviron ()->get_members ();
@@ -461,11 +460,19 @@ protected:
     }
 
     void stmtCodeGen (int depth) {
-        child (2)->stmtCodeGen (depth);
+        if (!isPrimitive(getDecl ())) {
+            for_each_child (c, child (2)) {
+                c->stmtCodeGen (depth);
+            } end_for;
+        }
     }
 
     void defCodeGen (int depth) {
-        child (2)->defCodeGen (depth);
+        if (!isPrimitive(getDecl ())) {
+            for_each_child (c, child (2)) {
+                c->defCodeGen (depth);
+            } end_for;
+        }
     }
 
 private:
