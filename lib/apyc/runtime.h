@@ -84,7 +84,9 @@ public:
     /** Return the class name. Helper method for equals(). */
     virtual string className() {return "Object";}
 
-    virtual $Reference* getElement(int k);
+    /** Return the Kth elementh. Should only be used for appropriate objects. 
+    */
+    virtual $Reference* getElement(int k) {return NULL;}
 
     /** Check equality between THIS and OTHER. */
     virtual bool equals(void* other) {return this == other;}
