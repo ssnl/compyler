@@ -90,24 +90,21 @@ $Reference::set($Object* obj) {
     int start = target->getSliceStart();
     int end = target->getSliceEnd();
 
+
     if (!target->isSlicing() || (start == 0 && end >= target->size())) {
         setObj(obj);
         return;
     }
 
-    vector<$Reference*> list1, list2;
-    list1 = target->getValue();
-    list2 = target->getValue();
-
     for (int i = 0; i < end - start; i++) {
-        list1.erase(list1.begin() + start);
+        target->value.erase(target->value.begin() + start);
     }
 
 
-    for (int i = 0; i < list2.size(); i++) {
-        ref = new $Reference(list2[i]->get());
+    for (int i = 0; i < source->value.size(); i++) {
+        ref = new $Reference(source->value[i]->get());
         HEAP.push_back(ref);
-        list1.insert(list1.begin() + start + i, ref);
+        target->value.insert(target->value.begin() + start + i, ref);
     }
 
     target->setSlicing(false);
@@ -545,6 +542,43 @@ list_0$::getItem(int k) {
 $Reference*
 list_0$::getElement(int k) {
     return getItem(k);
+}
+
+void
+list_0$::slicing(int start) {
+    sliceStart = start;
+    sliceEnd = value.size();
+
+    if (-sliceStart <= value.size())
+        sliceStart = 0;
+    else if (sliceStart < 0)
+        sliceStart += value.size();
+    else if (sliceStart > value.size())
+        sliceStart = value.size();
+}
+
+void
+list_0$::slicing(int start, int end) {
+    sliceStart = start;
+    sliceEnd = end;
+
+    if (-sliceStart <= value.size()) {
+        sliceStart = 0;
+    }
+    else if (sliceStart < 0) {
+        sliceStart += value.size();
+    }
+    else if (sliceStart > value.size()) {
+        sliceStart = value.size();
+    }
+
+    if (-sliceEnd <= value.size())
+        sliceEnd = 0;
+    else if (sliceEnd < 0)
+        sliceEnd += value.size();
+
+    if (sliceEnd < sliceStart)
+        sliceEnd = sliceStart;
 }
 
 $Reference*

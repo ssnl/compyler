@@ -287,6 +287,12 @@ AST::exprCodeGen (int depth)
 }
 
 void
+AST::targetCodeGen (int depth)
+{
+    exprCodeGen(depth);
+}
+
+void
 AST::runtimeDataStructGen (ostream& out)
 {
     for_each_child (c, this) {

@@ -425,11 +425,12 @@ public:
 /** The wrapper class for primitive type list.*/
 class list_0$: public $Object {
 protected:
-    vector<$Reference*> value;
     int sliceStart, sliceEnd;
     bool isSlice;
 public:
-    list_0$ () : value(), sliceStart(-1), sliceEnd(-1), isSlice(false) {}
+    vector<$Reference*> value;
+
+    list_0$ () : value(), sliceStart(0), sliceEnd(0), isSlice(false) {}
 
     vector<$Reference*> getValue() {return value;}
 
@@ -447,15 +448,9 @@ public:
 
     bool isSlicing() {return isSlice;}
 
-    void slicing(int start) {
-        sliceStart = start;
-        sliceEnd = value.size();
-    }
+    void slicing(int start);
 
-    void slicing(int start, int end) {
-        sliceStart = start;
-        sliceEnd = end;
-    }
+    void slicing(int start, int end);
 
     int getSliceStart() {return sliceStart;}
 

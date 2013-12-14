@@ -238,6 +238,9 @@ public:
      *  result of my evaluation at the top of the stack machine. */
     virtual void exprCodeGen (int depth);
 
+    /** Generate code for me assuming I am the target of an assignment. */
+    virtual void targetCodeGen (int depth);
+
     /** Generate code for me assuming I am within a return statement, creating
      *  a closure if necessary. */
     virtual void closureCodeGen (int depth);

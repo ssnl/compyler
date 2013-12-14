@@ -481,6 +481,45 @@ protected:
         VM->emit (NTV, ss.str (), nativeArity);
     }
 
+    void targetCodeGen (int depth) {
+        bool startMiss = actualParam (1)->isMissing ();
+        bool endMiss = actualParam (2)->isMissing ();
+        stringstream ss;
+
+        VM->newline();
+        VM->comment("Special measure for slicing as target");
+        actualParam (0)->exprCodeGen (depth);
+        if (startMiss && !endMiss) {
+            actualParam (2)->exprCodeGen (depth);
+            VM->code("tmp_res = SM.back();");
+            VM->emit(POP);
+            ss << "((list_0$*)SM.back()->get())->slicing(0, ";
+            ss << "((int_0$*)tmp_res->get())->getValue() );";
+            VM->code(ss.str());
+            VM->code("((list_0$*)SM.back()->get())->setSlicing(true);");
+        } else if (!startMiss && endMiss) {
+            actualParam (1)->exprCodeGen (depth);
+            VM->code("tmp_res = SM.back();");
+            VM->emit(POP);
+            ss << "((list_0$*)SM.back()->get())->slicing( ";
+            ss << "((int_0$*)tmp_res->get())->getValue() );";
+            VM->code(ss.str());
+            VM->code("((list_0$*)SM.back()->get())->setSlicing(true);");
+        } else if (!startMiss && !endMiss) {
+            actualParam (1)->exprCodeGen (depth);
+            VM->code("tmp_left = SM.back();");
+            VM->emit(POP);
+            actualParam (2)->exprCodeGen (depth);
+            VM->code("tmp_right = SM.back();");
+            VM->emit(POP);
+            ss << "((list_0$*)SM.back()->get())->slicing( ";
+            ss << "((int_0$*)tmp_left->get())->getValue(), ";
+            ss << "((int_0$*)tmp_right->get())->getValue() );";
+            VM->code(ss.str());
+            VM->code("((list_0$*)SM.back()->get())->setSlicing(true);");
+        }
+    }
+
 };
 
 NODE_FACTORY (Slicing_AST, SLICING);

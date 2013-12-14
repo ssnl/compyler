@@ -633,14 +633,14 @@ protected:
             child (1)->closureCodeGen (depth);
             VM->emit (EXPAND, tuplesize);
             for_each_child (c, child (0)) {
-                c->exprCodeGen (depth);
+                c->targetCodeGen (depth);
                 VM->emit (MOVE);
                 VM->emit (POP);
             } end_for;
             child (0)->exprCodeGen (depth);
         } else {
             child (1)->closureCodeGen (depth);
-            child (0)->exprCodeGen (depth);
+            child (0)->targetCodeGen (depth);
             VM->emit (MOVE);
         }
     }
