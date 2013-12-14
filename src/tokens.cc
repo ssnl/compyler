@@ -316,7 +316,7 @@ protected:
     void closureCodeGen (int depth) {
         exprCodeGen (depth);
 
-        if (isDefinition () && depth <= getDecl ()->getDepth ()) {
+        if (isDefinition () && depth > 0 && depth <= getDecl ()->getDepth ()) {
             handleClosure (depth);
         }
     }

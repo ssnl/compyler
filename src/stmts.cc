@@ -630,7 +630,7 @@ protected:
     void exprCodeGen (int depth) {
         if (child (0)->isTargetList ()) {
             int tuplesize = child (0)->arity ();
-            child (1)->exprCodeGen (depth);
+            child (1)->closureCodeGen (depth);
             VM->emit (EXPAND, tuplesize);
             for_each_child (c, child (0)) {
                 c->exprCodeGen (depth);
@@ -639,7 +639,7 @@ protected:
             } end_for;
             child (0)->exprCodeGen (depth);
         } else {
-            child (1)->exprCodeGen (depth);
+            child (1)->closureCodeGen (depth);
             child (0)->exprCodeGen (depth);
             VM->emit (MOVE);
         }
