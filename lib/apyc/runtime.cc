@@ -70,6 +70,49 @@ string
 $Object::toString(bool contained) {return "";}
 
 
+/* Class $Reference */
+
+void
+$Reference::set($Object* obj) {
+    if (obj->className() != "list") {
+        setObj(obj);
+        return;
+    }
+    $Reference* ref;
+    if (get() == NULL) {
+        ref = new $Reference(new list_0$());
+        HEAP.push_back(ref);
+        setObj(ref->get());
+    }
+
+    list_0$* target = (list_0$*) get();
+    list_0$* source = (list_0$*) obj;
+    int start = target->getSliceStart();
+    int end = target->getSliceEnd();
+
+    if (!target->isSlicing() || (start == 0 && end >= target->size())) {
+        setObj(obj);
+        return;
+    }
+
+    vector<$Reference*> list1, list2;
+    list1 = target->getValue();
+    list2 = target->getValue();
+
+    for (int i = 0; i < end - start; i++) {
+        list1.erase(list1.begin() + start);
+    }
+
+
+    for (int i = 0; i < list2.size(); i++) {
+        ref = new $Reference(list2[i]->get());
+        HEAP.push_back(ref);
+        list1.insert(list1.begin() + start + i, ref);
+    }
+
+    target->setSlicing(false);
+}
+
 /* Class bool_0$ */
 
 $Reference*

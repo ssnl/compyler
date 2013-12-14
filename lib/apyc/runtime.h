@@ -137,7 +137,14 @@ public:
         _obj->incrCounter ();
     }
 
-    void set ($Object* obj) {
+    /** Set this reference to point to OBJ. Same behavior as set() except
+     *  for lists.
+     */
+    void set ($Object* obj);
+
+
+    /** Helper method for set */
+    void setObj ($Object* obj) {
         if (_obj != NULL)
             _obj->decrCounter ();
         _obj = obj;
@@ -419,8 +426,10 @@ public:
 class list_0$: public $Object {
 protected:
     vector<$Reference*> value;
+    int sliceStart, sliceEnd;
+    bool isSlice;
 public:
-    list_0$ () : value() {}
+    list_0$ () : value(), sliceStart(-1), sliceEnd(-1), isSlice(false) {}
 
     vector<$Reference*> getValue() {return value;}
 
@@ -433,6 +442,24 @@ public:
     $Reference* getSlice(int L, int U);
 
     $Reference* getElement(int k);
+
+    void setSlicing(bool b) {isSlice = b;}
+
+    bool isSlicing() {return isSlice;}
+
+    void slicing(int start) {
+        sliceStart = start;
+        sliceEnd = value.size();
+    }
+
+    void slicing(int start, int end) {
+        sliceStart = start;
+        sliceEnd = end;
+    }
+
+    int getSliceStart() {return sliceStart;}
+
+    int getSliceEnd() {return sliceEnd;}
 
     void clear() {value.clear();}
 
