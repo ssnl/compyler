@@ -45,6 +45,7 @@ typedef void* Label;
 
 extern int argcount;
 extern char** args;
+extern bool middleOfLine;
 
 extern vector<Frame*> STACK;
 extern vector<$Reference*> HEAP;
@@ -68,6 +69,20 @@ extern stringstream tmp_ss;
 
 extern int_0$* __ZERO__;
 extern $Object* cmp;
+
+extern bool_0$ $bool_0$;
+extern int_0$ $int_0$;
+extern str_0$ $str_0$;
+extern range_0$ $range_0$;
+extern list_0$ $list_0$;
+extern tuple_0$ $tuple_0$;
+extern dict_0$ $dict_0$;
+extern file_0$ $file_0$;
+
+// Standard input, output, and error
+extern file_0$ $f1, $f2, $f3;
+extern $Reference *STDIN, *STDOUT, *STDERR;
+
 
 extern void runtimeErrorHandler( int signum );
 
@@ -561,18 +576,7 @@ public:
     bool equals(void* other);
 };
 
-extern bool_0$ $bool_0$;
-extern int_0$ $int_0$;
-extern str_0$ $str_0$;
-extern range_0$ $range_0$;
-extern list_0$ $list_0$;
-extern tuple_0$ $tuple_0$;
-extern dict_0$ $dict_0$;
-extern file_0$ $file_0$;
 
-// Standard input, output, and error
-extern file_0$ $f1, $f2, $f3;
-extern $Reference *STDIN, *STDOUT, *STDERR;
 
 // Allocators for list_0$, tuple_0$, and dict_0$
 $Reference* __tuple__();

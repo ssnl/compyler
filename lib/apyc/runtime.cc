@@ -12,6 +12,9 @@ using namespace std;
 int argcount;
 /** Stores the arguments passed to the generated program. */
 char** args;
+/** Denoting, for printing purpose, whether the current position is the start
+of a new line. */
+bool middleOfLine = false;
 
 /** Stores frames during runtime. */
 vector<Frame*> STACK;

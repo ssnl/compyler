@@ -151,8 +151,12 @@ VirtualMachine::emit (const int& instr, int arg)
             comment("Printing to standard output");
             code("tmp_ss.str(\"\");");
             code("if (" + tostr(arg) + " > 0) {");
+            code("if (middleOfLine) {", 8);
+            code("tmp_ss << \" \";");
+            code("}", 8);
             code("tmp_ss << SM.back()->get()->toString();", 8);
             code("SM.pop_back();", 8);
+            code("middleOfLine = true;", 8);
             code("}");
             code("for (int i = 1; i < " + tostr(arg) + "; i++) {");
             code("tmp_ss << \" \" << SM.back()->get()->toString();", 8);
@@ -219,8 +223,13 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             code("SM.pop_back();");
             code("tmp_ss.str(\"\");");
             code("if (" + tostr(arg2) + " > 0) {");
+            code("if (tmp_file == (file_0$*)STDOUT->get() && middleOfLine) {", 8);
+            code("tmp_ss << \" \";");
+            code("}", 8);
             code("tmp_ss << SM.back()->get()->toString();", 8);
             code("SM.pop_back();", 8);
+            code("if (tmp_file == (file_0$*)STDOUT->get())", 8);
+            code("middleOfLine = true;", 12);
             code("}");
             code("for (int i = 1; i < " + tostr(arg2) + "; i++) {");
             code("tmp_ss << \" \" << SM.back()->get()->toString();", 8);
@@ -228,6 +237,8 @@ VirtualMachine::emit (const int& instr, gcstring arg1, int arg2)
             code("}");
             code("tmp_ss << " + arg1 + ";");
             code("fprintf(tmp_file->getValue(), tmp_ss.str().c_str(), \"\");");
+            code("if (tmp_file == (file_0$*)STDOUT->get() && "+arg1+" == \"\\n\")");
+            code("middleOfLine = false;", 8);
             break;
 
         default:
@@ -334,6 +345,8 @@ VirtualMachine::emitMainPrologue ()
 void
 VirtualMachine::emitMainEpilogue ()
 {
+    code("if (middleOfLine)");
+    code("cout << endl;", 8);
     newline(2);
     comment("runtime epilogue: deleting objects stored on heap");
     if (DEBUG_DATA) {
